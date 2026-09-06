@@ -135,7 +135,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <h1>🧰 工具箱 ToolBox</h1>
   <div style="display:flex;align-items:center;gap:16px">
     <span class="tag">纯前端 · 本地运行 · 免费</span>
-    <span class="admin-btn" onclick="isAdmin?adminLogout():showAdminLogin()" style="cursor:pointer;font-size:18px" title="管理员入口">⚙️</span>
+    <span class="admin-btn" onclick="currentUser?logout():showLogin()" style="cursor:pointer;font-size:18px" title="登录/登出">👤</span>
   </div>
 </div>
 
@@ -143,7 +143,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="tab active" data-page="crypto">🔐 加密工具</div>
   <div class="tab" data-page="games">🎮 小游戏</div>
   <div class="tab" data-page="echo">💬 回声洞</div>
+  <div class="tab" data-page="cloud">☁️ 云盘</div>
   <div class="tab" data-page="monitor" id="monitorTab" style="display:none">🖥️ 服务器监控</div>
+  <div class="tab" data-page="admin" id="adminTab" style="display:none">🛡️ 审核管理</div>
 </div>
 
 <!-- 加密工具页 -->
@@ -188,10 +190,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="page" id="page-echo">
   <div class="echo-box">
     <h3 style="margin-bottom:16px">💬 回声洞 <span class="admin-badge" id="adminBadge" style="display:none">管理员</span></h3>
-    <textarea class="echo-input" id="echoInput" placeholder="说点什么吧，匿名发布..."></textarea>
+    <textarea class="echo-input" id="echoInput" placeholder="说点什么吧（需登录，发布后需审核）..."></textarea>
+    <input type="file" id="echoImage" accept="image/*" style="margin-bottom:12px;color:var(--muted)">
     <div class="btn-row">
       <button class="btn btn-primary" onclick="postEcho()">发布</button>
       <button class="btn btn-secondary" onclick="loadEcho()">刷新</button>
+      <button class="btn btn-secondary" onclick="currentUser?logout():showLogin()" id="loginBtn">登录</button>
     </div>
   </div>
   <div class="echo-list" id="echoList">
@@ -234,7 +238,58 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="service-item"><span>🔴 Redis 缓存</span><span class="service-status offline" id="redisStatus">未运行</span></div>
     <div class="service-item"><span>🟢 Node.js 后端</span><span class="service-status offline" id="nodeStatus">未运行</span></div>
   </div>
-  <div class="hint" style="text-align:center;margin-top:16px">数据每 5 秒自动刷新</div>
+  <div class="hint" style="text-align:center;margin-top:16px">数据每秒自动刷新</div>
+</div>
+
+<!-- 云盘页面 -->
+<div class="page" id="page-cloud">
+  <h3 style="margin-bottom:16px">☁️ 我的云盘 <span id="cloudUser" style="font-size:13px;color:var(--muted)"></span></h3>
+  <div id="cloudLoginTip" style="text-align:center;padding:60px;color:var(--muted)">
+    请先登录使用云盘<br><br>
+    <button class="btn btn-primary" onclick="showLogin()">登录 / 注册</button>
+  </div>
+  <div id="cloudContent" style="display:none">
+    <div class="monitor-card" style="margin-bottom:20px;text-align:left">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:14px">存储空间</span>
+        <span id="storageText" style="font-size:13px;color:var(--muted)">0 / 10 MB</span>
+      </div>
+      <div class="bar"><div class="bar-fill" id="storageBar" style="width:0%"></div></div>
+    </div>
+    <div class="echo-box" style="margin-bottom:20px">
+      <input type="file" id="fileInput" style="margin-bottom:12px;color:var(--muted)">
+      <button class="btn btn-primary" onclick="uploadFile()">上传文件</button>
+    </div>
+    <div class="service-list" id="fileList">
+      <div style="text-align:center;color:var(--muted);padding:20px">暂无文件</div>
+    </div>
+  </div>
+</div>
+
+<!-- 管理员审核页面 -->
+<div class="page" id="page-admin">
+  <h3 style="margin-bottom:16px">🛡️ 内容审核</h3>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="loadPending()">刷新待审核</button>
+  </div>
+  <div id="pendingList" class="echo-list">
+    <div class="echo-item"><div class="echo-text" style="color:var(--muted)">加载中...</div></div>
+  </div>
+</div>
+
+<!-- 登录弹窗 -->
+<div class="admin-login-overlay" id="loginModal">
+  <div class="admin-login-box">
+    <h3 id="loginTitle">👤 登录</h3>
+    <input type="text" id="loginUser" placeholder="用户名">
+    <input type="password" id="loginPass" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-primary" onclick="doLogin()">登录</button>
+      <button class="btn btn-secondary" onclick="doRegister()">注册</button>
+      <button class="btn btn-secondary" onclick="closeLogin()">取消</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:12px">管理员账号: admin / 520520</div>
+  </div>
 </div>
 
 <!-- 游戏弹窗 -->
@@ -789,8 +844,115 @@ async function loadMonitor(){
     document.getElementById('diskVal').textContent='--';document.getElementById('netVal').textContent='后端未连接';
   }
 }
-setInterval(loadMonitor,5000);
+setInterval(loadMonitor,1000);
 loadEcho();
+
+// ========== 用户系统 ==========
+let userToken=localStorage.getItem('token')||'';
+let currentUser=localStorage.getItem('username')||'';
+function showLogin(){document.getElementById('loginModal').classList.add('show');document.getElementById('loginUser').focus()}
+function closeLogin(){document.getElementById('loginModal').classList.remove('show')}
+async function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(!u||!p){toast('请输入用户名密码');return}
+  try{
+    const res=await fetch(API_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data=await res.json();
+    if(data.token){
+      userToken=data.token;currentUser=data.username;
+      localStorage.setItem('token',userToken);localStorage.setItem('username',currentUser);
+      closeLogin();toast('登录成功');updateUI();
+      if(currentUser==='admin'){isAdmin=true;document.getElementById('adminBadge').style.display='inline-block';document.getElementById('monitorTab').style.display='block';document.getElementById('adminTab').style.display='block';loadMonitor()}
+    }else toast(data.error||'登录失败');
+  }catch(e){toast('服务器未连接')}
+}
+async function doRegister(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(!u||!p){toast('请输入用户名密码');return}
+  try{
+    const res=await fetch(API_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const data=await res.json();
+    if(data.success){toast('注册成功，请登录');document.getElementById('loginPass').value=''}
+    else toast(data.error||'注册失败');
+  }catch(e){toast('服务器未连接')}
+}
+function logout(){userToken='';currentUser='';localStorage.removeItem('token');localStorage.removeItem('username');isAdmin=false;document.getElementById('adminBadge').style.display='none';document.getElementById('monitorTab').style.display='none';document.getElementById('adminTab').style.display='none';updateUI();toast('已退出');switchTab('crypto')}
+function updateUI(){
+  if(currentUser){document.getElementById('cloudLoginTip').style.display='none';document.getElementById('cloudContent').style.display='block';document.getElementById('cloudUser').textContent=' - '+currentUser;loadFiles()}
+  else{document.getElementById('cloudLoginTip').style.display='block';document.getElementById('cloudContent').style.display='none'}
+}
+if(currentUser&&currentUser==='admin'){isAdmin=true;document.getElementById('adminBadge').style.display='inline-block';document.getElementById('monitorTab').style.display='block';document.getElementById('adminTab').style.display='block'}
+if(currentUser)updateUI();
+
+// ========== 云盘 ==========
+async function loadFiles(){
+  if(!userToken)return;
+  try{
+    const res=await fetch(API_BASE+'/files',{headers:{'Authorization':'Bearer '+userToken}});
+    const data=await res.json();
+    const usedMB=(data.used/1024/1024).toFixed(2);
+    document.getElementById('storageText').textContent=usedMB+' / 10 MB';
+    document.getElementById('storageBar').style.width=(data.used/data.limit*100)+'%';
+    const list=document.getElementById('fileList');
+    if(!data.files.length){list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">暂无文件</div>';return}
+    list.innerHTML=data.files.map(f=>`<div class="service-item"><span>📄 ${f.filename} <span style="color:var(--muted);font-size:11px">(${(f.filesize/1024).toFixed(1)}KB)</span></span><div><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px" onclick="downloadFile(${f.id})">下载</button> <button class="btn btn-danger" style="padding:4px 12px;font-size:12px" onclick="deleteFile(${f.id})">删除</button></div></div>`).join('');
+  }catch(e){document.getElementById('fileList').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">服务器未连接</div>'}
+}
+async function uploadFile(){
+  const input=document.getElementById('fileInput');
+  if(!input.files[0]){toast('请选择文件');return}
+  const fd=new FormData();fd.append('file',input.files[0]);
+  try{
+    const res=await fetch(API_BASE+'/files',{method:'POST',headers:{'Authorization':'Bearer '+userToken},body:fd});
+    const data=await res.json();
+    if(data.success){toast('上传成功');input.value='';loadFiles()}
+    else toast(data.error||'上传失败');
+  }catch(e){toast('服务器未连接')}
+}
+async function downloadFile(id){window.open(API_BASE+'/files/'+id+'?token='+userToken,'_blank')}
+async function deleteFile(id){
+  if(!confirm('确定删除？'))return;
+  await fetch(API_BASE+'/files/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+userToken}});
+  loadFiles();toast('已删除');
+}
+
+// ========== 回声洞（带图+登录） ==========
+async function postEcho(){
+  if(!userToken){toast('请先登录');showLogin();return}
+  const text=document.getElementById('echoInput').value.trim();
+  const imgInput=document.getElementById('echoImage');
+  if(!text&&!imgInput.files[0]){toast('说点什么或发张图吧');return}
+  const fd=new FormData();
+  if(text)fd.append('text',text);
+  if(imgInput.files[0])fd.append('image',imgInput.files[0]);
+  try{
+    const res=await fetch(API_BASE+'/echo',{method:'POST',headers:{'Authorization':'Bearer '+userToken},body:fd});
+    const data=await res.json();
+    if(data.success){toast(data.message||'发布成功');document.getElementById('echoInput').value='';imgInput.value='';loadEcho()}
+    else toast(data.error||'发布失败');
+  }catch(e){toast('服务器未连接')}
+}
+function renderEcho(list){
+  const listEl=document.getElementById('echoList');
+  if(!list.length){listEl.innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">还没有留言，来说点什么吧~</div></div>';return}
+  listEl.innerHTML=list.map(item=>`<div class="echo-item"><div class="echo-text">${escapeHtml(item.text||'')}</div>${item.image?`<img src="${API_BASE.replace('/api','')}${item.image}" style="max-width:100%;border-radius:8px;margin:8px 0">`:''}<div class="echo-meta"><span>${item.username||'匿名'} · ${item.time||''}</span>${isAdmin?`<span class="echo-del" onclick="delEcho(${item.id})">删除</span>`:''}</div></div>`).join('');
+}
+
+// ========== 管理员审核 ==========
+async function loadPending(){
+  if(!isAdmin)return;
+  try{
+    const res=await fetch(API_BASE+'/admin/echo/pending',{headers:{'Authorization':'Bearer '+userToken}});
+    const data=await res.json();
+    const list=document.getElementById('pendingList');
+    if(!data.length){list.innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">没有待审核内容</div></div>';return}
+    list.innerHTML=data.map(item=>`<div class="echo-item"><div class="echo-text">${escapeHtml(item.text||'')}</div>${item.image?`<img src="${API_BASE.replace('/api','')}${item.image}" style="max-width:100%;border-radius:8px;margin:8px 0">`:''}<div class="echo-meta"><span>${item.username} · ${item.time}</span><div><button class="btn btn-success" style="padding:4px 10px;font-size:11px" onclick="approveEcho(${item.id})">通过</button> <button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="adminDelEcho(${item.id})">删除</button></div></div></div>`).join('');
+  }catch(e){document.getElementById('pendingList').innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">加载失败</div></div>'}
+}
+async function approveEcho(id){await fetch(API_BASE+'/admin/echo/'+id+'/approve',{method:'POST',headers:{'Authorization':'Bearer '+userToken}});loadPending();loadEcho();toast('已通过')}
+async function adminDelEcho(id){await fetch(API_BASE+'/admin/echo/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+userToken}});loadPending();loadEcho();toast('已删除')}
 </script>
 </body>
 </html>
