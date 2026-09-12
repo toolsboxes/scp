@@ -330,6 +330,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
   <div class="tab" onclick="switchTab('games', event)">🎮 小游戏</div>
   <div class="tab" onclick="switchTab('echo', event)">📢 回声洞</div>
   <div class="tab" onclick="switchTab('cloud', event)">☁️ 我的云盘</div>
+  <div class="tab" onclick="openChatFromNav()">💬 好友聊天</div>
   <div class="tab" onclick="switchTab('admin', event)">⚙️ 管理</div>
 </div>
 
@@ -645,7 +646,10 @@ function showAuth(mode) {
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
+  const el = document.getElementById(id);
+  if (el) {
+    el.remove();
+  }
 }
 
 async function doAuth() {
@@ -805,14 +809,29 @@ async function addFriend(friendId, friendName) {
 }
 
 // 好友列表
+// 从导航栏打开聊天
+function openChatFromNav() {
+  if (!currentUser) {
+    toast('请先登录', 'error');
+    showAuth('login');
+    return;
+  }
+  showFriendList();
+}
+
 function showFriendList() {
-  closeModal('profileModal');
+  // 不要关闭profileModal，因为从导航栏打开时没有
+  const existing = document.getElementById('friendListModal');
+  if (existing) existing.remove();
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.id = 'friendListModal';
   modal.style.display = 'flex';
   modal.innerHTML = '<div class="modal-content" style="max-width:400px;max-height:80vh;overflow-y:auto;">' +
     '<h3>💬 好友列表</h3>' +
+    '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
+    '<button class="btn btn-primary btn-sm" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
+    '</div>' +
     '<div id="friendListContent"><p style="text-align:center;color:var(--muted);">加载中...</p></div>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
     '</div>';
@@ -822,6 +841,11 @@ function showFriendList() {
 
 async function loadFriendList() {
   const contentEl = document.getElementById('friendListContent');
+  if (!contentEl) return;
+  if (!currentUser) {
+    contentEl.innerHTML = '<p style="text-align:center;color:var(--pink);">请先登录</p>';
+    return;
+  }
   try {
     const { data, error } = await sb.from('friends').select('*').eq('user_id', currentUser.id);
     if (error) throw error;
@@ -830,16 +854,16 @@ async function loadFriendList() {
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg2);border-radius:8px;margin-bottom:8px;">' +
         '<div style="display:flex;align-items:center;gap:8px;">' +
         '<span style="font-size:24px;">👤</span>' +
-        '<span style="font-weight:600;">' + escapeHtml(f.friend_name) + '</span>' +
+        '<span style="font-weight:600;">' + escapeHtml(f.friend_name || '好友') + '</span>' +
         '</div>' +
-        '<button class="btn btn-primary btn-sm" onclick="openChat(\'' + f.friend_id + '\', \'' + f.friend_name + '\')">💬 聊天</button>' +
+        '<button class="btn btn-primary btn-sm" onclick="openChat(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">💬 聊天</button>' +
         '</div>'
       ).join('');
     } else {
-      contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，快去添加吧！</p>';
+      contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
     }
   } catch (e) {
-    contentEl.innerHTML = '<p style="text-align:center;color:var(--pink);">加载失败：' + e.message + '</p>';
+    contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
   }
 }
 
