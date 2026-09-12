@@ -279,6 +279,9 @@ input:focus, textarea:focus { border-color: var(--purple); }
   .header h1 { font-size: 20px; }
   .header-buttons { gap: 6px; }
   .header-buttons .btn { padding: 6px 12px; font-size: 13px; }
+  .user-info { gap: 6px; flex-wrap: wrap; width: 100%; justify-content: center; }
+  .user-info .btn { padding: 10px 16px; font-size: 14px; min-width: 80px; min-height: 44px; }
+  .user-avatar { width: 40px !important; height: 40px !important; font-size: 24px !important; }
   .tabs { gap: 6px; padding: 8px; flex-wrap: wrap; }
   .tab { padding: 8px 12px; font-size: 13px; }
   .container { padding: 12px; }
@@ -647,7 +650,12 @@ function showAuth(mode) {
 
 function closeModal(id) {
   const el = document.getElementById(id);
-  if (el) {
+  if (!el) return;
+  // 预定义的弹窗（authModal）用active类控制，不删除元素
+  if (id === 'authModal') {
+    el.classList.remove('active');
+  } else {
+    // 动态创建的弹窗直接删除
     el.remove();
   }
 }
