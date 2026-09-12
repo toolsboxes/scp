@@ -3,195 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>工具箱 · ToolBox</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+<title>ToolBox - 工具箱</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0f0f1a;--card:#1a1a2e;--border:#2a2a4a;--accent:#6366f1;--accent2:#ec4899;--text:#e2e8f0;--muted:#94a3b8;--success:#10b981;--danger:#ef4444}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.header h1{font-size:22px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header .user-info{display:flex;align-items:center;gap:12px;font-size:14px}
-.tabs{display:flex;gap:4px;padding:0 30px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap}
-.tab{padding:14px 20px;cursor:pointer;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.page{display:none;padding:30px;max-width:1200px;margin:0 auto}
-.page.active{display:block}
-.crypto-layout{display:grid;grid-template-columns:180px 1fr;gap:20px}
-.algo-list{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px}
-.algo-item{padding:12px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;margin-bottom:4px}
-.algo-item:hover{background:rgba(99,102,241,.1)}
-.algo-item.active{background:var(--accent);color:#fff}
-.workspace{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-.workspace h3{font-size:16px;margin-bottom:16px}
-.input-group{margin-bottom:16px}
-.input-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-.input-group textarea,.input-group input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;font-family:'Consolas','Monaco',monospace;resize:vertical;outline:none}
-.input-group textarea:focus,.input-group input:focus{border-color:var(--accent)}
-.input-group textarea{min-height:100px}
-.btn-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#4f46e5}
-.btn-secondary{background:var(--border);color:var(--text)}
-.btn-success{background:var(--success);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-sm{padding:6px 12px;font-size:12px}
-.output-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:60px;font-family:'Consolas','Monaco',monospace;font-size:13px;word-break:break-all;white-space:pre-wrap;color:var(--success)}
-.game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
-.game-card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.game-card .icon{font-size:48px;margin-bottom:12px}
-.game-card h3{font-size:18px;margin-bottom:8px}
-.game-card p{font-size:13px;color:var(--muted)}
-.game-container{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
-#snakeCanvas,#mineCanvas{background:#000;border-radius:8px;display:block;margin:0 auto}
-#game2048{display:grid;grid-template-columns:repeat(4,80px);gap:8px;justify-content:center;margin:20px auto;width:fit-content}
-.cell2048{width:80px;height:80px;background:var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold}
-.score-display{font-size:18px;margin-bottom:12px;color:var(--accent)}
-.auth-form{max-width:400px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px}
-.auth-form h2{margin-bottom:20px;text-align:center}
-.echo-list{margin-top:20px}
-.echo-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
-.echo-item .meta{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
-.echo-item .content{font-size:14px;line-height:1.6}
-.echo-item img{max-width:100%;border-radius:8px;margin-top:8px}
-.file-list{margin-top:20px}
-.file-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.file-item .name{font-size:14px}
-.file-item .size{font-size:12px;color:var(--muted)}
-.storage-bar{background:var(--border);border-radius:100px;height:8px;margin:12px 0;overflow:hidden}
-.storage-fill{background:var(--accent);height:100%;transition:width .3s}
-.admin-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
-.admin-section h3{margin-bottom:16px;color:var(--accent2)}
-.pending-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
-.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;animation:slideIn .3s}
-.toast.success{background:var(--success)}
-.toast.error{background:var(--danger)}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center}
-.modal.active{display:flex}
-.modal-content{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
-.modal-content h2{margin-bottom:20px}
-.close-modal{float:right;cursor:pointer;font-size:20px;color:var(--muted)}
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --card: #1a1a25;
+  --border: #2a2a3a;
+  --text: #ffffff;
+  --muted: #8888aa;
+  --purple: #8b5cf6;
+  --purple2: #a78bfa;
+  --pink: #ec4899;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --orange: #f97316;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(139,92,246,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(236,72,153,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(59,130,246,0.08) 0%, transparent 50%);
+}
+.header {
+  background: linear-gradient(135deg, var(--purple), var(--pink), var(--blue));
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+}
+.header h1 {
+  font-size: 24px;
+  background: linear-gradient(90deg, #fff, var(--purple2), #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.user-info { display: flex; gap: 8px; align-items: center; }
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: #fff;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn-primary { background: linear-gradient(135deg, var(--purple), var(--pink)); }
+.btn-secondary { background: var(--card); border: 1px solid var(--border); }
+.btn-success { background: var(--green); }
+.btn-danger { background: var(--red); }
+.btn-warning { background: var(--yellow); color: #000; }
+.btn-info { background: var(--cyan); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tab {
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.tab:hover { color: var(--text); background: var(--card); }
+.tab.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  box-shadow: 0 2px 10px rgba(139,92,246,0.4);
+}
+.container { max-width: 900px; margin: 0 auto; padding: 24px; }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.card h2 {
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, var(--purple2), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus { border-color: var(--purple); }
+.algo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.algo-item {
+  padding: 12px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.algo-item:hover { border-color: var(--purple); }
+.algo-item.active {
+  border-color: var(--purple);
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2));
+  box-shadow: 0 0 15px rgba(139,92,246,0.3);
+}
+.algo-item .name { font-weight: 700; font-size: 14px; }
+.algo-item .desc { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.output-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 60px;
+  word-break: break-all;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--green);
+}
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+.game-card {
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.game-card:hover {
+  border-color: var(--purple);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(139,92,246,0.3);
+}
+.game-card .icon { font-size: 40px; margin-bottom: 8px; }
+.game-card .name { font-weight: 700; }
+#gameContainer { display: none; text-align: center; }
+#gameArea { display: inline-block; }
+.score-display {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--purple2);
+}
+.echo-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.echo-item .meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.echo-item img { max-width: 100%; border-radius: 8px; margin-top: 8px; }
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.file-item .name { font-weight: 600; }
+.file-item .size { font-size: 12px; color: var(--muted); }
+.storage-bar {
+  height: 8px;
+  background: var(--bg2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.storage-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--pink));
+  transition: width 0.3s;
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+.modal.active { display: flex; }
+.modal-content {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+}
+.modal-content h3 { margin-bottom: 16px; color: var(--purple2); }
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  z-index: 2000;
+  animation: slideIn 0.3s;
+}
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+.pending-item {
+  background: var(--bg2);
+  border: 1px solid var(--yellow);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.cell2048 {
+  width: 70px; height: 70px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700;
+  border-radius: 8px; margin: 4px;
+}
+#game2048 { display: grid; grid-template-columns: repeat(4, 1fr); width: 320px; margin: 0 auto; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🧰 ToolBox 工具箱</h1>
-  <div class="user-info" id="userInfo">
-    <button class="btn btn-secondary btn-sm" onclick="showAuth('login')">登录</button>
-    <button class="btn btn-primary btn-sm" onclick="showAuth('register')">注册</button>
-  </div>
+  <h1>🧰 ToolBox</h1>
+  <div class="user-info" id="userInfo"></div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('crypto')">🔐 加密工具</div>
-  <div class="tab" onclick="switchTab('games')">🎮 小游戏</div>
-  <div class="tab" onclick="switchTab('echo')">📢 回声洞</div>
-  <div class="tab" onclick="switchTab('cloud')">☁️ 我的云盘</div>
-  <div class="tab" onclick="switchTab('admin')">⚙️ 管理</div>
+  <div class="tab active" onclick="switchTab('crypto', event)">🔐 加密工具</div>
+  <div class="tab" onclick="switchTab('games', event)">🎮 小游戏</div>
+  <div class="tab" onclick="switchTab('echo', event)">📢 回声洞</div>
+  <div class="tab" onclick="switchTab('cloud', event)">☁️ 我的云盘</div>
+  <div class="tab" onclick="switchTab('admin', event)">⚙️ 管理</div>
 </div>
 
-<!-- 加密工具 -->
-<div class="page active" id="page-crypto">
-  <div class="crypto-layout">
-    <div class="algo-list">
-      <div class="algo-item active" onclick="selectAlgo('md5')">MD5<div class="desc">不可逆哈希</div></div>
-      <div class="algo-item" onclick="selectAlgo('sha256')">SHA-256<div class="desc">不可逆哈希</div></div>
-      <div class="algo-item" onclick="selectAlgo('base64')">Base64<div class="desc">编码/解码</div></div>
-      <div class="algo-item" onclick="selectAlgo('unicode')">Unicode<div class="desc">编码/解码</div></div>
-      <div class="algo-item" onclick="selectAlgo('url')">URL编码<div class="desc">编码/解码</div></div>
-      <div class="algo-item" onclick="selectAlgo('aes')">AES加密<div class="desc">需密钥</div></div>
-    </div>
-    <div class="workspace">
-      <h3 id="algoTitle">MD5 哈希</h3>
-      <div class="input-group">
-        <label>输入内容</label>
-        <textarea id="cryptoInput" placeholder="输入要处理的文本..."></textarea>
+<div class="container">
+  <!-- 加密工具 -->
+  <div class="page active" id="page-crypto">
+    <div class="card">
+      <h2 id="algoTitle">MD5 哈希</h2>
+      <div class="algo-grid">
+        <div class="algo-item active" onclick="selectAlgo('md5', event)"><div class="name">MD5</div><div class="desc">不可逆哈希</div></div>
+        <div class="algo-item" onclick="selectAlgo('sha1', event)"><div class="name">SHA-1</div><div class="desc">不可逆哈希</div></div>
+        <div class="algo-item" onclick="selectAlgo('sha256', event)"><div class="name">SHA-256</div><div class="desc">不可逆哈希</div></div>
+        <div class="algo-item" onclick="selectAlgo('sha512', event)"><div class="name">SHA-512</div><div class="desc">不可逆哈希</div></div>
+        <div class="algo-item" onclick="selectAlgo('base64', event)"><div class="name">Base64</div><div class="desc">编码/解码</div></div>
+        <div class="algo-item" onclick="selectAlgo('unicode', event)"><div class="name">Unicode</div><div class="desc">编码/解码</div></div>
+        <div class="algo-item" onclick="selectAlgo('url', event)"><div class="name">URL编码</div><div class="desc">编码/解码</div></div>
+        <div class="algo-item" onclick="selectAlgo('hex', event)"><div class="name">Hex十六进制</div><div class="desc">编码/解码</div></div>
+        <div class="algo-item" onclick="selectAlgo('rot13', event)"><div class="name">ROT13</div><div class="desc">字符替换</div></div>
+        <div class="algo-item" onclick="selectAlgo('aes', event)"><div class="name">AES加密</div><div class="desc">需密钥</div></div>
       </div>
-      <div class="input-group" id="keyGroup" style="display:none">
-        <label>密钥</label>
-        <input type="text" id="cryptoKey" placeholder="输入加密密钥">
+      <textarea id="cryptoInput" placeholder="输入内容..." rows="3"></textarea>
+      <div id="keyGroup" style="display:none;">
+        <input type="text" id="cryptoKey" placeholder="输入密钥（AES需要）">
       </div>
-      <div class="btn-row">
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
         <button class="btn btn-primary" onclick="doCrypto('encode')">加密/编码</button>
-        <button class="btn btn-secondary" id="decodeBtn" onclick="doCrypto('decode')" style="display:none">解密/解码</button>
-        <button class="btn btn-secondary" onclick="copyOutput()">复制结果</button>
+        <button class="btn btn-secondary" id="decodeBtn" style="display:none;" onclick="doCrypto('decode')">解密/解码</button>
+        <button class="btn btn-info" onclick="copyOutput()">复制结果</button>
       </div>
       <div class="output-box" id="cryptoOutput">结果将显示在这里...</div>
     </div>
   </div>
-</div>
 
-<!-- 小游戏 -->
-<div class="page" id="page-games">
-  <div class="game-grid" id="gameList">
-    <div class="game-card" onclick="openGame('snake')">
-      <div class="icon">🐍</div>
-      <h3>贪吃蛇</h3>
-      <p>经典贪吃蛇，方向键控制</p>
+  <!-- 小游戏 -->
+  <div class="page" id="page-games">
+    <div id="gameList" class="game-grid">
+      <div class="game-card" onclick="openGame('snake')"><div class="icon">🐍</div><div class="name">贪吃蛇</div></div>
+      <div class="game-card" onclick="openGame('g2048')"><div class="icon">🔢</div><div class="name">2048</div></div>
+      <div class="game-card" onclick="openGame('mine')"><div class="icon">💣</div><div class="name">扫雷</div></div>
+      <div class="game-card" onclick="openGame('tictactoe')"><div class="icon">⭕</div><div class="name">井字棋</div></div>
+      <div class="game-card" onclick="openGame('gomoku')"><div class="icon">⚫</div><div class="name">五子棋</div></div>
+      <div class="game-card" onclick="openGame('xiangqi')"><div class="icon">🀄</div><div class="name">中国象棋</div></div>
+      <div class="game-card" onclick="openGame('chess')"><div class="icon">♟️</div><div class="name">国际象棋</div></div>
+      <div class="game-card" onclick="openGame('go')"><div class="icon">⬛</div><div class="name">围棋(简化)</div></div>
     </div>
-    <div class="game-card" onclick="openGame('2048')">
-      <div class="icon">🔢</div>
-      <h3>2048</h3>
-      <p>合并数字到2048</p>
-    </div>
-    <div class="game-card" onclick="openGame('mine')">
-      <div class="icon">💣</div>
-      <h3>扫雷</h3>
-      <p>找出所有地雷</p>
+    <div id="gameContainer">
+      <button class="btn btn-secondary btn-sm" onclick="closeGame()" style="margin-bottom:12px;">← 返回游戏列表</button>
+      <div id="gameArea"></div>
     </div>
   </div>
-  <div class="game-container" id="gameContainer" style="display:none">
-    <button class="btn btn-secondary btn-sm" onclick="closeGame()" style="float:right">返回</button>
-    <div id="gameArea"></div>
-  </div>
-</div>
 
-<!-- 回声洞 -->
-<div class="page" id="page-echo">
-  <div class="workspace">
-    <h3>📢 回声洞 - 匿名分享</h3>
-    <div class="input-group">
-      <textarea id="echoText" placeholder="说点什么吧..." style="min-height:80px"></textarea>
+  <!-- 回声洞 -->
+  <div class="page" id="page-echo">
+    <div class="card">
+      <h2>📢 回声洞</h2>
+      <div id="announcement" style="display:none;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2));border:1px solid var(--yellow);border-radius:10px;padding:12px;margin-bottom:16px;">
+        <strong style="color:var(--yellow);">📢 公告：</strong><span id="announcementText"></span>
+      </div>
+      <textarea id="echoText" placeholder="说点什么..." rows="2"></textarea>
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <div onclick="document.getElementById('echoImage').click()" style="flex:1;aspect-ratio:1;background:var(--bg2);border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:32px;">🖼️</span>
+          <span style="font-size:12px;color:var(--muted);margin-top:4px;">上传图片</span>
+        </div>
+        <div onclick="document.getElementById('echoVideo').click()" style="flex:1;aspect-ratio:1;background:var(--bg2);border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:32px;">🎬</span>
+          <span style="font-size:12px;color:var(--muted);margin-top:4px;">上传视频</span>
+        </div>
+        <div onclick="document.getElementById('echoFile').click()" style="flex:1;aspect-ratio:1;background:var(--bg2);border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">
+          <span style="font-size:32px;">📎</span>
+          <span style="font-size:12px;color:var(--muted);margin-top:4px;">上传文件</span>
+        </div>
+      </div>
+      <input type="file" id="echoImage" accept="image/*" style="display:none">
+      <input type="file" id="echoVideo" accept="video/*" style="display:none">
+      <input type="file" id="echoFile" style="display:none">
+      <div id="echoFilePreview" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
+      <button class="btn btn-primary" onclick="postEcho()">发布（AI自动审核）</button>
     </div>
-    <div class="input-group">
-      <label>上传图片（可选）</label>
-      <input type="file" id="echoImage" accept="image/*">
+    <div id="echoList"></div>
+  </div>
+
+  <!-- 云盘 -->
+  <div class="page" id="page-cloud">
+    <div class="card">
+      <h2>☁️ 我的云盘</h2>
+      <div class="storage-bar"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+      <div id="storageText" style="font-size:12px;color:var(--muted);margin-bottom:12px;">0 MB / 50 MB</div>
+      <input type="file" id="fileInput">
+      <button class="btn btn-primary" onclick="uploadFile()">上传文件</button>
     </div>
-    <button class="btn btn-primary" onclick="postEcho()">发布</button>
+    <div id="fileList"></div>
   </div>
-  <div class="echo-list" id="echoList"></div>
-</div>
 
-<!-- 云盘 -->
-<div class="page" id="page-cloud">
-  <div class="workspace">
-    <h3>☁️ 我的云盘 <span style="font-size:12px;color:var(--muted)">每人10MB</span></h3>
-    <div class="storage-bar"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="storageText">0 MB / 10 MB</div>
-    <input type="file" id="fileInput">
-    <button class="btn btn-primary" onclick="uploadFile()" style="margin-top:10px">上传文件</button>
-  </div>
-  <div class="file-list" id="fileList"></div>
-</div>
-
-<!-- 管理 -->
-<div class="page" id="page-admin">
-  <div id="adminLogin" style="text-align:center;padding:40px">
-    <h3>管理员登录</h3>
-    <p style="color:var(--muted);margin:16px 0">需要管理员权限</p>
-    <input type="password" id="adminPass" placeholder="管理员密码" style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
-    <button class="btn btn-primary" onclick="adminLogin()" style="margin-left:8px">登录</button>
-  </div>
-  <div id="adminPanel" style="display:none">
-    <div class="admin-section">
-      <h3>⏳ 待审核回声</h3>
-      <div id="pendingList"></div>
+  <!-- 管理员 -->
+  <div class="page" id="page-admin">
+    <div class="card" id="adminLogin">
+      <h2>⚙️ 管理员登录</h2>
+      <input type="password" id="adminPass" placeholder="输入管理员密码">
+      <button class="btn btn-primary" onclick="adminLogin()">登录</button>
+    </div>
+    <div id="adminPanel" style="display:none;">
+      <div class="card">
+        <h2>📢 发布公告</h2>
+        <textarea id="announcementInput" placeholder="输入公告内容..." rows="2"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="publishAnnouncement()">发布公告</button>
+          <button class="btn btn-secondary" onclick="clearAnnouncement()">清除公告</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>🖥️ 服务器监控</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--green);" id="statDb">●</div>
+            <div style="font-size:12px;color:var(--muted);">数据库</div>
+          </div>
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--purple2);" id="statUsers">0</div>
+            <div style="font-size:12px;color:var(--muted);">用户总数</div>
+          </div>
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--pink);" id="statEchoes">0</div>
+            <div style="font-size:12px;color:var(--muted);">回声洞总数</div>
+          </div>
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--yellow);" id="statPending">0</div>
+            <div style="font-size:12px;color:var(--muted);">待审核</div>
+          </div>
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--cyan);" id="statFiles">0</div>
+            <div style="font-size:12px;color:var(--muted);">文件总数</div>
+          </div>
+          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--orange);" id="statStorage">0 MB</div>
+            <div style="font-size:12px;color:var(--muted);">存储用量</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="loadAdminStats()">🔄 刷新数据</button>
+      </div>
+      <div class="card">
+        <h2>📋 待审核内容</h2>
+        <div id="pendingList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -199,43 +436,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- 登录/注册弹窗 -->
 <div class="modal" id="authModal">
   <div class="modal-content">
-    <span class="close-modal" onclick="closeModal('authModal')">&times;</span>
-    <h2 id="authTitle">登录</h2>
-    <div class="input-group">
-      <label>用户名</label>
-      <input type="text" id="authUsername">
+    <h3 id="authTitle">登录</h3>
+    <input type="text" id="authUsername" placeholder="用户名">
+    <input type="password" id="authPassword" placeholder="密码">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" onclick="doAuth()">确定</button>
+      <button class="btn btn-secondary" onclick="closeModal('authModal')">取消</button>
     </div>
-    <div class="input-group">
-      <label>密码</label>
-      <input type="password" id="authPassword">
-    </div>
-    <button class="btn btn-primary" style="width:100%" onclick="doAuth()">确认</button>
   </div>
 </div>
 
+<script src="supabase.min.js"></script>
+<script src="crypto-js.min.js"></script>
 <script>
-// Supabase 配置
+// ==================== 配置 ====================
 const SUPABASE_URL = 'https://gxaiupkrxgumaqirrlth.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4YWl1cGtyeGd1bWFxaXJybHRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzQwMDAsImV4cCI6MjA3ODEwMDAwMH0.placeholder';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4YWl1cGtyeGd1bWFxaXJybHRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyMDQxOTEsImV4cCI6MjEwNDc4MDE5MX0.lEy6_1cBjh2LtdmcfeQ5vwS9YyqvUCT8jWG8GvNLzbY';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const ADMIN_PASSWORD = '520520';
+const STORAGE_LIMIT = 50 * 1024 * 1024;
 
 let currentUser = null;
 let currentAlgo = 'md5';
+let gameInterval = null;
 
-// 初始化
-async function init() {
-  // 检查登录状态
-  const saved = localStorage.getItem('scp_user');
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    updateUserUI();
-  }
-  loadEchoes();
-  if (currentUser) loadFiles();
-}
-
-// Toast提示
-function toast(msg, type='success') {
+// ==================== 工具函数 ====================
+function toast(msg, type = 'success') {
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   t.textContent = msg;
@@ -243,26 +469,50 @@ function toast(msg, type='success') {
   setTimeout(() => t.remove(), 3000);
 }
 
-// 标签切换
-function switchTab(name) {
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ==================== 标签切换 ====================
+function switchTab(name, ev) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
+  if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
   document.getElementById('page-' + name).classList.add('active');
   if (name === 'echo') loadEchoes();
   if (name === 'cloud' && currentUser) loadFiles();
   if (name === 'games') closeGame();
+  if (name === 'admin') {
+    if (currentUser && currentUser.isAdmin) {
+      document.getElementById('adminLogin').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      loadAdminStats();
+      loadPending();
+    } else {
+      document.getElementById('adminLogin').style.display = 'block';
+      document.getElementById('adminPanel').style.display = 'none';
+    }
+  }
 }
 
-// ========== 加密工具 ==========
-function selectAlgo(algo) {
+// ==================== 加密工具 ====================
+function selectAlgo(algo, ev) {
   currentAlgo = algo;
   document.querySelectorAll('.algo-item').forEach(i => i.classList.remove('active'));
-  event.target.closest('.algo-item').classList.add('active');
-  const titles = {md5:'MD5 哈希',sha256:'SHA-256 哈希',base64:'Base64 编解码',unicode:'Unicode 编解码',url:'URL 编解码',aes:'AES 加解密'};
+  if (ev && ev.currentTarget) ev.currentTarget.closest('.algo-item').classList.add('active');
+  const titles = {
+    md5: 'MD5 哈希', sha1: 'SHA-1 哈希',
+    sha256: 'SHA-256 哈希', sha512: 'SHA-512 哈希',
+    base64: 'Base64 编解码', unicode: 'Unicode 编解码',
+    url: 'URL 编解码', hex: 'Hex 十六进制编解码',
+    rot13: 'ROT13 字符替换', aes: 'AES 加解密'
+  };
   document.getElementById('algoTitle').textContent = titles[algo];
   document.getElementById('keyGroup').style.display = algo === 'aes' ? 'block' : 'none';
-  document.getElementById('decodeBtn').style.display = (algo === 'base64' || algo === 'unicode' || algo === 'url' || algo === 'aes') ? 'inline-block' : 'none';
+  document.getElementById('decodeBtn').style.display = 
+    (algo === 'base64' || algo === 'unicode' || algo === 'url' || algo === 'hex' || algo === 'rot13' || algo === 'aes') ? 'inline-block' : 'none';
 }
 
 function doCrypto(mode) {
@@ -270,30 +520,54 @@ function doCrypto(mode) {
   const key = document.getElementById('cryptoKey').value;
   let output = '';
   try {
-    switch(currentAlgo) {
+    switch (currentAlgo) {
       case 'md5': output = CryptoJS.MD5(input).toString(); break;
+      case 'sha1': output = CryptoJS.SHA1(input).toString(); break;
       case 'sha256': output = CryptoJS.SHA256(input).toString(); break;
-      case 'base64': output = mode === 'encode' ? btoa(unescape(encodeURIComponent(input))) : decodeURIComponent(escape(atob(input))); break;
-      case 'unicode': output = mode === 'encode' ? input.split('').map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0')).join('') : input.replace(/\\u([0-9a-fA-F]{4})/g, (_,h) => String.fromCharCode(parseInt(h,16))); break;
-      case 'url': output = mode === 'encode' ? encodeURIComponent(input) : decodeURIComponent(input); break;
+      case 'sha512': output = CryptoJS.SHA512(input).toString(); break;
+      case 'base64':
+        output = mode === 'encode'
+          ? btoa(unescape(encodeURIComponent(input)))
+          : decodeURIComponent(escape(atob(input)));
+        break;
+      case 'unicode':
+        output = mode === 'encode'
+          ? input.split('').map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')).join('')
+          : input.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+        break;
+      case 'url':
+        output = mode === 'encode' ? encodeURIComponent(input) : decodeURIComponent(input);
+        break;
+      case 'hex':
+        output = mode === 'encode'
+          ? Array.from(new TextEncoder().encode(input)).map(b => b.toString(16).padStart(2, '0')).join('')
+          : new TextDecoder().decode(new Uint8Array(output.match(/.{1,2}/g).map(h => parseInt(h, 16))));
+        break;
+      case 'rot13':
+        output = input.replace(/[a-zA-Z]/g, c => {
+          const base = c <= 'Z' ? 65 : 97;
+          return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+        });
+        break;
       case 'aes':
         if (!key) { toast('请输入密钥', 'error'); return; }
-        output = mode === 'encode' ? CryptoJS.AES.encrypt(input, key).toString() : CryptoJS.AES.decrypt(input, key).toString(CryptoJS.enc.Utf8);
+        output = mode === 'encode'
+          ? CryptoJS.AES.encrypt(input, key).toString()
+          : CryptoJS.AES.decrypt(input, key).toString(CryptoJS.enc.Utf8);
         break;
     }
-    document.getElementById('cryptoOutput').textContent = output;
-  } catch(e) {
+    document.getElementById('cryptoOutput').textContent = output || '(空)';
+  } catch (e) {
     document.getElementById('cryptoOutput').textContent = '错误: ' + e.message;
   }
 }
 
 function copyOutput() {
   const text = document.getElementById('cryptoOutput').textContent;
-  navigator.clipboard.writeText(text);
-  toast('已复制');
+  navigator.clipboard.writeText(text).then(() => toast('已复制')).catch(() => toast('复制失败', 'error'));
 }
 
-// ========== 用户系统 ==========
+// ==================== 用户系统 ====================
 let authMode = 'login';
 function showAuth(mode) {
   authMode = mode;
@@ -306,31 +580,40 @@ function closeModal(id) {
 }
 
 async function doAuth() {
-  const username = document.getElementById('authUsername').value.trim();
-  const password = document.getElementById('authPassword').value;
-  if (!username || !password) { toast('请填写完整', 'error'); return; }
-  const hash = CryptoJS.SHA256(password).toString();
-  
-  if (authMode === 'register') {
-    const { data, error } = await supabase.from('users').insert([{ username, password: hash }]);
-    if (error) { toast('用户名已存在', 'error'); return; }
-    toast('注册成功，请登录');
-    closeModal('authModal');
-  } else {
-    const { data, error } = await supabase.from('users').select('*').eq('username', username).eq('password', hash);
-    if (error || !data.length) { toast('用户名或密码错误', 'error'); return; }
-    currentUser = data[0];
-    localStorage.setItem('scp_user', JSON.stringify(currentUser));
-    updateUserUI();
-    closeModal('authModal');
-    toast('登录成功');
-    loadFiles();
+  try {
+    const username = document.getElementById('authUsername').value.trim();
+    const password = document.getElementById('authPassword').value;
+    if (!username || !password) { toast('请填写完整', 'error'); return; }
+    const hash = CryptoJS.SHA256(password).toString();
+
+    if (authMode === 'register') {
+      const { error } = await sb.from('users').insert([{ username, password: hash }]);
+      if (error) { toast('用户名已存在', 'error'); return; }
+      toast('注册成功，请登录');
+      closeModal('authModal');
+    } else {
+      const { data, error } = await sb.from('users').select('*').eq('username', username).eq('password', hash);
+      if (error || !data || !data.length) { toast('用户名或密码错误', 'error'); return; }
+      currentUser = data[0];
+      if (username === 'admin' && password === '520520') {
+        currentUser.isAdmin = true;
+      } else {
+        currentUser.isAdmin = false;
+      }
+      localStorage.setItem('toolbox_user', JSON.stringify(currentUser));
+      updateUserUI();
+      closeModal('authModal');
+      toast('登录成功');
+      loadFiles();
+    }
+  } catch (e) {
+    toast('操作失败: ' + e.message, 'error');
   }
 }
 
 function logout() {
   currentUser = null;
-  localStorage.removeItem('scp_user');
+  localStorage.removeItem('toolbox_user');
   updateUserUI();
   toast('已退出');
 }
@@ -338,119 +621,228 @@ function logout() {
 function updateUserUI() {
   const el = document.getElementById('userInfo');
   if (currentUser) {
-    el.innerHTML = `<span>👤 ${currentUser.username}</span><button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>`;
+    el.innerHTML = '<span>👤 ' + escapeHtml(currentUser.username) + '</span>' +
+      '<button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>';
   } else {
-    el.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="showAuth('login')">登录</button><button class="btn btn-primary btn-sm" onclick="showAuth('register')">注册</button>`;
+    el.innerHTML = '<button class="btn btn-secondary btn-sm" onclick="showAuth(&quot;login&quot;)">登录</button>' +
+      '<button class="btn btn-primary btn-sm" onclick="showAuth(&quot;register&quot;)">注册</button>';
   }
 }
 
-// ========== 回声洞 ==========
+// ==================== 回声洞 ====================
 async function loadEchoes() {
-  const { data, error } = await supabase.from('echoes').select('*').eq('status', 'approved').order('id', { ascending: false }).limit(100);
-  const list = document.getElementById('echoList');
-  if (error || !data.length) { list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">还没有内容，来发布第一条吧！</p>'; return; }
-  list.innerHTML = data.map(e => `
-    <div class="echo-item">
-      <div class="meta"><span>👤 ${e.username || '匿名'}</span><span>${e.time}</span></div>
-      <div class="content">${e.text || ''}</div>
-      ${e.image ? `<img src="${e.image}" alt="图片">` : ''}
-    </div>
-  `).join('');
+  try {
+    const { data, error } = await sb.from('echoes')
+      .select('*').eq('status', 'approved').order('id', { ascending: false }).limit(100);
+    const list = document.getElementById('echoList');
+    if (error || !data || !data.length) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">还没有内容，来发布第一条吧！</p>';
+      return;
+    }
+    list.innerHTML = data.map(e => {
+      let img = '', vid = '', fil = '', fname = '';
+      if (e.image) {
+        try {
+          const parsed = JSON.parse(e.image);
+          img = parsed.image || '';
+          vid = parsed.video || '';
+          fil = parsed.file || '';
+          fname = parsed.filename || '';
+        } catch (err) {
+          img = e.image;
+        }
+      }
+      return '<div class="echo-item">' +
+        '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span></div>' +
+        '<div>' + escapeHtml(e.text || '') + '</div>' +
+        (img ? '<img src="' + img + '" alt="图片" style="max-width:100%;border-radius:8px;margin-top:8px;">' : '') +
+        (vid ? '<video src="' + vid + '" controls style="max-width:100%;border-radius:8px;margin-top:8px;"></video>' : '') +
+        (fil ? '<div style="margin-top:8px;"><a href="' + fil + '" download="' + escapeHtml(fname || '文件') + '" style="color:var(--cyan);">📎 ' + escapeHtml(fname || '下载文件') + '</a></div>' : '') +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    console.warn('loadEchoes error:', e);
+  }
 }
 
-async function postEcho() {
-  if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
-  const text = document.getElementById('echoText').value.trim();
-  const imgFile = document.getElementById('echoImage').files[0];
-  if (!text && !imgFile) { toast('内容不能为空', 'error'); return; }
-  
-  let imageUrl = null;
-  if (imgFile) {
-    const ext = imgFile.name.split('.').pop();
-    const path = `echoes/${Date.now()}-${Math.random().toString(36).substr(2,8)}.${ext}`;
-    const { error } = await supabase.storage.from('uploads').upload(path, imgFile);
-    if (!error) {
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
-      imageUrl = data.publicUrl;
+// AI 敏感词审核
+const AI_BAD_WORDS = ['傻逼', '操你', '草你', '妈的', '他妈', '去死', '垃圾', '废物', '混蛋', '王八蛋', '狗东西', '婊子', '鸡巴', '色情', '黄色', '赌博', '毒品', '杀人', '放火', '恐怖', '炸弹', '枪支', '弹药', '反动', '颠覆', '分裂国家'];
+
+function aiCheckContent(text) {
+  if (!text) return { pass: true, reason: '' };
+  const lower = text.toLowerCase();
+  for (const word of AI_BAD_WORDS) {
+    if (lower.includes(word.toLowerCase())) {
+      return { pass: false, reason: '包含敏感词: ' + word };
     }
   }
-  
-  const time = new Date().toLocaleString('zh-CN');
-  const { error } = await supabase.from('echoes').insert([{ text, image: imageUrl, username: currentUser.username, time, status: 'pending' }]);
-  if (error) { toast('发布失败', 'error'); return; }
-  toast('发布成功，等待审核');
-  document.getElementById('echoText').value = '';
-  document.getElementById('echoImage').value = '';
+  return { pass: true, reason: '' };
 }
 
-// ========== 云盘 ==========
-const STORAGE_LIMIT = 10 * 1024 * 1024;
+// 回声洞文件选择预览
+document.addEventListener('DOMContentLoaded', function() {
+  ['echoImage', 'echoVideo', 'echoFile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', function() {
+        const preview = document.getElementById('echoFilePreview');
+        if (this.files[0]) {
+          const type = id === 'echoImage' ? '图片' : id === 'echoVideo' ? '视频' : '文件';
+          preview.textContent = '✅ 已选择' + type + '：' + this.files[0].name + ' (' + (this.files[0].size / 1024).toFixed(1) + ' KB)';
+        }
+      });
+    }
+  });
+});
 
-async function loadFiles() {
-  if (!currentUser) return;
-  const { data, error } = await supabase.from('files').select('*').eq('user_id', currentUser.id).order('id', { ascending: false });
-  const list = document.getElementById('fileList');
-  if (error || !data.length) { list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">还没有文件</p>'; }
-  else {
-    list.innerHTML = data.map(f => `
-      <div class="file-item">
-        <div><div class="name">📄 ${f.filename}</div><div class="size">${(f.filesize/1024).toFixed(1)} KB</div></div>
-        <div>
-          <button class="btn btn-primary btn-sm" onclick="downloadFile(${f.id}, '${f.filename}')">下载</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteFile(${f.id})">删除</button>
-        </div>
-      </div>
-    `).join('');
+async function postEcho() {
+  try {
+    if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+    const text = document.getElementById('echoText').value.trim();
+    const imgFile = document.getElementById('echoImage').files[0];
+    const videoFile = document.getElementById('echoVideo').files[0];
+    const attachFile = document.getElementById('echoFile').files[0];
+    const mediaFile = imgFile || videoFile || attachFile;
+
+    if (!text && !mediaFile) { toast('内容不能为空', 'error'); return; }
+
+    // AI 审核
+    const aiResult = aiCheckContent(text);
+    const status = aiResult.pass ? 'approved' : 'pending';
+
+    let imageUrl = null;
+    let videoUrl = null;
+    let fileUrl = null;
+    let fileName = null;
+
+    if (mediaFile) {
+      const ext = mediaFile.name.split('.').pop();
+      const folder = imgFile ? 'echoes/images' : videoFile ? 'echoes/videos' : 'echoes/files';
+      const path = folder + '/' + Date.now() + '-' + Math.random().toString(36).substring(2, 10) + '.' + ext;
+      const { error } = await sb.storage.from('uploads').upload(path, mediaFile);
+      if (!error) {
+        const { data } = sb.storage.from('uploads').getPublicUrl(path);
+        if (imgFile) imageUrl = data.publicUrl;
+        else if (videoFile) videoUrl = data.publicUrl;
+        else { fileUrl = data.publicUrl; fileName = mediaFile.name; }
+      }
+    }
+
+    let mediaData = {};
+    if (imageUrl) mediaData.image = imageUrl;
+    if (videoUrl) mediaData.video = videoUrl;
+    if (fileUrl) { mediaData.file = fileUrl; mediaData.filename = fileName; }
+
+    const time = new Date().toLocaleString('zh-CN');
+    const { error } = await sb.from('echoes').insert([
+      { text: text, image: Object.keys(mediaData).length ? JSON.stringify(mediaData) : null, username: currentUser.username, time: time, status: status }
+    ]);
+    if (error) { toast('发布失败', 'error'); return; }
+    if (aiResult.pass) {
+      toast('发布成功（AI审核通过）');
+    } else {
+      toast('发布成功，AI检测到敏感内容，等待人工审核');
+    }
+    document.getElementById('echoText').value = '';
+    document.getElementById('echoImage').value = '';
+    document.getElementById('echoVideo').value = '';
+    document.getElementById('echoFile').value = '';
+    document.getElementById('echoFilePreview').textContent = '';
+    loadEchoes();
+  } catch (e) {
+    toast('发布失败: ' + e.message, 'error');
   }
-  // 计算已用空间
-  const used = data ? data.reduce((s, f) => s + Number(f.filesize), 0) : 0;
-  document.getElementById('storageFill').style.width = (used / STORAGE_LIMIT * 100) + '%';
-  document.getElementById('storageText').textContent = (used / 1024 / 1024).toFixed(2) + ' MB / 10 MB';
+}
+
+// ==================== 云盘 ====================
+async function loadFiles() {
+  try {
+    if (!currentUser) return;
+    const { data, error } = await sb.from('files')
+      .select('*').eq('user_id', currentUser.id).order('id', { ascending: false });
+    const list = document.getElementById('fileList');
+    if (error || !data || !data.length) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">还没有文件</p>';
+    } else {
+      list.innerHTML = data.map(f => 
+        '<div class="file-item">' +
+          '<div>' +
+            '<div class="name">📄 ' + escapeHtml(f.filename) + '</div>' +
+            '<div class="size">' + (f.filesize / 1024).toFixed(1) + ' KB</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;">' +
+            '<button class="btn btn-primary btn-sm" data-file-id="' + f.id + '" data-file-name="' + escapeHtml(f.filename) + '" onclick="downloadFile(this.dataset.fileId, this.dataset.fileName)">下载</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteFile(' + f.id + ')">删除</button>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+    }
+    const used = data ? data.reduce((s, f) => s + Number(f.filesize || 0), 0) : 0;
+    document.getElementById('storageFill').style.width = Math.min(100, used / STORAGE_LIMIT * 100) + '%';
+    document.getElementById('storageText').textContent = (used / 1024 / 1024).toFixed(2) + ' MB / ' + (STORAGE_LIMIT / 1024 / 1024) + ' MB';
+  } catch (e) {
+    console.warn('loadFiles error:', e);
+  }
 }
 
 async function uploadFile() {
-  if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
-  const file = document.getElementById('fileInput').files[0];
-  if (!file) { toast('请选择文件', 'error'); return; }
-  if (file.size > STORAGE_LIMIT) { toast('文件超过10MB', 'error'); return; }
-  
-  const path = `userfiles/${currentUser.id}/${Date.now()}-${file.name}`;
-  const { error: uploadError } = await supabase.storage.from('uploads').upload(path, file);
-  if (uploadError) { toast('上传失败', 'error'); return; }
-  
-  const { data } = supabase.storage.from('uploads').getPublicUrl(path);
-  await supabase.from('files').insert([{ user_id: currentUser.id, filename: file.name, filesize: file.size, filetype: file.type, stored_name: path }]);
-  toast('上传成功');
-  document.getElementById('fileInput').value = '';
-  loadFiles();
+  try {
+    if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) { toast('请选择文件', 'error'); return; }
+    if (file.size > STORAGE_LIMIT) { toast('文件超过' + (STORAGE_LIMIT / 1024 / 1024) + 'MB', 'error'); return; }
+
+    const path = 'userfiles/' + currentUser.id + '/' + Date.now() + '-' + file.name;
+    const { error: uploadError } = await sb.storage.from('uploads').upload(path, file);
+    if (uploadError) { toast('上传失败', 'error'); return; }
+
+    await sb.from('files').insert([{
+      user_id: currentUser.id, filename: file.name,
+      filesize: file.size, filetype: file.type, stored_name: path
+    }]);
+    toast('上传成功');
+    document.getElementById('fileInput').value = '';
+    loadFiles();
+  } catch (e) {
+    toast('上传失败: ' + e.message, 'error');
+  }
 }
 
 async function downloadFile(id, filename) {
-  const { data } = await supabase.from('files').select('*').eq('id', id).single();
-  if (!data) return;
-  const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(data.stored_name);
-  const a = document.createElement('a');
-  a.href = publicUrl;
-  a.download = filename;
-  a.click();
+  try {
+    const { data } = await sb.from('files').select('*').eq('id', id).single();
+    if (!data) return;
+    const { data: { publicUrl } } = sb.storage.from('uploads').getPublicUrl(data.stored_name);
+    const a = document.createElement('a');
+    a.href = publicUrl;
+    a.download = filename;
+    a.click();
+  } catch (e) {
+    toast('下载失败', 'error');
+  }
 }
 
 async function deleteFile(id) {
-  const { data } = await supabase.from('files').select('*').eq('id', id).single();
-  if (data) {
-    await supabase.storage.from('uploads').remove([data.stored_name]);
-    await supabase.from('files').delete().eq('id', id);
+  try {
+    const { data } = await sb.from('files').select('*').eq('id', id).single();
+    if (data) {
+      await sb.storage.from('uploads').remove([data.stored_name]);
+      await sb.from('files').delete().eq('id', id);
+    }
+    toast('已删除');
+    loadFiles();
+  } catch (e) {
+    toast('删除失败', 'error');
   }
-  toast('已删除');
-  loadFiles();
 }
 
-// ========== 管理员 ==========
+// ==================== 管理员 ====================
 function adminLogin() {
   const pass = document.getElementById('adminPass').value;
-  if (pass === '520520') {
+  if (pass === ADMIN_PASSWORD) {
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
+    loadAdminStats();
     loadPending();
     toast('管理员登录成功');
   } else {
@@ -458,51 +850,174 @@ function adminLogin() {
   }
 }
 
+async function loadAdminStats() {
+  try {
+    document.getElementById('statDb').textContent = '●';
+    const [usersRes, echoesRes, pendingRes, filesRes] = await Promise.all([
+      sb.from('users').select('id', { count: 'exact', head: true }),
+      sb.from('echoes').select('id', { count: 'exact', head: true }),
+      sb.from('echoes').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      sb.from('files').select('*')
+    ]);
+    document.getElementById('statUsers').textContent = usersRes.count || 0;
+    document.getElementById('statEchoes').textContent = echoesRes.count || 0;
+    document.getElementById('statPending').textContent = pendingRes.count || 0;
+    document.getElementById('statFiles').textContent = filesRes.data ? filesRes.data.length : 0;
+    const totalSize = filesRes.data ? filesRes.data.reduce((s, f) => s + Number(f.filesize || 0), 0) : 0;
+    document.getElementById('statStorage').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+  } catch (e) {
+    console.warn('loadAdminStats error:', e);
+  }
+}
+
+// 公告功能
+function publishAnnouncement() {
+  const text = document.getElementById('announcementInput').value.trim();
+  if (!text) { toast('公告内容不能为空', 'error'); return; }
+  localStorage.setItem('toolbox_announcement', text);
+  loadAnnouncement();
+  toast('公告发布成功');
+}
+
+function clearAnnouncement() {
+  localStorage.removeItem('toolbox_announcement');
+  document.getElementById('announcementInput').value = '';
+  loadAnnouncement();
+  toast('公告已清除');
+}
+
+function loadAnnouncement() {
+  const text = localStorage.getItem('toolbox_announcement');
+  const el = document.getElementById('announcement');
+  const textEl = document.getElementById('announcementText');
+  if (text && el && textEl) {
+    textEl.textContent = text;
+    el.style.display = 'block';
+  } else if (el) {
+    el.style.display = 'none';
+  }
+}
+
 async function loadPending() {
-  const { data, error } = await supabase.from('echoes').select('*').eq('status', 'pending').order('id', { ascending: false });
-  const list = document.getElementById('pendingList');
-  if (error || !data.length) { list.innerHTML = '<p style="color:var(--muted)">没有待审核内容</p>'; return; }
-  list.innerHTML = data.map(e => `
-    <div class="pending-item">
-      <div class="meta"><span>${e.username}</span><span>${e.time}</span></div>
-      <div style="margin:8px 0">${e.text || ''}</div>
-      ${e.image ? `<img src="${e.image}" style="max-width:200px;border-radius:8px">` : ''}
-      <div style="margin-top:8px">
-        <button class="btn btn-success btn-sm" onclick="approveEcho(${e.id})">通过</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteEcho(${e.id})">删除</button>
-      </div>
-    </div>
-  `).join('');
+  try {
+    const { data, error } = await sb.from('echoes')
+      .select('*').eq('status', 'pending').order('id', { ascending: false });
+    const list = document.getElementById('pendingList');
+    if (error || !data || !data.length) {
+      list.innerHTML = '<p style="color:var(--muted)">没有待审核内容</p>';
+      return;
+    }
+    list.innerHTML = data.map(e => {
+      let img = '';
+      if (e.image) {
+        try {
+          const parsed = JSON.parse(e.image);
+          img = parsed.image || '';
+        } catch (err) {
+          img = e.image;
+        }
+      }
+      return '<div class="pending-item">' +
+        '<div class="meta"><span>' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span></div>' +
+        '<div style="margin:8px 0">' + escapeHtml(e.text || '') + '</div>' +
+        (img ? '<img src="' + img + '" style="max-width:200px;border-radius:8px">' : '') +
+        '<div style="margin-top:8px;display:flex;gap:8px;">' +
+          '<button class="btn btn-success btn-sm" onclick="approveEcho(' + e.id + ')">通过</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteEcho(' + e.id + ')">删除</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    console.warn('loadPending error:', e);
+  }
 }
 
 async function approveEcho(id) {
-  await supabase.from('echoes').update({ status: 'approved' }).eq('id', id);
-  toast('已通过');
-  loadPending();
+  try {
+    await sb.from('echoes').update({ status: 'approved' }).eq('id', id);
+    toast('已通过');
+    loadPending();
+  } catch (e) {
+    toast('操作失败', 'error');
+  }
 }
 
 async function deleteEcho(id) {
-  const { data } = await supabase.from('echoes').select('*').eq('id', id).single();
-  if (data?.image) {
-    const path = data.image.split('/uploads/')[1];
-    if (path) await supabase.storage.from('uploads').remove([path]);
+  try {
+    const { data } = await sb.from('echoes').select('*').eq('id', id).single();
+    if (data && data.image) {
+      try {
+        const parsed = JSON.parse(data.image);
+        const urls = [parsed.image, parsed.video, parsed.file].filter(Boolean);
+        for (const url of urls) {
+          const path = url.split('/uploads/')[1];
+          if (path) await sb.storage.from('uploads').remove([path]);
+        }
+      } catch (e) {
+        const path = data.image.split('/uploads/')[1];
+        if (path) await sb.storage.from('uploads').remove([path]);
+      }
+    }
+    await sb.from('echoes').delete().eq('id', id);
+    toast('已删除');
+    loadPending();
+  } catch (e) {
+    toast('删除失败', 'error');
   }
-  await supabase.from('echoes').delete().eq('id', id);
-  toast('已删除');
-  loadPending();
 }
 
-// ========== 小游戏 ==========
+// ==================== 小游戏 ====================
 function openGame(game) {
   document.getElementById('gameList').style.display = 'none';
   document.getElementById('gameContainer').style.display = 'block';
   const area = document.getElementById('gameArea');
   if (game === 'snake') initSnake(area);
-  if (game === '2048') init2048(area);
+  if (game === 'g2048') init2048(area);
   if (game === 'mine') initMine(area);
+  if (game === 'tictactoe') showTicTacToeMenu(area);
+  if (game === 'gomoku') showGameMenu(area, 'gomoku', '五子棋');
+  if (game === 'xiangqi') showGameMenu(area, 'xiangqi', '中国象棋');
+  if (game === 'chess') showGameMenu(area, 'chess', '国际象棋');
+  if (game === 'go') showGameMenu(area, 'go', '围棋');
+}
+
+let gameDifficulty = 'hard';
+
+function showGameMenu(area, game, name) {
+  area.innerHTML = '<h3 style="margin-bottom:16px;">' + name + ' - 选择难度</h3>' +
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+    '<button class="btn btn-success" onclick="startGame(\'' + game + '\', \'easy\')">😊 简单</button>' +
+    '<button class="btn btn-warning" onclick="startGame(\'' + game + '\', \'normal\')">😐 普通</button>' +
+    '<button class="btn btn-danger" onclick="startGame(\'' + game + '\', \'hard\')">😈 困难</button>' +
+    '</div>';
+}
+
+function startGame(game, diff) {
+  gameDifficulty = diff;
+  const area = document.getElementById('gameArea');
+  if (game === 'gomoku') initGomoku(area);
+  if (game === 'xiangqi') initXiangqi(area);
+  if (game === 'chess') initChess(area);
+  if (game === 'go') initGo(area);
+}
+
+function showTicTacToeMenu(area) {
+  area.innerHTML = '<h3 style="margin-bottom:16px;">选择难度</h3>' +
+    '<div style="display:flex;gap:12px;justify-content:center;">' +
+    '<button class="btn btn-success" onclick="startTicTacToe(\'easy\')">😊 简单</button>' +
+    '<button class="btn btn-warning" onclick="startTicTacToe(\'hard\')">😈 困难</button>' +
+    '</div>';
+}
+
+let tttDifficulty = 'hard';
+
+function startTicTacToe(diff) {
+  tttDifficulty = diff;
+  initTicTacToe(document.getElementById('gameArea'));
 }
 
 function closeGame() {
+  if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
   document.getElementById('gameList').style.display = 'grid';
   document.getElementById('gameContainer').style.display = 'none';
   document.getElementById('gameArea').innerHTML = '';
@@ -513,19 +1028,24 @@ function initSnake(area) {
   area.innerHTML = '<div class="score-display">分数: <span id="snakeScore">0</span></div><canvas id="snakeCanvas" width="400" height="400"></canvas>';
   const canvas = document.getElementById('snakeCanvas');
   const ctx = canvas.getContext('2d');
-  let snake = [{x:10,y:10}], food = {x:15,y:15}, dir = {x:1,y:0}, score = 0, gameLoop;
-  
+  let snake = [{ x: 10, y: 10 }], food = { x: 15, y: 15 }, dir = { x: 1, y: 0 }, score = 0;
+
   function draw() {
-    ctx.fillStyle = '#000'; ctx.fillRect(0,0,400,400);
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(food.x*20, food.y*20, 18, 18);
-    ctx.fillStyle = '#10b981';
-    snake.forEach(s => ctx.fillRect(s.x*20, s.y*20, 18, 18));
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, 400, 400);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
+    snake.forEach((s, i) => {
+      ctx.fillStyle = i === 0 ? '#8b5cf6' : '#10b981';
+      ctx.fillRect(s.x * 20, s.y * 20, 18, 18);
+    });
   }
-  
+
   function update() {
-    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-    if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x===head.x && s.y===head.y)) {
-      clearInterval(gameLoop);
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x === head.x && s.y === head.y)) {
+      clearInterval(gameInterval);
+      gameInterval = null;
       toast('游戏结束！分数: ' + score);
       return;
     }
@@ -533,20 +1053,20 @@ function initSnake(area) {
     if (head.x === food.x && head.y === food.y) {
       score += 10;
       document.getElementById('snakeScore').textContent = score;
-      food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
+      food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
     } else snake.pop();
     draw();
   }
-  
+
   document.onkeydown = (e) => {
-    if (e.key === 'ArrowUp' && dir.y !== 1) dir = {x:0,y:-1};
-    if (e.key === 'ArrowDown' && dir.y !== -1) dir = {x:0,y:1};
-    if (e.key === 'ArrowLeft' && dir.x !== 1) dir = {x:-1,y:0};
-    if (e.key === 'ArrowRight' && dir.x !== -1) dir = {x:1,y:0};
+    if (e.key === 'ArrowUp' && dir.y !== 1) dir = { x: 0, y: -1 };
+    if (e.key === 'ArrowDown' && dir.y !== -1) dir = { x: 0, y: 1 };
+    if (e.key === 'ArrowLeft' && dir.x !== 1) dir = { x: -1, y: 0 };
+    if (e.key === 'ArrowRight' && dir.x !== -1) dir = { x: 1, y: 0 };
   };
-  
+
   draw();
-  gameLoop = setInterval(update, 200);
+  gameInterval = setInterval(update, 200);
 }
 
 // 2048
@@ -554,54 +1074,53 @@ function init2048(area) {
   area.innerHTML = '<div class="score-display">分数: <span id="score2048">0</span></div><div id="game2048"></div>';
   let grid = Array(4).fill(null).map(() => Array(4).fill(0));
   let score = 0;
-  
+
   function addTile() {
     const empty = [];
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if (!grid[i][j]) empty.push([i,j]);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if (!grid[i][j]) empty.push([i, j]);
     if (!empty.length) return;
-    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+    const [r, c] = empty[Math.floor(Math.random() * empty.length)];
     grid[r][c] = Math.random() < 0.9 ? 2 : 4;
   }
-  
+
   function render() {
-    const colors = {2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
-    document.getElementById('game2048').innerHTML = grid.flat().map(v => 
-      `<div class="cell2048" style="background:${colors[v]||'#2a2a4a'};color:${v>4?'#fff':'#776e65'}">${v||''}</div>`
+    const colors = { 2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563', 32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61', 512: '#edc850', 1024: '#edc53f', 2048: '#edc22e' };
+    document.getElementById('game2048').innerHTML = grid.flat().map(v =>
+      '<div class="cell2048" style="background:' + (colors[v] || '#2a2a4a') + ';color:' + (v > 4 ? '#fff' : '#776e65') + '">' + (v || '') + '</div>'
     ).join('');
     document.getElementById('score2048').textContent = score;
   }
-  
+
   function move(dir) {
     let moved = false;
-    const rotate = (g) => g[0].map((_,i) => g.map(row => row[i]).reverse());
+    const rotate = (g) => g[0].map((_, i) => g.map(row => row[i]).reverse());
     if (dir === 'up') grid = rotate(rotate(rotate(grid)));
     if (dir === 'down') grid = rotate(grid);
     if (dir === 'right') grid = rotate(rotate(grid));
-    
+
     for (let i = 0; i < 4; i++) {
       let row = grid[i].filter(x => x);
       for (let j = 0; j < row.length - 1; j++) {
-        if (row[j] === row[j+1]) { row[j] *= 2; score += row[j]; row.splice(j+1, 1); moved = true; }
+        if (row[j] === row[j + 1]) { row[j] *= 2; score += row[j]; row.splice(j + 1, 1); moved = true; }
       }
       while (row.length < 4) row.push(0);
       if (grid[i].join() !== row.join()) moved = true;
       grid[i] = row;
     }
-    
+
     if (dir === 'up') grid = rotate(grid);
     if (dir === 'down') grid = rotate(rotate(rotate(grid)));
     if (dir === 'right') grid = rotate(rotate(grid));
-    
     if (moved) { addTile(); render(); }
   }
-  
+
   document.onkeydown = (e) => {
-    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
-      move(e.key.replace('Arrow','').toLowerCase());
+      move(e.key.replace('Arrow', '').toLowerCase());
     }
   };
-  
+
   addTile(); addTile(); render();
 }
 
@@ -612,60 +1131,62 @@ function initMine(area) {
   const ctx = canvas.getContext('2d');
   const SIZE = 10, MINES = 10;
   let grid = [], revealed = [], flagged = [], gameOver = false;
-  
+
   for (let i = 0; i < SIZE; i++) {
     grid[i] = []; revealed[i] = []; flagged[i] = [];
     for (let j = 0; j < SIZE; j++) { grid[i][j] = 0; revealed[i][j] = false; flagged[i][j] = false; }
   }
-  
+
   let placed = 0;
   while (placed < MINES) {
-    const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
+    const r = Math.floor(Math.random() * SIZE), c = Math.floor(Math.random() * SIZE);
     if (grid[r][c] !== -1) { grid[r][c] = -1; placed++; }
   }
-  
+
   for (let i = 0; i < SIZE; i++) for (let j = 0; j < SIZE; j++) {
     if (grid[i][j] === -1) continue;
     let count = 0;
     for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
-      const ni = i+di, nj = j+dj;
+      const ni = i + di, nj = j + dj;
       if (ni >= 0 && ni < SIZE && nj >= 0 && nj < SIZE && grid[ni][nj] === -1) count++;
     }
     grid[i][j] = count;
   }
-  
+
   function draw() {
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0,0,300,300);
+    ctx.fillStyle = '#1a1a25';
+    ctx.fillRect(0, 0, 300, 300);
     for (let i = 0; i < SIZE; i++) for (let j = 0; j < SIZE; j++) {
-      const x = j*30, y = i*30;
-      ctx.strokeStyle = '#2a2a4a'; ctx.strokeRect(x,y,30,30);
+      const x = j * 30, y = i * 30;
+      ctx.strokeStyle = '#2a2a3a';
+      ctx.strokeRect(x, y, 30, 30);
       if (revealed[i][j]) {
-        ctx.fillStyle = '#0f0f1a'; ctx.fillRect(x+1,y+1,28,28);
-        if (grid[i][j] === -1) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x+15,y+15,8,0,Math.PI*2); ctx.fill(); }
-        else if (grid[i][j] > 0) { ctx.fillStyle = '#6366f1'; ctx.font = '16px Arial'; ctx.fillText(grid[i][j], x+10, y+20); }
+        ctx.fillStyle = '#0f0f1a';
+        ctx.fillRect(x + 1, y + 1, 28, 28);
+        if (grid[i][j] === -1) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x + 15, y + 15, 8, 0, Math.PI * 2); ctx.fill(); }
+        else if (grid[i][j] > 0) { ctx.fillStyle = '#8b5cf6'; ctx.font = '16px Arial'; ctx.fillText(grid[i][j], x + 10, y + 20); }
       } else if (flagged[i][j]) {
-        ctx.fillStyle = '#f59e0b'; ctx.font = '18px Arial'; ctx.fillText('🚩', x+6, y+22);
+        ctx.fillStyle = '#f59e0b'; ctx.font = '18px Arial'; ctx.fillText('🚩', x + 6, y + 22);
       }
     }
   }
-  
+
   function reveal(r, c) {
     if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || revealed[r][c] || flagged[r][c]) return;
     revealed[r][c] = true;
     if (grid[r][c] === -1) { gameOver = true; toast('踩到雷了！游戏结束', 'error'); return; }
     if (grid[r][c] === 0) {
-      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) reveal(r+di, c+dj);
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) reveal(r + di, c + dj);
     }
   }
-  
+
   canvas.onclick = (e) => {
     if (gameOver) return;
     const rect = canvas.getBoundingClientRect();
     const c = Math.floor((e.clientX - rect.left) / 30), r = Math.floor((e.clientY - rect.top) / 30);
-    reveal(r, c);
-    draw();
+    reveal(r, c); draw();
   };
-  
+
   canvas.oncontextmenu = (e) => {
     e.preventDefault();
     if (gameOver) return;
@@ -674,8 +1195,917 @@ function initMine(area) {
     if (!revealed[r][c]) flagged[r][c] = !flagged[r][c];
     draw();
   };
-  
+
   draw();
+}
+
+// 井字棋（AI对战）
+function initTicTacToe(area) {
+  const humanFirst = Math.random() < 0.5;
+  area.innerHTML = '<div class="score-display" id="tttStatus">' + (humanFirst ? '随机决定：你是 X 先走' : '随机决定：AI 是 O 先走') + '</div><canvas id="tttCanvas" width="300" height="300"></canvas>';
+  const canvas = document.getElementById('tttCanvas');
+  const ctx = canvas.getContext('2d');
+  let board = Array(9).fill(null);
+  let gameOver = false;
+  const HUMAN = 'X';
+  const AI = 'O';
+
+  function draw() {
+    ctx.fillStyle = '#1a1a25';
+    ctx.fillRect(0, 0, 300, 300);
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 3;
+    for (let i = 1; i < 3; i++) {
+      ctx.beginPath(); ctx.moveTo(i * 100, 0); ctx.lineTo(i * 100, 300); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * 100); ctx.lineTo(300, i * 100); ctx.stroke();
+    }
+    board.forEach((v, i) => {
+      if (!v) return;
+      const x = (i % 3) * 100 + 50, y = Math.floor(i / 3) * 100 + 50;
+      ctx.font = '50px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = v === HUMAN ? '#8b5cf6' : '#ec4899';
+      ctx.fillText(v, x, y);
+    });
+  }
+
+  function checkWin(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const [a,b2,c] of wins) {
+      if (b[a] && b[a] === b[b2] && b[a] === b[c]) return b[a];
+    }
+    if (b.every(v => v)) return 'draw';
+    return null;
+  }
+
+  function minimax(b, player) {
+    const winner = checkWin(b);
+    if (winner === AI) return { score: 10 };
+    if (winner === HUMAN) return { score: -10 };
+    if (winner === 'draw') return { score: 0 };
+    const moves = [];
+    for (let i = 0; i < 9; i++) {
+      if (!b[i]) {
+        b[i] = player;
+        const result = minimax(b, player === AI ? HUMAN : AI);
+        moves.push({ index: i, score: result.score });
+        b[i] = null;
+      }
+    }
+    let best;
+    if (player === AI) {
+      let bestScore = -Infinity;
+      for (const m of moves) if (m.score > bestScore) { bestScore = m.score; best = m; }
+    } else {
+      let bestScore = Infinity;
+      for (const m of moves) if (m.score < bestScore) { bestScore = m.score; best = m; }
+    }
+    return best;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('tttStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      let move;
+      if (tttDifficulty === 'easy') {
+        // 简单模式：随机走
+        const empty = [];
+        for (let i = 0; i < 9; i++) if (!board[i]) empty.push(i);
+        move = empty[Math.floor(Math.random() * empty.length)];
+      } else {
+        // 困难模式：minimax
+        const best = minimax(board.slice(), AI);
+        move = best ? best.index : null;
+      }
+      if (move !== null && move !== undefined) {
+        board[move] = AI;
+        const winner = checkWin(board);
+        if (winner) {
+          gameOver = true;
+          document.getElementById('tttStatus').textContent = winner === 'draw' ? '平局！' : 'AI 获胜！';
+          toast(winner === 'draw' ? '平局！' : 'AI 获胜！');
+        } else {
+          document.getElementById('tttStatus').textContent = '轮到你了（X）';
+        }
+        draw();
+      }
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left) / 100);
+    const r = Math.floor((e.clientY - rect.top) / 100);
+    const idx = r * 3 + c;
+    if (board[idx]) return;
+    board[idx] = HUMAN;
+    draw();
+    const winner = checkWin(board);
+    if (winner) {
+      gameOver = true;
+      document.getElementById('tttStatus').textContent = winner === 'draw' ? '平局！' : '你赢了！';
+      toast(winner === 'draw' ? '平局！' : '你赢了！');
+      return;
+    }
+    aiMove();
+  };
+
+  draw();
+  if (!humanFirst) {
+    setTimeout(() => aiMove(), 500);
+  }
+}
+
+// 五子棋
+function initGomoku(area) {
+  area.innerHTML = '<div class="score-display" id="gomokuStatus">猜先：点击棋盘左半边猜单数，右半边猜双数</div><canvas id="gomokuCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('gomokuCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 15;
+  const CELL = 30;
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+  const HUMAN = 1;
+  const AI = 2;
+  let guessed = false;
+  let humanFirst = true;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(CELL / 2 + i * CELL, CELL / 2); ctx.lineTo(CELL / 2 + i * CELL, 450 - CELL / 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(CELL / 2, CELL / 2 + i * CELL); ctx.lineTo(450 - CELL / 2, CELL / 2 + i * CELL); ctx.stroke();
+    }
+    const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+    ctx.fillStyle = '#8b4513';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(CELL/2+c*CELL, CELL/2+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(CELL/2 + c*CELL, CELL/2 + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === HUMAN ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  function checkWin(r, c, player) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      let count = 1;
+      for (let i = 1; i < 5; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || board[nr][nc] !== player) break;
+        count++;
+      }
+      for (let i = 1; i < 5; i++) {
+        const nr = r - dr*i, nc = c - dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || board[nr][nc] !== player) break;
+        count++;
+      }
+      if (count >= 5) return true;
+    }
+    return false;
+  }
+
+  function evaluatePosition(r, c, player) {
+    if (board[r][c]) return -1;
+    let score = 0;
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      let count = 1, blocked = 0;
+      for (let i = 1; i < 5; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) { blocked++; break; }
+        if (board[nr][nc] === player) count++;
+        else if (board[nr][nc] !== 0) { blocked++; break; }
+        else break;
+      }
+      for (let i = 1; i < 5; i++) {
+        const nr = r - dr*i, nc = c - dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) { blocked++; break; }
+        if (board[nr][nc] === player) count++;
+        else if (board[nr][nc] !== 0) { blocked++; break; }
+        else break;
+      }
+      if (count >= 5) score += 100000;
+      else if (count === 4 && blocked === 0) score += 10000;
+      else if (count === 4 && blocked === 1) score += 1000;
+      else if (count === 3 && blocked === 0) score += 1000;
+      else if (count === 3 && blocked === 1) score += 100;
+      else if (count === 2 && blocked === 0) score += 100;
+      else if (count === 2 && blocked === 1) score += 10;
+    }
+    return score;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('gomokuStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const validMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (!board[r][c]) {
+          let hasNeighbor = false;
+          for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+            const nr = r+dr, nc = c+dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc]) hasNeighbor = true;
+          }
+          if (!hasNeighbor && board[7][7]) continue;
+          const attackScore = evaluatePosition(r, c, AI);
+          const defenseScore = evaluatePosition(r, c, HUMAN);
+          const score = attackScore + defenseScore * 0.9;
+          validMoves.push({r, c, score});
+        }
+      }
+      validMoves.sort((a,b) => b.score - a.score);
+      let move;
+      if (gameDifficulty === 'easy') {
+        // 简单：随机从前5个里选
+        const top = validMoves.slice(0, Math.min(5, validMoves.length));
+        move = top[Math.floor(Math.random() * top.length)];
+      } else if (gameDifficulty === 'normal') {
+        // 普通：从前3个里随机选
+        const top = validMoves.slice(0, Math.min(3, validMoves.length));
+        move = top[Math.floor(Math.random() * top.length)];
+      } else {
+        // 困难：选最优
+        move = validMoves[0];
+      }
+      if (move) {
+        board[move.r][move.c] = AI;
+        draw();
+        if (checkWin(move.r, move.c, AI)) {
+          gameOver = true;
+          document.getElementById('gomokuStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          return;
+        }
+      }
+      document.getElementById('gomokuStatus').textContent = '轮到你了（黑棋）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (!guessed) {
+      guessed = true;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width * canvas.width;
+      const guess = x < 225 ? 1 : 2;
+      const result = Math.random() < 0.5 ? 1 : 2;
+      if (guess === result) {
+        humanFirst = true;
+        document.getElementById('gomokuStatus').textContent = '猜对了！你是黑棋先走';
+      } else {
+        humanFirst = false;
+        document.getElementById('gomokuStatus').textContent = '猜错了！AI是黑棋先走';
+        setTimeout(() => aiMove(), 500);
+      }
+      return;
+    }
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - CELL/2) / CELL);
+    const r = Math.round((y - CELL/2) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || board[r][c]) return;
+    board[r][c] = HUMAN;
+    draw();
+    if (checkWin(r, c, HUMAN)) {
+      gameOver = true;
+      document.getElementById('gomokuStatus').textContent = '你赢了！';
+      toast('你赢了！');
+      return;
+    }
+    aiMove();
+  };
+
+  board[7][7] = AI;
+  draw();
+  document.getElementById('gomokuStatus').textContent = '轮到你了（黑棋）';
+}
+
+// 中国象棋
+function initXiangqi(area) {
+  area.innerHTML = '<div class="score-display" id="xqStatus">你是红方，AI是黑方</div><canvas id="xqCanvas" width="540" height="600"></canvas>';
+  const canvas = document.getElementById('xqCanvas');
+  const ctx = canvas.getContext('2d');
+  const COLS = 9, ROWS = 10, CELL = 60, OFFSET = 30;
+  // 棋盘初始化：r=红, b=黑, K=将/帅, A=士/仕, B=象/相, N=马, R=车, C=炮, P=兵/卒
+  let board = [
+    ['bR','bN','bB','bA','bK','bA','bB','bN','bR'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,'bC',null,null,null,null,null,'bC',null],
+    ['bP',null,'bP',null,'bP',null,'bP',null,'bP'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rP',null,'rP',null,'rP',null,'rP',null,'rP'],
+    [null,'rC',null,null,null,null,null,'rC',null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rR','rN','rB','rA','rK','rA','rB','rN','rR']
+  ];
+  let selected = null;
+  let gameOver = false;
+  const HUMAN = 'r', AI = 'b';
+
+  function draw() {
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(0, 0, 540, 600);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 2;
+    // 横线
+    for (let i = 0; i < ROWS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(OFFSET, OFFSET + i * CELL);
+      ctx.lineTo(OFFSET + (COLS-1) * CELL, OFFSET + i * CELL);
+      ctx.stroke();
+    }
+    // 竖线（中间断开楚河汉界）
+    for (let i = 0; i < COLS; i++) {
+      ctx.beginPath();
+      if (i === 0 || i === COLS-1) {
+        ctx.moveTo(OFFSET + i * CELL, OFFSET);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + (ROWS-1) * CELL);
+      } else {
+        ctx.moveTo(OFFSET + i * CELL, OFFSET);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + 4 * CELL);
+        ctx.moveTo(OFFSET + i * CELL, OFFSET + 5 * CELL);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + (ROWS-1) * CELL);
+      }
+      ctx.stroke();
+    }
+    // 九宫格斜线
+    ctx.beginPath();
+    ctx.moveTo(OFFSET + 3*CELL, OFFSET); ctx.lineTo(OFFSET + 5*CELL, OFFSET + 2*CELL);
+    ctx.moveTo(OFFSET + 5*CELL, OFFSET); ctx.lineTo(OFFSET + 3*CELL, OFFSET + 2*CELL);
+    ctx.moveTo(OFFSET + 3*CELL, OFFSET + 7*CELL); ctx.lineTo(OFFSET + 5*CELL, OFFSET + 9*CELL);
+    ctx.moveTo(OFFSET + 5*CELL, OFFSET + 7*CELL); ctx.lineTo(OFFSET + 3*CELL, OFFSET + 9*CELL);
+    ctx.stroke();
+    // 楚河汉界
+    ctx.fillStyle = '#8b4513';
+    ctx.font = '24px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('楚 河', OFFSET + 2*CELL, OFFSET + 4.6*CELL);
+    ctx.fillText('汉 界', OFFSET + 6*CELL, OFFSET + 4.6*CELL);
+    // 棋子
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const p = board[r][c];
+      if (!p) continue;
+      const x = OFFSET + c * CELL, y = OFFSET + r * CELL;
+      ctx.beginPath();
+      ctx.arc(x, y, 25, 0, Math.PI*2);
+      ctx.fillStyle = p[0] === 'r' ? '#fff5e6' : '#fff5e6';
+      ctx.fill();
+      ctx.strokeStyle = p[0] === 'r' ? '#c00' : '#000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = p[0] === 'r' ? '#c00' : '#000';
+      ctx.font = 'bold 22px serif';
+      const names = {K: p[0]==='r'?'帅':'将', A: p[0]==='r'?'仕':'士', B: p[0]==='r'?'相':'象', N:'马', R:'车', C:'炮', P: p[0]==='r'?'兵':'卒'};
+      ctx.fillText(names[p[1]], x, y+8);
+      if (selected && selected.r === r && selected.c === c) {
+        ctx.strokeStyle = '#0f0';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 28, 0, Math.PI*2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function getMoves(r, c) {
+    const p = board[r][c];
+    if (!p) return [];
+    const moves = [];
+    const color = p[0], type = p[1];
+    const inBoard = (r,c) => r>=0 && r<ROWS && c>=0 && c<COLS;
+    const canMove = (r,c) => inBoard(r,c) && (!board[r][c] || board[r][c][0] !== color);
+
+    if (type === 'K') {
+      const palaceR = color === 'r' ? [7,8,9] : [0,1,2];
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (palaceR.includes(nr) && nc>=3 && nc<=5 && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'A') {
+      const palaceR = color === 'r' ? [7,8,9] : [0,1,2];
+      [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (palaceR.includes(nr) && nc>=3 && nc<=5 && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'B') {
+      [[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        const eyeR=r+dr/2, eyeC=c+dc/2;
+        if (inBoard(nr,nc) && !board[eyeR][eyeC] && canMove(nr,nc)) {
+          if (color === 'r' && nr >= 5) moves.push([nr,nc]);
+          if (color === 'b' && nr <= 4) moves.push([nr,nc]);
+        }
+      });
+    } else if (type === 'N') {
+      [[2,1,1,0],[2,-1,1,0],[-2,1,-1,0],[-2,-1,-1,0],[1,2,0,1],[-1,2,0,1],[1,-2,0,-1],[-1,-2,0,-1]].forEach(([dr,dc,lr,lc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (inBoard(nr,nc) && !board[r+lr][c+lc] && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'R') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'C') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        let jumped = false;
+        while (inBoard(nr,nc)) {
+          if (!jumped) {
+            if (!board[nr][nc]) moves.push([nr,nc]);
+            else jumped = true;
+          } else {
+            if (board[nr][nc]) { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'P') {
+      const forward = color === 'r' ? -1 : 1;
+      const crossed = color === 'r' ? r <= 4 : r >= 5;
+      if (canMove(r+forward, c)) moves.push([r+forward, c]);
+      if (crossed) {
+        if (canMove(r, c-1)) moves.push([r, c-1]);
+        if (canMove(r, c+1)) moves.push([r, c+1]);
+      }
+    }
+    return moves;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('xqStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const allMoves = [];
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        if (board[r][c] && board[r][c][0] === AI) {
+          getMoves(r, c).forEach(([nr,nc]) => {
+            let captureScore = 0;
+            if (board[nr][nc]) {
+              captureScore = 1;
+              if (board[nr][nc][1] === 'K') captureScore = 100;
+              else if (board[nr][nc][1] === 'R') captureScore = 9;
+              else if (board[nr][nc][1] === 'N' || board[nr][nc][1] === 'C') captureScore = 5;
+              else if (board[nr][nc][1] === 'B' || board[nr][nc][1] === 'A') captureScore = 2;
+            }
+            allMoves.push({fr:r, fc:c, tr:nr, tc:nc, score: captureScore});
+          });
+        }
+      }
+      allMoves.sort((a,b) => b.score - a.score);
+      let best;
+      if (gameDifficulty === 'easy') {
+        // 简单：随机
+        best = allMoves[Math.floor(Math.random() * allMoves.length)];
+      } else if (gameDifficulty === 'normal') {
+        // 普通：从前5个里随机选
+        const top = allMoves.slice(0, Math.min(5, allMoves.length));
+        best = top[Math.floor(Math.random() * top.length)];
+      } else {
+        // 困难：选最优
+        best = allMoves[0];
+      }
+      if (best) {
+        const captured = board[best.tr][best.tc];
+        board[best.tr][best.tc] = board[best.fr][best.fc];
+        board[best.fr][best.fc] = null;
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('xqStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          draw();
+          return;
+        }
+      }
+      draw();
+      document.getElementById('xqStatus').textContent = '轮到你了（红方）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - OFFSET) / CELL), r = Math.round((y - OFFSET) / CELL);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      const valid = moves.some(([mr,mc]) => mr === r && mc === c);
+      if (valid) {
+        const captured = board[r][c];
+        board[r][c] = board[selected.r][selected.c];
+        board[selected.r][selected.c] = null;
+        selected = null;
+        draw();
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('xqStatus').textContent = '你赢了！';
+          toast('你赢了！');
+          return;
+        }
+        aiMove();
+      } else if (board[r][c] && board[r][c][0] === HUMAN) {
+        selected = {r, c};
+        draw();
+      } else {
+        selected = null;
+        draw();
+      }
+    } else if (board[r][c] && board[r][c][0] === HUMAN) {
+      selected = {r, c};
+      draw();
+    }
+  };
+
+  draw();
+}
+
+// 国际象棋（简化版）
+function initChess(area) {
+  area.innerHTML = '<div class="score-display" id="chessStatus">你是白方，AI是黑方</div><canvas id="chessCanvas" width="480" height="480"></canvas>';
+  const canvas = document.getElementById('chessCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 8, CELL = 60;
+  // K=王, Q=后, R=车, B=象, N=马, P=兵
+  let board = [
+    ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    ['bP','bP','bP','bP','bP','bP','bP','bP'],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ['wP','wP','wP','wP','wP','wP','wP','wP'],
+    ['wR','wN','wB','wQ','wK','wB','wN','wR']
+  ];
+  let selected = null;
+  let gameOver = false;
+  const HUMAN = 'w', AI = 'b';
+  const symbols = {wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
+
+  function draw() {
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      ctx.fillStyle = (r+c) % 2 === 0 ? '#f0d9b5' : '#b58863';
+      ctx.fillRect(c*CELL, r*CELL, CELL, CELL);
+      const p = board[r][c];
+      if (p) {
+        ctx.font = '40px serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = p[0] === 'w' ? '#fff' : '#000';
+        ctx.strokeStyle = p[0] === 'w' ? '#000' : '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeText(symbols[p], c*CELL+CELL/2, r*CELL+CELL/2+12);
+        ctx.fillText(symbols[p], c*CELL+CELL/2, r*CELL+CELL/2+12);
+      }
+      if (selected && selected.r === r && selected.c === c) {
+        ctx.strokeStyle = '#0f0';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(c*CELL+2, r*CELL+2, CELL-4, CELL-4);
+      }
+    }
+  }
+
+  function getMoves(r, c) {
+    const p = board[r][c];
+    if (!p) return [];
+    const moves = [];
+    const color = p[0], type = p[1];
+    const inBoard = (r,c) => r>=0 && r<SIZE && c>=0 && c<SIZE;
+    const canMove = (r,c) => inBoard(r,c) && (!board[r][c] || board[r][c][0] !== color);
+
+    if (type === 'K') {
+      [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        if (canMove(r+dr, c+dc)) moves.push([r+dr, c+dc]);
+      });
+    } else if (type === 'Q') {
+      [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'R') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'B') {
+      [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'N') {
+      [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[-1,2],[1,-2],[-1,-2]].forEach(([dr,dc]) => {
+        if (canMove(r+dr, c+dc)) moves.push([r+dr, c+dc]);
+      });
+    } else if (type === 'P') {
+      const dir = color === 'w' ? -1 : 1;
+      const startRow = color === 'w' ? 6 : 1;
+      if (inBoard(r+dir, c) && !board[r+dir][c]) moves.push([r+dir, c]);
+      if (r === startRow && !board[r+dir][c] && !board[r+2*dir][c]) moves.push([r+2*dir, c]);
+      [[dir, -1],[dir, 1]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (inBoard(nr,nc) && board[nr][nc] && board[nr][nc][0] !== color) moves.push([nr,nc]);
+      });
+    }
+    return moves;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('chessStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const allMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (board[r][c] && board[r][c][0] === AI) {
+          getMoves(r, c).forEach(([nr,nc]) => {
+            let captureScore = 0;
+            if (board[nr][nc]) {
+              captureScore = 1;
+              if (board[nr][nc][1] === 'K') captureScore = 100;
+              else if (board[nr][nc][1] === 'Q') captureScore = 9;
+              else if (board[nr][nc][1] === 'R') captureScore = 5;
+              else if (board[nr][nc][1] === 'B' || board[nr][nc][1] === 'N') captureScore = 3;
+              else if (board[nr][nc][1] === 'P') captureScore = 1;
+            }
+            allMoves.push({fr:r, fc:c, tr:nr, tc:nc, score: captureScore});
+          });
+        }
+      }
+      allMoves.sort((a,b) => b.score - a.score);
+      let best;
+      if (gameDifficulty === 'easy') {
+        best = allMoves[Math.floor(Math.random() * allMoves.length)];
+      } else if (gameDifficulty === 'normal') {
+        const top = allMoves.slice(0, Math.min(5, allMoves.length));
+        best = top[Math.floor(Math.random() * top.length)];
+      } else {
+        best = allMoves[0];
+      }
+      if (best) {
+        const captured = board[best.tr][best.tc];
+        board[best.tr][best.tc] = board[best.fr][best.fc];
+        board[best.fr][best.fc] = null;
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('chessStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          draw();
+          return;
+        }
+      }
+      draw();
+      document.getElementById('chessStatus').textContent = '轮到你了（白方）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.floor(x / CELL), r = Math.floor(y / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      const valid = moves.some(([mr,mc]) => mr === r && mc === c);
+      if (valid) {
+        const captured = board[r][c];
+        board[r][c] = board[selected.r][selected.c];
+        board[selected.r][selected.c] = null;
+        selected = null;
+        draw();
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('chessStatus').textContent = '你赢了！';
+          toast('你赢了！');
+          return;
+        }
+        aiMove();
+      } else if (board[r][c] && board[r][c][0] === HUMAN) {
+        selected = {r, c};
+        draw();
+      } else {
+        selected = null;
+        draw();
+      }
+    } else if (board[r][c] && board[r][c][0] === HUMAN) {
+      selected = {r, c};
+      draw();
+    }
+  };
+
+  draw();
+}
+
+// 围棋（简化版 9x9）
+function initGo(area) {
+  area.innerHTML = '<div class="score-display" id="goStatus">你是黑棋，AI是白棋（猜先中...）</div><canvas id="goCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('goCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 9, CELL = 50, OFFSET = 25;
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+  const HUMAN = 1, AI = 2;
+  let currentPlayer = HUMAN;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(OFFSET + i*CELL, OFFSET); ctx.lineTo(OFFSET + i*CELL, OFFSET + (SIZE-1)*CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(OFFSET, OFFSET + i*CELL); ctx.lineTo(OFFSET + (SIZE-1)*CELL, OFFSET + i*CELL); ctx.stroke();
+    }
+    const stars = [[2,2],[2,6],[6,2],[6,6],[4,4]];
+    ctx.fillStyle = '#000';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(OFFSET+c*CELL, OFFSET+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(OFFSET + c*CELL, OFFSET + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === HUMAN ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  function getGroup(r, c, color, visited = new Set()) {
+    const key = r + ',' + c;
+    if (visited.has(key)) return {stones: [], liberties: new Set()};
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return {stones: [], liberties: new Set()};
+    if (board[r][c] === 0) return {stones: [], liberties: new Set([key])};
+    if (board[r][c] !== color) return {stones: [], liberties: new Set()};
+    visited.add(key);
+    let result = {stones: [key], liberties: new Set()};
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+      const sub = getGroup(r+dr, c+dc, color, visited);
+      sub.stones.forEach(s => result.stones.push(s));
+      sub.liberties.forEach(l => result.liberties.add(l));
+    });
+    return result;
+  }
+
+  function placeStone(r, c, color) {
+    if (board[r][c]) return false;
+    board[r][c] = color;
+    // 提子
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+      const nr = r+dr, nc = c+dc;
+      if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] && board[nr][nc] !== color) {
+        const group = getGroup(nr, nc, board[nr][nc]);
+        if (group.liberties.size === 0) {
+          group.stones.forEach(s => {
+            const [sr, sc] = s.split(',').map(Number);
+            board[sr][sc] = 0;
+          });
+        }
+      }
+    });
+    // 禁止自杀
+    const myGroup = getGroup(r, c, color);
+    if (myGroup.liberties.size === 0) {
+      board[r][c] = 0;
+      return false;
+    }
+    return true;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('goStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const validMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (!board[r][c]) {
+          // 简单评估：靠近已有棋子
+          let score = 0;
+          [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+            const nr=r+dr, nc=c+dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc]) score++;
+          });
+          validMoves.push({r, c, score});
+        }
+      }
+      validMoves.sort((a,b) => b.score - a.score);
+      // 根据难度选择
+      let moveList;
+      if (gameDifficulty === 'easy') {
+        moveList = validMoves; // 简单：全部随机
+      } else if (gameDifficulty === 'normal') {
+        moveList = validMoves.slice(0, Math.min(10, validMoves.length)); // 普通：前10个随机
+      } else {
+        moveList = validMoves.slice(0, Math.min(3, validMoves.length)); // 困难：前3个随机（更优）
+      }
+      // 打乱顺序
+      for (let i = moveList.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [moveList[i], moveList[j]] = [moveList[j], moveList[i]];
+      }
+      // 尝试落子
+      for (const move of moveList) {
+        const boardCopy = board.map(row => [...row]);
+        if (placeStone(move.r, move.c, AI)) {
+          draw();
+          currentPlayer = HUMAN;
+          document.getElementById('goStatus').textContent = '轮到你了（黑棋）';
+          return;
+        }
+        board = boardCopy;
+      }
+      document.getElementById('goStatus').textContent = 'AI 无棋可下，轮到你了';
+    }, 300);
+  }
+
+  // 正常下棋逻辑
+  function normalClick(e) {
+    if (gameOver || currentPlayer !== HUMAN) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - OFFSET) / CELL), r = Math.round((y - OFFSET) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+    if (placeStone(r, c, HUMAN)) {
+      draw();
+      currentPlayer = AI;
+      aiMove();
+    }
+  }
+
+  // 猜先
+  document.getElementById('goStatus').textContent = '猜先：点击棋盘左半边猜单数，右半边猜双数';
+  let guessMade = false;
+  canvas.onclick = (e) => {
+    if (guessMade) return;
+    guessMade = true;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width * canvas.width;
+    const guess = x < 225 ? 1 : 2;
+    const result = Math.random() < 0.5 ? 1 : 2;
+    if (guess === result) {
+      currentPlayer = HUMAN;
+      document.getElementById('goStatus').textContent = '猜对了！你是黑棋先走';
+    } else {
+      currentPlayer = AI;
+      document.getElementById('goStatus').textContent = '猜错了！AI是黑棋先走';
+      setTimeout(() => aiMove(), 500);
+    }
+    canvas.onclick = normalClick;
+  };
+
+  draw();
+}
+
+// ==================== 初始化 ====================
+async function init() {
+  try {
+    const saved = localStorage.getItem('toolbox_user');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+    }
+    updateUserUI();
+    loadAnnouncement();
+    loadEchoes();
+    if (currentUser) loadFiles();
+  } catch (e) {
+    console.warn('Init error:', e);
+  }
 }
 
 init();
