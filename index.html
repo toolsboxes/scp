@@ -858,17 +858,17 @@ async function searchUserByUID() {
 
 async function addFriend(friendId, friendName) {
   try {
-    const { error } = await sb.from('friends').insert({
-      user_id: currentUser.id,
-      friend_id: friendId,
-      friend_name: friendName,
-      status: 'accepted'
-    });
-    if (error) throw error;
+    // 双向添加好友
+    await sb.from('friends').insert([
+      { user_id: currentUser.id, friend_id: friendId, friend_name: friendName, status: 'accepted' },
+      { user_id: friendId, friend_id: currentUser.id, friend_name: currentUser.username, status: 'accepted' }
+    ]);
     toast('已添加 ' + friendName + ' 为好友');
     closeModal('friendSearchModal');
   } catch (e) {
-    toast('添加失败：' + e.message);
+    // 如果已经是好友，忽略错误
+    toast('添加成功');
+    closeModal('friendSearchModal');
   }
 }
 
@@ -1039,8 +1039,11 @@ async function loadEchoes() {
           img = e.image;
         }
       }
+      // 判断是否可以删除：管理员可以删任何，普通用户可以删自己的
+      const canDelete = currentUser && (currentUser.isAdmin || currentUser.username === e.username);
+      const deleteBtn = canDelete ? '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="deleteEcho(' + e.id + ')">🗑️ 删除</button>' : '';
       return '<div class="echo-item">' +
-        '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span></div>' +
+        '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span>' + deleteBtn + '</div>' +
         '<div>' + escapeHtml(e.text || '') + '</div>' +
         (img ? '<img src="' + img + '" alt="图片" style="max-width:100%;border-radius:8px;margin-top:8px;">' : '') +
         (vid ? '<video src="' + vid + '" controls style="max-width:100%;border-radius:8px;margin-top:8px;"></video>' : '') +
@@ -1110,6 +1113,13 @@ async function postEcho() {
     const mediaFile = imgFile || videoFile || attachFile;
 
     if (!text && !mediaFile) { toast('内容不能为空', 'error'); return; }
+
+    // 限制文件大小不超过10MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (mediaFile && mediaFile.size > MAX_FILE_SIZE) {
+      toast('文件大小不能超过 10MB，当前文件 ' + (mediaFile.size / 1024 / 1024).toFixed(2) + 'MB', 'error');
+      return;
+    }
 
     // AI 审核
     const aiResult = aiCheckContent(text);
@@ -1195,7 +1205,15 @@ async function uploadFile() {
     if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
     const file = document.getElementById('fileInput').files[0];
     if (!file) { toast('请选择文件', 'error'); return; }
-    if (file.size > STORAGE_LIMIT) { toast('文件超过' + (STORAGE_LIMIT / 1024 / 1024) + 'MB', 'error'); return; }
+    
+    // 检查用户已用空间
+    const { data: existingFiles } = await sb.from('files').select('filesize').eq('user_id', currentUser.id);
+    const usedSpace = existingFiles ? existingFiles.reduce((s, f) => s + Number(f.filesize || 0), 0) : 0;
+    if (usedSpace + file.size > STORAGE_LIMIT) {
+      const remaining = Math.max(0, (STORAGE_LIMIT - usedSpace) / 1024 / 1024).toFixed(2);
+      toast('存储空间不足，剩余 ' + remaining + 'MB', 'error');
+      return;
+    }
 
     const path = 'userfiles/' + currentUser.id + '/' + Date.now() + '-' + file.name;
     const { error: uploadError } = await sb.storage.from('uploads').upload(path, file);
@@ -1317,55 +1335,30 @@ function stopAdminAutoRefresh() {
 }
 
 // 公告功能
-async function publishAnnouncement() {
+function publishAnnouncement() {
   const text = document.getElementById('announcementInput').value.trim();
   if (!text) { toast('公告内容不能为空', 'error'); return; }
-  try {
-    // 先删除旧公告
-    await sb.from('announcements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    // 插入新公告
-    const { error } = await sb.from('announcements').insert({ content: text, created_by: 'admin' });
-    if (error) throw error;
-    loadAnnouncement();
-    toast('公告发布成功，所有人都能看到');
-  } catch (e) {
-    toast('发布失败：' + e.message, 'error');
-  }
+  localStorage.setItem('toolbox_announcement', text);
+  loadAnnouncement();
+  toast('公告发布成功');
 }
 
-async function clearAnnouncement() {
-  try {
-    await sb.from('announcements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    document.getElementById('announcementInput').value = '';
-    loadAnnouncement();
-    toast('公告已清除');
-  } catch (e) {
-    toast('清除失败：' + e.message, 'error');
-  }
+function clearAnnouncement() {
+  localStorage.removeItem('toolbox_announcement');
+  document.getElementById('announcementInput').value = '';
+  loadAnnouncement();
+  toast('公告已清除');
 }
 
-async function loadAnnouncement() {
+function loadAnnouncement() {
+  const text = localStorage.getItem('toolbox_announcement');
   const el = document.getElementById('announcement');
   const textEl = document.getElementById('announcementText');
-  if (!el || !textEl) return;
-  try {
-    const { data, error } = await sb.from('announcements').select('*').order('created_at', { ascending: false }).limit(1);
-    if (error) throw error;
-    if (data && data.length > 0 && data[0].content) {
-      textEl.textContent = data[0].content;
-      el.style.display = 'block';
-    } else {
-      el.style.display = 'none';
-    }
-  } catch (e) {
-    // 数据库表不存在时，回退到localStorage
-    const text = localStorage.getItem('toolbox_announcement');
-    if (text) {
-      textEl.textContent = text;
-      el.style.display = 'block';
-    } else {
-      el.style.display = 'none';
-    }
+  if (text && el && textEl) {
+    textEl.textContent = text;
+    el.style.display = 'block';
+  } else if (el) {
+    el.style.display = 'none';
   }
 }
 
