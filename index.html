@@ -795,6 +795,7 @@ function showProfile() {
     '<button class="btn btn-primary" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
     '<button class="btn btn-secondary" style="flex:1;" onclick="showFriendList()">💬 好友列表</button>' +
     '</div>' +
+    '<button class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="deleteAccount()">⚠️ 注销账号</button>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
     '</div>';
   document.body.appendChild(modal);
@@ -803,6 +804,57 @@ function showProfile() {
 function copyUID() {
   const uid = getUID(currentUser);
   navigator.clipboard.writeText(uid).then(() => toast('UID 已复制')).catch(() => toast('复制失败'));
+}
+
+// 注销账号
+async function deleteAccount() {
+  if (!currentUser) return;
+  if (currentUser.username === 'admin') {
+    toast('管理员账号不能注销', 'error');
+    return;
+  }
+  if (!confirm('确定要注销账号吗？所有数据（云盘文件、好友、聊天记录、发布的内容）都会被删除，无法恢复！')) {
+    return;
+  }
+  try {
+    const userId = currentUser.id;
+    // 删除云盘文件
+    const { data: userFiles } = await sb.from('files').select('*').eq('user_id', userId);
+    if (userFiles) {
+      for (const f of userFiles) {
+        try { await sb.storage.from('uploads').remove([f.stored_name]); } catch(e) {}
+      }
+      await sb.from('files').delete().eq('user_id', userId);
+    }
+    // 删除好友关系
+    await sb.from('friends').delete().or('user_id.eq.' + userId + ',friend_id.eq.' + userId);
+    // 删除聊天记录
+    await sb.from('messages').delete().or('sender_id.eq.' + userId + ',receiver_id.eq.' + userId);
+    // 删除回声洞内容
+    const { data: userEchoes } = await sb.from('echoes').select('*').eq('username', currentUser.username);
+    if (userEchoes) {
+      for (const e of userEchoes) {
+        if (e.image) {
+          try {
+            const parsed = JSON.parse(e.image);
+            const urls = [parsed.image, parsed.video, parsed.file].filter(Boolean);
+            for (const url of urls) {
+              const path = url.split('/uploads/')[1];
+              if (path) await sb.storage.from('uploads').remove([path]);
+            }
+          } catch(err) {}
+        }
+      }
+      await sb.from('echoes').delete().eq('username', currentUser.username);
+    }
+    // 删除用户
+    await sb.from('users').delete().eq('id', userId);
+    // 退出登录
+    logout();
+    toast('账号已注销');
+  } catch (e) {
+    toast('注销失败：' + e.message, 'error');
+  }
 }
 
 // 好友搜索
@@ -948,7 +1000,10 @@ function openChat(friendId, friendName) {
     '<button class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
     '</div>' +
     '<div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;"></div>' +
-    '<div style="display:flex;gap:8px;">' +
+    '<input type="file" id="chatFileInput" style="display:none;" onchange="sendChatFile()">' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'chatFileInput\').click()" title="发送文件">📎</button>' +
+    '<button class="btn btn-secondary btn-sm" onclick="showCloudFilePicker()" title="从云盘选择">☁️</button>' +
     '<input type="text" id="chatInput" placeholder="输入消息..." style="flex:1;" onkeypress="if(event.key===\'Enter\')sendMessage()">' +
     '<button class="btn btn-primary" onclick="sendMessage()">发送</button>' +
     '</div>' +
@@ -957,6 +1012,89 @@ function openChat(friendId, friendName) {
   loadMessages();
   if (chatRefreshInterval) clearInterval(chatRefreshInterval);
   chatRefreshInterval = setInterval(loadMessages, 1000);
+}
+
+// 发送聊天文件
+async function sendChatFile() {
+  const fileInput = document.getElementById('chatFileInput');
+  const file = fileInput.files[0];
+  if (!file || !currentChatFriend) return;
+  if (file.size > 10 * 1024 * 1024) {
+    toast('文件不能超过 10MB', 'error');
+    fileInput.value = '';
+    return;
+  }
+  try {
+    const path = 'chatfiles/' + Date.now() + '-' + file.name;
+    const { error } = await sb.storage.from('uploads').upload(path, file);
+    if (error) throw error;
+    const { data: { publicUrl } } = sb.storage.from('uploads').getPublicUrl(path);
+    const fileType = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'file';
+    const content = JSON.stringify({ type: fileType, url: publicUrl, name: file.name, size: file.size });
+    await sb.from('messages').insert({
+      sender_id: currentUser.id,
+      receiver_id: currentChatFriend.id,
+      content: content,
+      is_file: true
+    });
+    toast('文件已发送');
+    fileInput.value = '';
+    loadMessages();
+  } catch (e) {
+    toast('发送失败：' + e.message, 'error');
+  }
+}
+
+// 从云盘选择文件发送
+async function showCloudFilePicker() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await sb.from('files').select('*').eq('user_id', currentUser.id);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      toast('云盘里还没有文件', 'error');
+      return;
+    }
+    const fileList = data.map(f => 
+      '<div style="padding:8px;background:var(--bg2);border-radius:6px;margin-bottom:6px;cursor:pointer;" onclick="sendCloudFile(\'' + f.id + '\')">' +
+      '📄 ' + escapeHtml(f.filename) + ' (' + (f.filesize / 1024).toFixed(1) + ' KB)' +
+      '</div>'
+    ).join('');
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'cloudPickerModal';
+    modal.style.display = 'flex';
+    modal.innerHTML = '<div class="modal-content" style="max-width:400px;max-height:60vh;overflow-y:auto;">' +
+      '<h3>☁️ 从云盘选择文件</h3>' +
+      fileList +
+      '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'cloudPickerModal\')">取消</button>' +
+      '</div>';
+    document.body.appendChild(modal);
+  } catch (e) {
+    toast('加载失败：' + e.message, 'error');
+  }
+}
+
+// 发送云盘文件
+async function sendCloudFile(fileId) {
+  try {
+    const { data, error } = await sb.from('files').select('*').eq('id', fileId).single();
+    if (error) throw error;
+    const { data: { publicUrl } } = sb.storage.from('uploads').getPublicUrl(data.stored_name);
+    const fileType = data.filetype && data.filetype.startsWith('image/') ? 'image' : data.filetype && data.filetype.startsWith('video/') ? 'video' : 'file';
+    const content = JSON.stringify({ type: fileType, url: publicUrl, name: data.filename, size: data.filesize, from_cloud: true });
+    await sb.from('messages').insert({
+      sender_id: currentUser.id,
+      receiver_id: currentChatFriend.id,
+      content: content,
+      is_file: true
+    });
+    closeModal('cloudPickerModal');
+    toast('文件已发送');
+    loadMessages();
+  } catch (e) {
+    toast('发送失败：' + e.message, 'error');
+  }
 }
 
 function closeChat() {
@@ -982,9 +1120,27 @@ async function loadMessages() {
     if (data && data.length > 0) {
       messagesEl.innerHTML = data.map(m => {
         const isMe = m.sender_id === currentUser.id;
+        let content = m.content;
+        let isFile = false;
+        // 尝试解析文件消息
+        try {
+          const parsed = JSON.parse(m.content);
+          if (parsed.type && parsed.url) {
+            isFile = true;
+            if (parsed.type === 'image') {
+              content = '<img src="' + parsed.url + '" style="max-width:200px;border-radius:8px;display:block;">';
+            } else if (parsed.type === 'video') {
+              content = '<video src="' + parsed.url + '" controls style="max-width:200px;border-radius:8px;display:block;"></video>';
+            } else {
+              content = '<a href="' + parsed.url + '" download="' + escapeHtml(parsed.name || '文件') + '" style="color:var(--cyan);text-decoration:none;">📎 ' + escapeHtml(parsed.name || '文件') + ' (' + (parsed.size / 1024).toFixed(1) + ' KB)</a>';
+            }
+          }
+        } catch (e) {
+          // 不是JSON，是普通文本
+        }
         return '<div style="margin-bottom:8px;text-align:' + (isMe ? 'right' : 'left') + ';">' +
-          '<div style="display:inline-block;background:' + (isMe ? 'var(--purple2)' : 'var(--bg)') + ';padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;">' +
-          escapeHtml(m.content) +
+          '<div style="display:inline-block;background:' + (isMe ? 'var(--purple2)' : 'var(--bg)') + ';padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;text-align:left;">' +
+          content +
           '</div>' +
           '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + (new Date(m.created_at)).toLocaleTimeString() + '</div>' +
           '</div>';
