@@ -859,7 +859,7 @@ function openChat(friendId, friendName) {
   document.body.appendChild(modal);
   loadMessages();
   if (chatRefreshInterval) clearInterval(chatRefreshInterval);
-  chatRefreshInterval = setInterval(loadMessages, 2000);
+  chatRefreshInterval = setInterval(loadMessages, 1000);
 }
 
 function closeChat() {
