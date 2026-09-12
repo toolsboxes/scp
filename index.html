@@ -271,6 +271,51 @@ input:focus, textarea:focus { border-color: var(--purple); }
   border-radius: 8px; margin: 4px;
 }
 #game2048 { display: grid; grid-template-columns: repeat(4, 1fr); width: 320px; margin: 0 auto; }
+
+/* 手机端适配 */
+@media (max-width: 768px) {
+  body { padding: 10px; }
+  .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .header h1 { font-size: 20px; }
+  .header-buttons { gap: 6px; }
+  .header-buttons .btn { padding: 6px 12px; font-size: 13px; }
+  .tabs { gap: 6px; padding: 8px; flex-wrap: wrap; }
+  .tab { padding: 8px 12px; font-size: 13px; }
+  .container { padding: 12px; }
+  .tool-grid { grid-template-columns: 1fr; gap: 10px; }
+  .tool-item { padding: 12px; }
+  .result-box { font-size: 13px; padding: 10px; word-break: break-all; }
+  textarea, input[type="text"], input[type="password"] { font-size: 14px; padding: 10px; }
+  .btn { padding: 10px 16px; font-size: 14px; }
+  .game-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .game-card { padding: 16px 10px; }
+  .game-card .icon { font-size: 32px; }
+  .game-card .name { font-size: 14px; }
+  #gameArea canvas { max-width: 100%; height: auto; }
+  #tttCanvas, #gomokuCanvas, #xqCanvas, #chessCanvas, #goCanvas { width: 100% !important; max-width: 360px; height: auto !important; }
+  .score-display { font-size: 14px; padding: 10px; }
+  .echo-item { padding: 12px; }
+  .echo-username { font-size: 13px; }
+  .echo-text { font-size: 14px; }
+  .file-item { padding: 10px; flex-wrap: wrap; gap: 8px; }
+  .file-name { font-size: 13px; flex: 1 1 100%; }
+  .upload-box { min-height: 80px; padding: 16px; }
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 20px; }
+  .stat-label { font-size: 12px; }
+  .admin-section { padding: 14px; }
+  .modal-content { width: 90%; max-width: 360px; padding: 20px; }
+  .cloud-upload-area { min-height: 100px; padding: 16px; }
+  #roomIdInput { width: 100% !important; max-width: 200px; }
+}
+
+@media (max-width: 480px) {
+  .game-grid { grid-template-columns: 1fr; }
+  .header h1 { font-size: 18px; }
+  .tab { padding: 6px 10px; font-size: 12px; }
+  .cell2048 { width: 55px; height: 55px; font-size: 18px; margin: 3px; }
+  #game2048 { width: 260px; }
+}
 </style>
 </head>
 <body>
@@ -396,34 +441,58 @@ input:focus, textarea:focus { border-color: var(--purple); }
         </div>
       </div>
       <div class="card">
-        <h2>🖥️ 服务器监控</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px;">
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--green);" id="statDb">●</div>
-            <div style="font-size:12px;color:var(--muted);">数据库</div>
+        <h2>🖥️ 服务器监控 <span style="font-size:12px;color:var(--muted);">（每秒自动刷新）</span></h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;">
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--green);" id="statDb">●</div>
+            <div style="font-size:11px;color:var(--muted);">数据库状态</div>
           </div>
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--purple2);" id="statUsers">0</div>
-            <div style="font-size:12px;color:var(--muted);">用户总数</div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--purple2);" id="statUsers">0</div>
+            <div style="font-size:11px;color:var(--muted);">用户总数</div>
           </div>
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--pink);" id="statEchoes">0</div>
-            <div style="font-size:12px;color:var(--muted);">回声洞总数</div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--pink);" id="statEchoes">0</div>
+            <div style="font-size:11px;color:var(--muted);">回声洞总数</div>
           </div>
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--yellow);" id="statPending">0</div>
-            <div style="font-size:12px;color:var(--muted);">待审核</div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--yellow);" id="statPending">0</div>
+            <div style="font-size:11px;color:var(--muted);">待审核</div>
           </div>
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--cyan);" id="statFiles">0</div>
-            <div style="font-size:12px;color:var(--muted);">文件总数</div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--cyan);" id="statFiles">0</div>
+            <div style="font-size:11px;color:var(--muted);">文件总数</div>
           </div>
-          <div style="background:var(--bg2);padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:24px;font-weight:700;color:var(--orange);" id="statStorage">0 MB</div>
-            <div style="font-size:12px;color:var(--muted);">存储用量</div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--orange);" id="statStorage">0 MB</div>
+            <div style="font-size:11px;color:var(--muted);">存储用量</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--green);" id="statGames">0</div>
+            <div style="font-size:11px;color:var(--muted);">对战房间数</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--purple2);" id="statApproved">0</div>
+            <div style="font-size:11px;color:var(--muted);">已通过审核</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--pink);" id="statPlaying">0</div>
+            <div style="font-size:11px;color:var(--muted);">对战中</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--yellow);" id="statWaiting">0</div>
+            <div style="font-size:11px;color:var(--muted);">等待中房间</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--cyan);" id="statUptime">0s</div>
+            <div style="font-size:11px;color:var(--muted);">面板运行时间</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--orange);" id="statRefresh">0</div>
+            <div style="font-size:11px;color:var(--muted);">刷新次数</div>
           </div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="loadAdminStats()">🔄 刷新数据</button>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">数据库类型：PostgreSQL (Supabase) | 区域：新加坡 | 最后刷新：<span id="statLastRefresh">-</span></div>
       </div>
       <div class="card">
         <h2>📋 待审核内容</h2>
@@ -621,11 +690,232 @@ function logout() {
 function updateUserUI() {
   const el = document.getElementById('userInfo');
   if (currentUser) {
-    el.innerHTML = '<span>👤 ' + escapeHtml(currentUser.username) + '</span>' +
-      '<button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>';
+    const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+    el.innerHTML = '<div class="user-avatar" onclick="showProfile()" title="点击查看个人信息" style="cursor:pointer;font-size:28px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border-radius:50%;border:2px solid var(--purple2);">👤</div>' +
+      '<span style="margin-left:8px;font-weight:600;">' + escapeHtml(currentUser.username) + '</span>' +
+      '<button class="btn btn-secondary btn-sm" onclick="logout()" style="margin-left:8px;">退出</button>';
   } else {
     el.innerHTML = '<button class="btn btn-secondary btn-sm" onclick="showAuth(&quot;login&quot;)">登录</button>' +
       '<button class="btn btn-primary btn-sm" onclick="showAuth(&quot;register&quot;)">注册</button>';
+  }
+}
+
+// 个人信息弹窗
+function showProfile() {
+  if (!currentUser) return;
+  const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'profileModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:400px;">' +
+    '<h3>👤 个人信息</h3>' +
+    '<div style="text-align:center;margin-bottom:16px;">' +
+    '<div style="font-size:64px;margin-bottom:8px;">👤</div>' +
+    '<div style="font-size:20px;font-weight:700;">' + escapeHtml(currentUser.username) + '</div>' +
+    '</div>' +
+    '<div style="background:var(--bg2);padding:12px;border-radius:8px;margin-bottom:12px;">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">我的 UID（用于添加好友）</div>' +
+    '<div style="font-size:16px;font-weight:700;color:var(--green);word-break:break-all;">' + uid + '</div>' +
+    '<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyUID()">📋 复制 UID</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
+    '<button class="btn btn-secondary" style="flex:1;" onclick="showFriendList()">💬 好友列表</button>' +
+    '</div>' +
+    '<button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+function copyUID() {
+  const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+  navigator.clipboard.writeText(uid).then(() => toast('UID 已复制')).catch(() => toast('复制失败'));
+}
+
+// 好友搜索
+function showFriendSearch() {
+  closeModal('profileModal');
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'friendSearchModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:400px;">' +
+    '<h3>🔍 添加好友</h3>' +
+    '<p style="font-size:13px;color:var(--muted);">输入对方的 UID 来搜索并添加好友</p>' +
+    '<input type="text" id="searchUIDInput" placeholder="输入对方 UID..." style="width:100%;margin-bottom:12px;">' +
+    '<button class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="searchUserByUID()">🔍 搜索</button>' +
+    '<div id="searchResult"></div>' +
+    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(\'friendSearchModal\')">关闭</button>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+async function searchUserByUID() {
+  const uid = document.getElementById('searchUIDInput').value.trim();
+  if (!uid) { toast('请输入 UID'); return; }
+  const resultEl = document.getElementById('searchResult');
+  resultEl.innerHTML = '<p style="text-align:center;color:var(--muted);">搜索中...</p>';
+  try {
+    const { data, error } = await sb.from('users').select('*').eq('id', uid);
+    if (error) throw error;
+    if (data && data.length > 0) {
+      const user = data[0];
+      if (user.username === currentUser.username) {
+        resultEl.innerHTML = '<p style="text-align:center;color:var(--yellow);">不能添加自己为好友</p>';
+        return;
+      }
+      resultEl.innerHTML = '<div style="background:var(--bg2);padding:12px;border-radius:8px;text-align:center;">' +
+        '<div style="font-size:32px;margin-bottom:4px;">👤</div>' +
+        '<div style="font-weight:700;font-size:16px;">' + escapeHtml(user.username) + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;word-break:break-all;">UID: ' + user.id + '</div>' +
+        '<button class="btn btn-primary btn-sm" onclick="addFriend(\'' + user.id + '\', \'' + user.username + '\')">➕ 添加好友</button>' +
+        '</div>';
+    } else {
+      resultEl.innerHTML = '<p style="text-align:center;color:var(--pink);">未找到该用户</p>';
+    }
+  } catch (e) {
+    resultEl.innerHTML = '<p style="text-align:center;color:var(--pink);">搜索失败：' + e.message + '</p>';
+  }
+}
+
+async function addFriend(friendId, friendName) {
+  try {
+    const { error } = await sb.from('friends').insert({
+      user_id: currentUser.id,
+      friend_id: friendId,
+      friend_name: friendName,
+      status: 'accepted'
+    });
+    if (error) throw error;
+    toast('已添加 ' + friendName + ' 为好友');
+    closeModal('friendSearchModal');
+  } catch (e) {
+    toast('添加失败：' + e.message);
+  }
+}
+
+// 好友列表
+function showFriendList() {
+  closeModal('profileModal');
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'friendListModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:400px;max-height:80vh;overflow-y:auto;">' +
+    '<h3>💬 好友列表</h3>' +
+    '<div id="friendListContent"><p style="text-align:center;color:var(--muted);">加载中...</p></div>' +
+    '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
+    '</div>';
+  document.body.appendChild(modal);
+  loadFriendList();
+}
+
+async function loadFriendList() {
+  const contentEl = document.getElementById('friendListContent');
+  try {
+    const { data, error } = await sb.from('friends').select('*').eq('user_id', currentUser.id);
+    if (error) throw error;
+    if (data && data.length > 0) {
+      contentEl.innerHTML = data.map(f =>
+        '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg2);border-radius:8px;margin-bottom:8px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:24px;">👤</span>' +
+        '<span style="font-weight:600;">' + escapeHtml(f.friend_name) + '</span>' +
+        '</div>' +
+        '<button class="btn btn-primary btn-sm" onclick="openChat(\'' + f.friend_id + '\', \'' + f.friend_name + '\')">💬 聊天</button>' +
+        '</div>'
+      ).join('');
+    } else {
+      contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，快去添加吧！</p>';
+    }
+  } catch (e) {
+    contentEl.innerHTML = '<p style="text-align:center;color:var(--pink);">加载失败：' + e.message + '</p>';
+  }
+}
+
+// 聊天界面
+let currentChatFriend = null;
+let chatRefreshInterval = null;
+
+function openChat(friendId, friendName) {
+  currentChatFriend = { id: friendId, name: friendName };
+  closeModal('friendListModal');
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'chatModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:500px;height:70vh;display:flex;flex-direction:column;">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+    '<h3 style="margin:0;">💬 与 ' + escapeHtml(friendName) + ' 聊天</h3>' +
+    '<button class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
+    '</div>' +
+    '<div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;"></div>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<input type="text" id="chatInput" placeholder="输入消息..." style="flex:1;" onkeypress="if(event.key===\'Enter\')sendMessage()">' +
+    '<button class="btn btn-primary" onclick="sendMessage()">发送</button>' +
+    '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+  loadMessages();
+  if (chatRefreshInterval) clearInterval(chatRefreshInterval);
+  chatRefreshInterval = setInterval(loadMessages, 2000);
+}
+
+function closeChat() {
+  if (chatRefreshInterval) {
+    clearInterval(chatRefreshInterval);
+    chatRefreshInterval = null;
+  }
+  closeModal('chatModal');
+  currentChatFriend = null;
+}
+
+async function loadMessages() {
+  if (!currentChatFriend) return;
+  const messagesEl = document.getElementById('chatMessages');
+  if (!messagesEl) return;
+  try {
+    const { data, error } = await sb.from('messages')
+      .select('*')
+      .or('and(sender_id.eq.' + currentUser.id + ',receiver_id.eq.' + currentChatFriend.id + '),and(sender_id.eq.' + currentChatFriend.id + ',receiver_id.eq.' + currentUser.id + ')')
+      .order('created_at', { ascending: true })
+      .limit(100);
+    if (error) throw error;
+    if (data && data.length > 0) {
+      messagesEl.innerHTML = data.map(m => {
+        const isMe = m.sender_id === currentUser.id;
+        return '<div style="margin-bottom:8px;text-align:' + (isMe ? 'right' : 'left') + ';">' +
+          '<div style="display:inline-block;background:' + (isMe ? 'var(--purple2)' : 'var(--bg)') + ';padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;">' +
+          escapeHtml(m.content) +
+          '</div>' +
+          '<div style="font-size:10px;color:var(--muted);margin-top:2px;">' + (new Date(m.created_at)).toLocaleTimeString() + '</div>' +
+          '</div>';
+      }).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    } else {
+      messagesEl.innerHTML = '<p style="text-align:center;color:var(--muted);">暂无消息，发送第一条吧！</p>';
+    }
+  } catch (e) {
+    console.warn('loadMessages error:', e);
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const content = input.value.trim();
+  if (!content || !currentChatFriend) return;
+  input.value = '';
+  try {
+    const { error } = await sb.from('messages').insert({
+      sender_id: currentUser.id,
+      receiver_id: currentChatFriend.id,
+      content: content
+    });
+    if (error) throw error;
+    loadMessages();
+  } catch (e) {
+    toast('发送失败：' + e.message);
   }
 }
 
@@ -842,7 +1132,7 @@ function adminLogin() {
   if (pass === ADMIN_PASSWORD) {
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
-    loadAdminStats();
+    startAdminAutoRefresh();
     loadPending();
     toast('管理员登录成功');
   } else {
@@ -850,23 +1140,64 @@ function adminLogin() {
   }
 }
 
+let adminStartTime = Date.now();
+let adminRefreshCount = 0;
+let adminAutoRefresh = null;
+
 async function loadAdminStats() {
   try {
     document.getElementById('statDb').textContent = '●';
-    const [usersRes, echoesRes, pendingRes, filesRes] = await Promise.all([
+    const [usersRes, echoesRes, pendingRes, approvedRes, filesRes, gamesRes, playingRes, waitingRes] = await Promise.all([
       sb.from('users').select('id', { count: 'exact', head: true }),
       sb.from('echoes').select('id', { count: 'exact', head: true }),
       sb.from('echoes').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      sb.from('files').select('*')
-    ]);
-    document.getElementById('statUsers').textContent = usersRes.count || 0;
-    document.getElementById('statEchoes').textContent = echoesRes.count || 0;
-    document.getElementById('statPending').textContent = pendingRes.count || 0;
-    document.getElementById('statFiles').textContent = filesRes.data ? filesRes.data.length : 0;
-    const totalSize = filesRes.data ? filesRes.data.reduce((s, f) => s + Number(f.filesize || 0), 0) : 0;
-    document.getElementById('statStorage').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+      sb.from('echoes').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+      sb.from('files').select('*'),
+      sb.from('games').select('id', { count: 'exact', head: true }),
+      sb.from('games').select('id', { count: 'exact', head: true }).eq('status', 'playing'),
+      sb.from('games').select('id', { count: 'exact', head: true }).eq('status', 'waiting')
+    ]).catch(() => [null,null,null,null,null,null,null,null]);
+    if (usersRes) document.getElementById('statUsers').textContent = usersRes.count || 0;
+    if (echoesRes) document.getElementById('statEchoes').textContent = echoesRes.count || 0;
+    if (pendingRes) document.getElementById('statPending').textContent = pendingRes.count || 0;
+    if (approvedRes) document.getElementById('statApproved').textContent = approvedRes.count || 0;
+    if (filesRes && filesRes.data) {
+      document.getElementById('statFiles').textContent = filesRes.data.length;
+      const totalSize = filesRes.data.reduce((s, f) => s + Number(f.filesize || 0), 0);
+      document.getElementById('statStorage').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+    }
+    if (gamesRes) document.getElementById('statGames').textContent = gamesRes.count || 0;
+    if (playingRes) document.getElementById('statPlaying').textContent = playingRes.count || 0;
+    if (waitingRes) document.getElementById('statWaiting').textContent = waitingRes.count || 0;
+    // 面板运行时间
+    const uptime = Math.floor((Date.now() - adminStartTime) / 1000);
+    const hours = Math.floor(uptime / 3600);
+    const mins = Math.floor((uptime % 3600) / 60);
+    const secs = uptime % 60;
+    document.getElementById('statUptime').textContent = (hours > 0 ? hours + 'h' : '') + (mins > 0 ? mins + 'm' : '') + secs + 's';
+    // 刷新次数
+    adminRefreshCount++;
+    document.getElementById('statRefresh').textContent = adminRefreshCount;
+    // 最后刷新时间
+    const now = new Date();
+    document.getElementById('statLastRefresh').textContent = now.toLocaleTimeString();
   } catch (e) {
     console.warn('loadAdminStats error:', e);
+  }
+}
+
+function startAdminAutoRefresh() {
+  if (adminAutoRefresh) clearInterval(adminAutoRefresh);
+  adminStartTime = Date.now();
+  adminRefreshCount = 0;
+  loadAdminStats();
+  adminAutoRefresh = setInterval(loadAdminStats, 1000);
+}
+
+function stopAdminAutoRefresh() {
+  if (adminAutoRefresh) {
+    clearInterval(adminAutoRefresh);
+    adminAutoRefresh = null;
   }
 }
 
@@ -1169,10 +1500,11 @@ function startGame(game, diff) {
 }
 
 function showTicTacToeMenu(area) {
-  area.innerHTML = '<h3 style="margin-bottom:16px;">选择难度</h3>' +
-    '<div style="display:flex;gap:12px;justify-content:center;">' +
-    '<button class="btn btn-success" onclick="startTicTacToe(\'easy\')">😊 简单</button>' +
-    '<button class="btn btn-warning" onclick="startTicTacToe(\'hard\')">😈 困难</button>' +
+  area.innerHTML = '<h3 style="margin-bottom:16px;">选择模式</h3>' +
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+    '<button class="btn btn-success" onclick="startTicTacToe(\'easy\')">😊 简单AI</button>' +
+    '<button class="btn btn-warning" onclick="startTicTacToe(\'hard\')">😈 困难AI</button>' +
+    '<button class="btn btn-primary" onclick="showOnlineMenu(\'tictactoe\', \'井字棋\')">🌐 人人对战</button>' +
     '</div>';
 }
 
@@ -1752,6 +2084,113 @@ function initGomoku(area) {
   document.getElementById('gomokuStatus').textContent = '轮到你了（黑棋）';
 }
 
+// 五子棋在线对战
+function initOnlineGomoku(area) {
+  const myColor = currentPlayerRole === 'player1' ? 1 : 2;
+  const oppColor = myColor === 1 ? 2 : 1;
+  area.innerHTML = '<div class="score-display" id="gomokuStatus">人人对战 - 你是' + (myColor === 1 ? '黑棋' : '白棋') + '</div><canvas id="gomokuCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('gomokuCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 15, CELL = 30;
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(CELL / 2 + i * CELL, CELL / 2); ctx.lineTo(CELL / 2 + i * CELL, 450 - CELL / 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(CELL / 2, CELL / 2 + i * CELL); ctx.lineTo(450 - CELL / 2, CELL / 2 + i * CELL); ctx.stroke();
+    }
+    const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+    ctx.fillStyle = '#8b4513';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(CELL/2+c*CELL, CELL/2+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(CELL/2 + c*CELL, CELL/2 + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === 1 ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  function checkWin(r, c, color) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      let count = 1;
+      for (let i = 1; i < 5; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === color) count++;
+        else break;
+      }
+      for (let i = 1; i < 5; i++) {
+        const nr = r - dr*i, nc = c - dc*i;
+        if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] === color) count++;
+        else break;
+      }
+      if (count >= 5) return true;
+    }
+    return false;
+  }
+
+  // 监听对方走棋
+  window.onlineBoardUpdate = function(game) {
+    if (game.current_player === currentPlayerRole && game.board) {
+      board = game.board;
+      draw();
+      // 检查是否有人赢了
+      let winner = null;
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (board[r][c] && checkWin(r, c, board[r][c])) {
+          winner = board[r][c];
+          break;
+        }
+      }
+      if (winner) {
+        gameOver = true;
+        document.getElementById('gomokuStatus').textContent = winner === myColor ? '你赢了！' : '对方赢了！';
+      } else {
+        document.getElementById('gomokuStatus').textContent = '轮到你了（' + (myColor === 1 ? '黑棋' : '白棋') + '）';
+      }
+    }
+  };
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    // 检查是否轮到我
+    const moveCount = board.flat().filter(v => v).length;
+    const myTurn = (moveCount % 2 === 0 && currentPlayerRole === 'player1') ||
+                   (moveCount % 2 === 1 && currentPlayerRole === 'player2');
+    if (!myTurn) {
+      toast('还没轮到你');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - CELL/2) / CELL), r = Math.round((y - CELL/2) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || board[r][c]) return;
+    board[r][c] = myColor;
+    draw();
+    if (checkWin(r, c, myColor)) {
+      gameOver = true;
+      document.getElementById('gomokuStatus').textContent = '你赢了！';
+      sendMove(board);
+      return;
+    }
+    document.getElementById('gomokuStatus').textContent = '等待对方...';
+    sendMove(board);
+  };
+
+  draw();
+  document.getElementById('gomokuStatus').textContent = currentPlayerRole === 'player1' ? '轮到你了（黑棋）' : '等待对方...';
+}
+
 // 中国象棋
 function initXiangqi(area) {
   area.innerHTML = '<div class="score-display" id="xqStatus">你是红方，AI是黑方</div><canvas id="xqCanvas" width="540" height="600"></canvas>';
@@ -1999,6 +2438,121 @@ function initXiangqi(area) {
   draw();
 }
 
+// 中国象棋在线对战
+function initOnlineXiangqi(area) {
+  const myColor = currentPlayerRole === 'player1' ? 'r' : 'b';
+  const oppColor = myColor === 'r' ? 'b' : 'r';
+  const ROWS = 10, COLS = 9;
+  area.innerHTML = '<div class="score-display" id="xqStatus">人人对战 - 你是' + (myColor === 'r' ? '红棋' : '黑棋') + '</div><canvas id="xqCanvas" width="450" height="500"></canvas>';
+  const canvas = document.getElementById('xqCanvas');
+  const ctx = canvas.getContext('2d');
+  let board = [];
+  let selected = null;
+  let gameOver = false;
+
+  function initBoard() {
+    board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+    const back = ['R','N','B','A','K','A','B','N','R'];
+    for (let c = 0; c < COLS; c++) {
+      board[0][c] = 'b' + back[c];
+      board[9][c] = 'r' + back[c];
+    }
+    board[2][1] = 'bC'; board[2][7] = 'bC';
+    board[7][1] = 'rC'; board[7][7] = 'rC';
+    for (let c = 0; c < COLS; c += 2) {
+      board[3][c] = 'bP';
+      board[6][c] = 'rP';
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(0, 0, 450, 500);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 1;
+    const ox = 25, oy = 25, cell = 50;
+    for (let r = 0; r < ROWS; r++) {
+      ctx.beginPath(); ctx.moveTo(ox, oy + r*cell); ctx.lineTo(ox + 8*cell, oy + r*cell); ctx.stroke();
+    }
+    for (let c = 0; c < COLS; c++) {
+      if (c === 0 || c === 8) {
+        ctx.beginPath(); ctx.moveTo(ox + c*cell, oy); ctx.lineTo(ox + c*cell, oy + 9*cell); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.moveTo(ox + c*cell, oy); ctx.lineTo(ox + c*cell, oy + 4*cell); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ox + c*cell, oy + 5*cell); ctx.lineTo(ox + c*cell, oy + 9*cell); ctx.stroke();
+      }
+    }
+    ctx.beginPath(); ctx.moveTo(ox + 3*cell, oy); ctx.lineTo(ox + 5*cell, oy + 2*cell); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox + 5*cell, oy); ctx.lineTo(ox + 3*cell, oy + 2*cell); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox + 3*cell, oy + 7*cell); ctx.lineTo(ox + 5*cell, oy + 9*cell); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox + 5*cell, oy + 7*cell); ctx.lineTo(ox + 3*cell, oy + 9*cell); ctx.stroke();
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (board[r][c]) {
+        const x = ox + c*cell, y = oy + r*cell;
+        ctx.beginPath(); ctx.arc(x, y, 20, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c][0] === 'r' ? '#ffcccc' : '#ccccff';
+        ctx.fill();
+        ctx.strokeStyle = board[r][c][0] === 'r' ? '#c00' : '#00c';
+        ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = board[r][c][0] === 'r' ? '#c00' : '#00c';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const names = {K:'将',A:'士',B:'象',N:'马',R:'车',C:'炮',P:'兵'};
+        const bnames = {K:'帅',A:'仕',B:'相',N:'马',R:'车',C:'炮',P:'卒'};
+        ctx.fillText(board[r][c][0] === 'r' ? names[board[r][c][1]] : bnames[board[r][c][1]], x, y);
+      }
+    }
+    if (selected) {
+      ctx.strokeStyle = '#ff0';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(ox + selected[1]*cell - 22, oy + selected[0]*cell - 22, 44, 44);
+    }
+  }
+
+  // 监听对方走棋
+  window.onlineBoardUpdate = function(game) {
+    if (game.current_player === currentPlayerRole && game.board) {
+      board = game.board;
+      selected = null;
+      draw();
+      document.getElementById('xqStatus').textContent = '轮到你了（' + (myColor === 'r' ? '红棋' : '黑棋') + '）';
+    }
+  };
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const moveCount = board.flat().filter(v => v).length - 32; // 初始32个棋子
+    const myTurn = (moveCount % 2 === 0 && currentPlayerRole === 'player1') ||
+                   (moveCount % 2 === 1 && currentPlayerRole === 'player2');
+    if (!myTurn) {
+      toast('还没轮到你');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const ox = 25, oy = 25, cell = 50;
+    const c = Math.round((x - ox) / cell), r = Math.round((y - oy) / cell);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+    if (selected) {
+      // 走棋
+      board[r][c] = board[selected[0]][selected[1]];
+      board[selected[0]][selected[1]] = null;
+      selected = null;
+      draw();
+      document.getElementById('xqStatus').textContent = '等待对方...';
+      sendMove(board);
+    } else if (board[r][c] && board[r][c][0] === myColor) {
+      selected = [r, c];
+      draw();
+    }
+  };
+
+  initBoard();
+  draw();
+  document.getElementById('xqStatus').textContent = currentPlayerRole === 'player1' ? '轮到你了（红棋）' : '等待对方...';
+}
+
 // 国际象棋（简化版）
 function initChess(area) {
   area.innerHTML = '<div class="score-display" id="chessStatus">你是白方，AI是黑方</div><canvas id="chessCanvas" width="480" height="480"></canvas>';
@@ -2187,6 +2741,98 @@ function initChess(area) {
   draw();
 }
 
+// 国际象棋在线对战
+function initOnlineChess(area) {
+  const myColor = currentPlayerRole === 'player1' ? 'w' : 'b';
+  const oppColor = myColor === 'w' ? 'b' : 'w';
+  const SIZE = 8;
+  area.innerHTML = '<div class="score-display" id="chessStatus">人人对战 - 你是' + (myColor === 'w' ? '白棋' : '黑棋') + '</div><canvas id="chessCanvas" width="400" height="400"></canvas>';
+  const canvas = document.getElementById('chessCanvas');
+  const ctx = canvas.getContext('2d');
+  let board = [];
+  let selected = null;
+  let gameOver = false;
+
+  function initBoard() {
+    board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(null));
+    const back = ['R','N','B','Q','K','B','N','R'];
+    for (let c = 0; c < SIZE; c++) {
+      board[0][c] = 'b' + back[c];
+      board[1][c] = 'bP';
+      board[6][c] = 'wP';
+      board[7][c] = 'w' + back[c];
+    }
+  }
+
+  function draw() {
+    const cell = 50;
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      ctx.fillStyle = (r + c) % 2 === 0 ? '#f0d9b5' : '#b58863';
+      ctx.fillRect(c*cell, r*cell, cell, cell);
+    }
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        const x = c*cell + cell/2, y = r*cell + cell/2;
+        ctx.font = '32px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = board[r][c][0] === 'w' ? '#fff' : '#000';
+        ctx.strokeStyle = board[r][c][0] === 'w' ? '#000' : '#fff';
+        ctx.lineWidth = 1;
+        const symbols = {K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙'};
+        ctx.strokeText(symbols[board[r][c][1]], x, y);
+        ctx.fillText(symbols[board[r][c][1]], x, y);
+      }
+    }
+    if (selected) {
+      ctx.strokeStyle = '#ff0';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(selected[1]*cell, selected[0]*cell, cell, cell);
+    }
+  }
+
+  // 监听对方走棋
+  window.onlineBoardUpdate = function(game) {
+    if (game.current_player === currentPlayerRole && game.board) {
+      board = game.board;
+      selected = null;
+      draw();
+      document.getElementById('chessStatus').textContent = '轮到你了（' + (myColor === 'w' ? '白棋' : '黑棋') + '）';
+    }
+  };
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const moveCount = board.flat().filter(v => v).length - 32;
+    const myTurn = (moveCount % 2 === 0 && currentPlayerRole === 'player1') ||
+                   (moveCount % 2 === 1 && currentPlayerRole === 'player2');
+    if (!myTurn) {
+      toast('还没轮到你');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const cell = 50;
+    const c = Math.floor(x / cell), r = Math.floor(y / cell);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+    if (selected) {
+      board[r][c] = board[selected[0]][selected[1]];
+      board[selected[0]][selected[1]] = null;
+      selected = null;
+      draw();
+      document.getElementById('chessStatus').textContent = '等待对方...';
+      sendMove(board);
+    } else if (board[r][c] && board[r][c][0] === myColor) {
+      selected = [r, c];
+      draw();
+    }
+  };
+
+  initBoard();
+  draw();
+  document.getElementById('chessStatus').textContent = currentPlayerRole === 'player1' ? '轮到你了（白棋）' : '等待对方...';
+}
+
 // 围棋（简化版 9x9）
 function initGo(area) {
   area.innerHTML = '<div class="score-display" id="goStatus">你是黑棋，AI是白棋（猜先中...）</div><canvas id="goCanvas" width="450" height="450"></canvas>';
@@ -2346,6 +2992,74 @@ function initGo(area) {
   };
 
   draw();
+}
+
+// 围棋在线对战
+function initOnlineGo(area) {
+  const myColor = currentPlayerRole === 'player1' ? 1 : 2;
+  const oppColor = myColor === 1 ? 2 : 1;
+  const SIZE = 9, CELL = 50, OFFSET = 25;
+  area.innerHTML = '<div class="score-display" id="goStatus">人人对战 - 你是' + (myColor === 1 ? '黑棋' : '白棋') + '</div><canvas id="goCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('goCanvas');
+  const ctx = canvas.getContext('2d');
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(OFFSET + i*CELL, OFFSET); ctx.lineTo(OFFSET + i*CELL, OFFSET + (SIZE-1)*CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(OFFSET, OFFSET + i*CELL); ctx.lineTo(OFFSET + (SIZE-1)*CELL, OFFSET + i*CELL); ctx.stroke();
+    }
+    const stars = [[2,2],[2,6],[6,2],[6,6],[4,4]];
+    ctx.fillStyle = '#000';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(OFFSET+c*CELL, OFFSET+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(OFFSET + c*CELL, OFFSET + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === 1 ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 监听对方走棋
+  window.onlineBoardUpdate = function(game) {
+    if (game.current_player === currentPlayerRole && game.board) {
+      board = game.board;
+      draw();
+      document.getElementById('goStatus').textContent = '轮到你了（' + (myColor === 1 ? '黑棋' : '白棋') + '）';
+    }
+  };
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const moveCount = board.flat().filter(v => v).length;
+    const myTurn = (moveCount % 2 === 0 && currentPlayerRole === 'player1') ||
+                   (moveCount % 2 === 1 && currentPlayerRole === 'player2');
+    if (!myTurn) {
+      toast('还没轮到你');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - OFFSET) / CELL), r = Math.round((y - OFFSET) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || board[r][c]) return;
+    board[r][c] = myColor;
+    draw();
+    document.getElementById('goStatus').textContent = '等待对方...';
+    sendMove(board);
+  };
+
+  draw();
+  document.getElementById('goStatus').textContent = currentPlayerRole === 'player1' ? '轮到你了（黑棋）' : '等待对方...';
 }
 
 // ==================== 初始化 ====================
