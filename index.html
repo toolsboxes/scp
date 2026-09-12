@@ -911,16 +911,17 @@ async function searchUserByUID() {
 async function addFriend(friendId, friendName) {
   try {
     // 双向添加好友
-    await sb.from('friends').insert([
-      { user_id: currentUser.id, friend_id: friendId, friend_name: friendName, status: 'accepted' },
-      { user_id: friendId, friend_id: currentUser.id, friend_name: currentUser.username, status: 'accepted' }
+    const { error } = await sb.from('friends').insert([
+      { user_id: String(currentUser.id), friend_id: String(friendId), friend_name: friendName, status: 'accepted' },
+      { user_id: String(friendId), friend_id: String(currentUser.id), friend_name: currentUser.username, status: 'accepted' }
     ]);
+    if (error) throw error;
     toast('已添加 ' + friendName + ' 为好友');
     closeModal('friendSearchModal');
+    // 刷新好友列表
+    setTimeout(() => showFriendList(), 500);
   } catch (e) {
-    // 如果已经是好友，忽略错误
-    toast('添加成功');
-    closeModal('friendSearchModal');
+    toast('添加失败：' + e.message, 'error');
   }
 }
 
@@ -2342,7 +2343,7 @@ function initGomoku(area) {
       const result = Math.random() < 0.5 ? 1 : 2;
       if (guess === result) {
         humanFirst = true;
-        document.getElementById('gomokuStatus').textContent = '猜对了！你是黑棋先走';
+        document.getElementById('gomokuStatus').textContent = '猜对了！你是黑棋先走，请落子';
       } else {
         humanFirst = false;
         document.getElementById('gomokuStatus').textContent = '猜错了！AI是黑棋先走';
@@ -2370,9 +2371,8 @@ function initGomoku(area) {
     aiMove();
   };
 
-  board[7][7] = AI;
   draw();
-  document.getElementById('gomokuStatus').textContent = '轮到你了（黑棋）';
+  document.getElementById('gomokuStatus').textContent = '猜先：点击棋盘左半边猜单数，右半边猜双数';
 }
 
 // 五子棋在线对战
@@ -2885,6 +2885,19 @@ function initChess(area) {
         ctx.lineWidth = 3;
         ctx.strokeRect(c*CELL+2, r*CELL+2, CELL-4, CELL-4);
       }
+    }
+    // 画走法提示（小点点）
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      moves.forEach(([mr, mc]) => {
+        ctx.beginPath();
+        ctx.arc(mc*CELL+CELL/2, mr*CELL+CELL/2, 8, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0, 200, 0, 0.6)';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
     }
   }
 
