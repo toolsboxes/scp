@@ -984,12 +984,179 @@ function openGame(game) {
 let gameDifficulty = 'hard';
 
 function showGameMenu(area, game, name) {
-  area.innerHTML = '<h3 style="margin-bottom:16px;">' + name + ' - 选择难度</h3>' +
+  area.innerHTML = '<h3 style="margin-bottom:16px;">' + name + ' - 选择模式</h3>' +
     '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-    '<button class="btn btn-success" onclick="startGame(\'' + game + '\', \'easy\')">😊 简单</button>' +
-    '<button class="btn btn-warning" onclick="startGame(\'' + game + '\', \'normal\')">😐 普通</button>' +
-    '<button class="btn btn-danger" onclick="startGame(\'' + game + '\', \'hard\')">😈 困难</button>' +
+    '<button class="btn btn-success" onclick="startGame(\'' + game + '\', \'easy\')">😊 简单AI</button>' +
+    '<button class="btn btn-warning" onclick="startGame(\'' + game + '\', \'normal\')">😐 普通AI</button>' +
+    '<button class="btn btn-danger" onclick="startGame(\'' + game + '\', \'hard\')">😈 困难AI</button>' +
+    '<button class="btn btn-primary" onclick="showOnlineMenu(\'' + game + '\', \'' + name + '\')">🌐 人人对战</button>' +
     '</div>';
+}
+
+// 人人对战菜单
+let onlineGameType = '';
+let onlineGameName = '';
+let currentGameId = null;
+let currentPlayerRole = null; // 'player1' or 'player2'
+let onlineChannel = null;
+
+function showOnlineMenu(game, name) {
+  onlineGameType = game;
+  onlineGameName = name;
+  const area = document.getElementById('gameArea');
+  const username = localStorage.getItem('toolbox_user');
+  if (!username) {
+    area.innerHTML = '<h3 style="margin-bottom:16px;">人人对战需要先登录</h3>' +
+      '<p>请先在右上角登录或注册账号</p>';
+    return;
+  }
+  area.innerHTML = '<h3 style="margin-bottom:16px;">' + name + ' - 人人对战</h3>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;align-items:center;">' +
+    '<button class="btn btn-primary" onclick="createOnlineRoom()">🎮 创建房间</button>' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+    '<input type="text" id="roomIdInput" placeholder="输入房间号" style="padding:8px;border-radius:8px;border:1px solid #444;background:#1a1a25;color:#fff;width:200px;">' +
+    '<button class="btn btn-success" onclick="joinOnlineRoom()">🚪 加入房间</button>' +
+    '</div>' +
+    '</div>';
+}
+
+// 创建房间
+async function createOnlineRoom() {
+  const username = localStorage.getItem('toolbox_user');
+  try {
+    const { data, error } = await sb.from('games').insert({
+      game_type: onlineGameType,
+      player1: username,
+      status: 'waiting',
+      board: null,
+      current_player: 'player1'
+    }).select();
+    if (error) throw error;
+    currentGameId = data[0].id;
+    currentPlayerRole = 'player1';
+    toast('房间创建成功！房间号：' + currentGameId.substring(0, 8));
+    showWaitingRoom();
+    subscribeToGame();
+  } catch (e) {
+    toast('创建房间失败：' + e.message);
+  }
+}
+
+// 加入房间
+async function joinOnlineRoom() {
+  const roomId = document.getElementById('roomIdInput').value.trim();
+  if (!roomId) {
+    toast('请输入房间号');
+    return;
+  }
+  const username = localStorage.getItem('toolbox_user');
+  try {
+    // 查找房间
+    const { data, error } = await sb.from('games').select('*').eq('id', roomId).single();
+    if (error) throw error;
+    if (data.status !== 'waiting') {
+      toast('房间已满或已开始');
+      return;
+    }
+    if (data.player1 === username) {
+      currentPlayerRole = 'player1';
+    } else {
+      // 加入房间
+      const { error: updateError } = await sb.from('games').update({
+        player2: username,
+        status: 'playing'
+      }).eq('id', roomId);
+      if (updateError) throw updateError;
+      currentPlayerRole = 'player2';
+    }
+    currentGameId = roomId;
+    toast('加入房间成功！');
+    startOnlineGame();
+    subscribeToGame();
+  } catch (e) {
+    toast('加入房间失败：' + e.message);
+  }
+}
+
+// 等待房间
+function showWaitingRoom() {
+  const area = document.getElementById('gameArea');
+  area.innerHTML = '<h3 style="margin-bottom:16px;">等待玩家加入...</h3>' +
+    '<p>房间号：<strong>' + currentGameId.substring(0, 8) + '</strong></p>' +
+    '<p>把房间号分享给朋友，让他加入房间</p>' +
+    '<p style="color:#888;">完整房间号：' + currentGameId + '</p>' +
+    '<button class="btn btn-danger" onclick="leaveOnlineGame()">离开房间</button>';
+}
+
+// 订阅游戏更新
+function subscribeToGame() {
+  if (onlineChannel) {
+    sb.removeChannel(onlineChannel);
+  }
+  onlineChannel = sb.channel('game:' + currentGameId)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'games',
+      filter: 'id=eq.' + currentGameId
+    }, (payload) => {
+      handleGameUpdate(payload.new);
+    })
+    .subscribe();
+}
+
+// 处理游戏更新
+function handleGameUpdate(game) {
+  if (game.status === 'playing' && currentPlayerRole === 'player1') {
+    // 玩家2加入了，开始游戏
+    startOnlineGame();
+  } else if (game.status === 'playing') {
+    // 更新棋盘
+    if (game.board && window.onlineBoardUpdate) {
+      window.onlineBoardUpdate(game);
+    }
+  } else if (game.status === 'finished') {
+    toast('游戏结束！赢家：' + (game.winner || '未知'));
+  }
+}
+
+// 开始在线游戏
+function startOnlineGame() {
+  const area = document.getElementById('gameArea');
+  const game = onlineGameType;
+  // 根据游戏类型初始化在线对战
+  if (game === 'tictactoe') initOnlineTicTacToe(area);
+  else if (game === 'gomoku') initOnlineGomoku(area);
+  else if (game === 'xiangqi') initOnlineXiangqi(area);
+  else if (game === 'chess') initOnlineChess(area);
+  else if (game === 'go') initOnlineGo(area);
+  else toast('该游戏暂不支持人人对战');
+}
+
+// 离开游戏
+function leaveOnlineGame() {
+  if (onlineChannel) {
+    sb.removeChannel(onlineChannel);
+    onlineChannel = null;
+  }
+  currentGameId = null;
+  currentPlayerRole = null;
+  closeGame();
+}
+
+// 发送走棋
+async function sendMove(board) {
+  if (!currentGameId) return;
+  const nextPlayer = currentPlayerRole === 'player1' ? 'player2' : 'player1';
+  try {
+    const { error } = await sb.from('games').update({
+      board: board,
+      current_player: nextPlayer
+    }).eq('id', currentGameId);
+    if (error) throw error;
+  } catch (e) {
+    toast('发送走棋失败：' + e.message);
+  }
 }
 
 function startGame(game, diff) {
@@ -1317,6 +1484,95 @@ function initTicTacToe(area) {
   if (!humanFirst) {
     setTimeout(() => aiMove(), 500);
   }
+}
+
+// 井字棋在线对战
+function initOnlineTicTacToe(area) {
+  const mySymbol = currentPlayerRole === 'player1' ? 'X' : 'O';
+  const oppSymbol = mySymbol === 'X' ? 'O' : 'X';
+  area.innerHTML = '<div class="score-display" id="tttStatus">人人对战 - 你是 ' + mySymbol + '</div><canvas id="tttCanvas" width="300" height="300"></canvas>';
+  const canvas = document.getElementById('tttCanvas');
+  const ctx = canvas.getContext('2d');
+  let board = Array(9).fill(null);
+  let gameOver = false;
+
+  function draw() {
+    ctx.fillStyle = '#1a1a25';
+    ctx.fillRect(0, 0, 300, 300);
+    ctx.strokeStyle = '#8b5cf6';
+    ctx.lineWidth = 3;
+    for (let i = 1; i < 3; i++) {
+      ctx.beginPath(); ctx.moveTo(i * 100, 0); ctx.lineTo(i * 100, 300); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * 100); ctx.lineTo(300, i * 100); ctx.stroke();
+    }
+    board.forEach((v, i) => {
+      if (!v) return;
+      const x = (i % 3) * 100 + 50, y = Math.floor(i / 3) * 100 + 50;
+      ctx.font = '50px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = v === mySymbol ? '#8b5cf6' : '#ec4899';
+      ctx.fillText(v, x, y);
+    });
+  }
+
+  function checkWin(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const [a,b2,c] of wins) {
+      if (b[a] && b[a] === b[b2] && b[a] === b[c]) return b[a];
+    }
+    if (b.every(v => v)) return 'draw';
+    return null;
+  }
+
+  // 监听对方走棋
+  window.onlineBoardUpdate = function(game) {
+    if (game.current_player === currentPlayerRole) {
+      // 轮到我了，更新棋盘
+      if (game.board) {
+        board = game.board;
+        draw();
+        const winner = checkWin(board);
+        if (winner) {
+          gameOver = true;
+          document.getElementById('tttStatus').textContent = winner === 'draw' ? '平局！' : (winner === mySymbol ? '你赢了！' : '对方赢了！');
+        } else {
+          document.getElementById('tttStatus').textContent = '轮到你了（' + mySymbol + '）';
+        }
+      }
+    }
+  };
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    // 检查是否轮到我
+    // 简单处理：玩家1先走，然后轮流
+    const myTurn = (board.filter(v => v).length % 2 === 0 && currentPlayerRole === 'player1') ||
+                   (board.filter(v => v).length % 2 === 1 && currentPlayerRole === 'player2');
+    if (!myTurn) {
+      toast('还没轮到你');
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left) / 100);
+    const r = Math.floor((e.clientY - rect.top) / 100);
+    const idx = r * 3 + c;
+    if (board[idx]) return;
+    board[idx] = mySymbol;
+    draw();
+    const winner = checkWin(board);
+    if (winner) {
+      gameOver = true;
+      document.getElementById('tttStatus').textContent = winner === 'draw' ? '平局！' : '你赢了！';
+      sendMove(board);
+      return;
+    }
+    document.getElementById('tttStatus').textContent = '等待对方...';
+    sendMove(board);
+  };
+
+  draw();
+  document.getElementById('tttStatus').textContent = currentPlayerRole === 'player1' ? '轮到你了（X）' : '等待对方...';
 }
 
 // 五子棋
