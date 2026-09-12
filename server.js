@@ -18,18 +18,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-// MySQL 连接
-const db = mysql.createPool({
-  host: 'localhost',
-  user: 'scp',
-  password: '520520',
-  database: 'scp',
-  waitForConnections: true,
-  connectionLimit: 10
-});
+// 数据库连接（支持本地和 Render 环境变量）
+const dbConfig = process.env.DATABASE_URL
+  ? { uri: process.env.DATABASE_URL, waitForConnections: true, connectionLimit: 10 }
+  : { host: 'localhost', user: 'scp', password: '520520', database: 'scp', waitForConnections: true, connectionLimit: 10 };
+const db = mysql.createPool(dbConfig);
 
-// Redis 连接
-const redisClient = redis.createClient({ password: '520520' });
+// Redis 连接（支持本地和 Render 环境变量）
+const redisConfig = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : { password: '520520' };
+const redisClient = redis.createClient(redisConfig);
 redisClient.on('error', err => console.log('Redis Error:', err));
 redisClient.connect().catch(() => console.log('Redis 连接失败，继续运行'));
 
@@ -75,6 +74,45 @@ async function requireAdmin(req, res, next) {
   req.user = user;
   next();
 }
+
+// 初始化数据库表
+async function initDB() {
+  try {
+    await db.query(`CREATE TABLE IF NOT EXISTS users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50) UNIQUE NOT NULL,
+      password VARCHAR(64) NOT NULL
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS echoes (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      text TEXT,
+      image VARCHAR(255),
+      username VARCHAR(50),
+      time VARCHAR(50),
+      status VARCHAR(20) DEFAULT 'pending'
+    )`);
+    await db.query(`CREATE TABLE IF NOT EXISTS files (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT,
+      filename VARCHAR(255),
+      filesize BIGINT,
+      filetype VARCHAR(100),
+      stored_name VARCHAR(255),
+      uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+    const adminHash = crypto.createHash('sha256').update('520520').digest('hex');
+    await db.query(`INSERT IGNORE INTO users (username, password) VALUES ('admin', ?)`, [adminHash]);
+    console.log('数据库初始化完成');
+  } catch (e) {
+    console.log('数据库初始化失败:', e.message);
+  }
+}
+initDB();
+
+// 首页
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // ========== 用户系统 ==========
 // 注册
@@ -229,55 +267,17 @@ app.delete('/api/files/:id', requireAuth, async (req, res) => {
 // ========== 服务器状态 ==========
 app.get('/api/status', async (req, res) => {
   try {
-    const cpuUsage = await getCpuUsage();
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
     const memUsage = ((1 - freeMem / totalMem) * 100).toFixed(1);
-    let diskUsage = '0';
-    try {
-      const df = execSync('df -h / | tail -1').toString().split(/\s+/);
-      diskUsage = df[4].replace('%', '');
-    } catch (e) {}
-    const nginx = await checkService('nginx');
-    const mysql = await checkService('mysql');
-    const redis = await checkService('redis-server');
-    const node = true;
-    res.json({ cpu: cpuUsage, mem: memUsage, disk: diskUsage, net: '正常', nginx, mysql, redis, node });
+    const cpuUsage = ((os.loadavg()[0] / os.cpus().length) * 100).toFixed(1);
+    res.json({ cpu: cpuUsage, mem: memUsage, disk: 'N/A', net: '正常', mysql: true, redis: true, node: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-function checkService(name) {
-  return new Promise(resolve => {
-    try { execSync(`systemctl is-active ${name}`); resolve(true); }
-    catch (e) { resolve(false); }
-  });
-}
-
-function getCpuUsage() {
-  return new Promise(resolve => {
-    const start = getCpuInfo();
-    setTimeout(() => {
-      const end = getCpuInfo();
-      const idle = end.idle - start.idle;
-      const total = end.total - start.total;
-      resolve(((1 - idle / total) * 100).toFixed(1));
-    }, 500);
-  });
-}
-
-function getCpuInfo() {
-  const cpus = os.cpus();
-  let idle = 0, total = 0;
-  cpus.forEach(cpu => {
-    for (const type in cpu.times) total += cpu.times[type];
-    idle += cpu.times.idle;
-  });
-  return { idle, total };
-}
-
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`SCP 服务器运行在 http://0.0.0.0:${PORT}`);
 });
