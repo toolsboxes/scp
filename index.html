@@ -660,6 +660,36 @@ function closeModal(id) {
   }
 }
 
+// 生成随机session token
+function generateSessionToken() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// 检查是否在别的设备登录了
+async function checkSession() {
+  if (!currentUser || currentUser.username === 'admin') return;
+  try {
+    const localToken = localStorage.getItem('toolbox_session_token');
+    if (!localToken) return;
+    const { data, error } = await sb.from('users').select('session_token').eq('id', currentUser.id).single();
+    if (error) return;
+    if (data && data.session_token && data.session_token !== localToken) {
+      // 别的设备登录了
+      toast('你的账号在别的设备登录了，已自动退出', 'error');
+      logout();
+    }
+  } catch (e) {
+    // 忽略错误
+  }
+}
+
+// 启动session检查
+let sessionCheckInterval = null;
+function startSessionCheck() {
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+  sessionCheckInterval = setInterval(checkSession, 10000);
+}
+
 async function doAuth() {
   try {
     const username = document.getElementById('authUsername').value.trim();
@@ -690,11 +720,21 @@ async function doAuth() {
       } else {
         currentUser.isAdmin = false;
       }
+      // 生成session token，实现多设备登录限制
+      const token = generateSessionToken();
+      localStorage.setItem('toolbox_session_token', token);
+      try {
+        await sb.from('users').update({ session_token: token }).eq('id', currentUser.id);
+      } catch (e) {
+        // 字段可能不存在，忽略
+      }
+      currentUser.session_token = token;
       localStorage.setItem('toolbox_user', JSON.stringify(currentUser));
       updateUserUI();
       closeModal('authModal');
       toast('登录成功');
       loadFiles();
+      startSessionCheck();
     }
   } catch (e) {
     toast('操作失败: ' + e.message, 'error');
@@ -704,14 +744,25 @@ async function doAuth() {
 function logout() {
   currentUser = null;
   localStorage.removeItem('toolbox_user');
+  localStorage.removeItem('toolbox_session_token');
+  if (sessionCheckInterval) {
+    clearInterval(sessionCheckInterval);
+    sessionCheckInterval = null;
+  }
   updateUserUI();
   toast('已退出');
+}
+
+// 统一UID格式：用户名-fixed-id
+function getUID(user) {
+  if (!user) return '';
+  return (user.username || 'user') + '-fixed-id';
 }
 
 function updateUserUI() {
   const el = document.getElementById('userInfo');
   if (currentUser) {
-    const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+    const uid = getUID(currentUser);
     el.innerHTML = '<div class="user-avatar" onclick="showProfile()" title="点击查看个人信息" style="cursor:pointer;font-size:28px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border-radius:50%;border:2px solid var(--purple2);">👤</div>' +
       '<span style="margin-left:8px;font-weight:600;">' + escapeHtml(currentUser.username) + '</span>' +
       '<button class="btn btn-secondary btn-sm" onclick="logout()" style="margin-left:8px;">退出</button>';
@@ -724,7 +775,7 @@ function updateUserUI() {
 // 个人信息弹窗
 function showProfile() {
   if (!currentUser) return;
-  const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+  const uid = getUID(currentUser);
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.id = 'profileModal';
@@ -750,7 +801,7 @@ function showProfile() {
 }
 
 function copyUID() {
-  const uid = currentUser.id || currentUser.uid || 'UID-' + (currentUser.username || '').charCodeAt(0);
+  const uid = getUID(currentUser);
   navigator.clipboard.writeText(uid).then(() => toast('UID 已复制')).catch(() => toast('复制失败'));
 }
 
@@ -773,12 +824,17 @@ function showFriendSearch() {
 }
 
 async function searchUserByUID() {
-  const uid = document.getElementById('searchUIDInput').value.trim();
-  if (!uid) { toast('请输入 UID'); return; }
+  const input = document.getElementById('searchUIDInput').value.trim();
+  if (!input) { toast('请输入 UID 或用户名'); return; }
   const resultEl = document.getElementById('searchResult');
   resultEl.innerHTML = '<p style="text-align:center;color:var(--muted);">搜索中...</p>';
   try {
-    const { data, error } = await sb.from('users').select('*').eq('id', uid);
+    // 支持两种格式：用户名-fixed-id 或直接用户名
+    let searchName = input;
+    if (input.endsWith('-fixed-id')) {
+      searchName = input.replace('-fixed-id', '');
+    }
+    const { data, error } = await sb.from('users').select('*').eq('username', searchName);
     if (error) throw error;
     if (data && data.length > 0) {
       const user = data[0];
@@ -789,7 +845,7 @@ async function searchUserByUID() {
       resultEl.innerHTML = '<div style="background:var(--bg2);padding:12px;border-radius:8px;text-align:center;">' +
         '<div style="font-size:32px;margin-bottom:4px;">👤</div>' +
         '<div style="font-weight:700;font-size:16px;">' + escapeHtml(user.username) + '</div>' +
-        '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;word-break:break-all;">UID: ' + user.id + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;word-break:break-all;">UID: ' + getUID(user) + '</div>' +
         '<button class="btn btn-primary btn-sm" onclick="addFriend(\'' + user.id + '\', \'' + user.username + '\')">➕ 添加好友</button>' +
         '</div>';
     } else {
@@ -997,7 +1053,25 @@ async function loadEchoes() {
 }
 
 // AI 敏感词审核
-const AI_BAD_WORDS = ['傻逼', '操你', '草你', '妈的', '他妈', '去死', '垃圾', '废物', '混蛋', '王八蛋', '狗东西', '婊子', '鸡巴', '色情', '黄色', '赌博', '毒品', '杀人', '放火', '恐怖', '炸弹', '枪支', '弹药', '反动', '颠覆', '分裂国家'];
+const AI_BAD_WORDS = [
+  // 中文脏话
+  '傻逼', 'sb', 'SB', 'Sb', 'sB', '煞笔', '傻比', '傻B', '傻b',
+  '操你', '草你', '艹你', 'cao你', '操', '草', '艹',
+  '妈的', '妈的', '他妈的', 'tmd', 'TMD', '尼玛', '你妈', 'nmsl', 'NMSL',
+  '去死', '垃圾', '废物', '混蛋', '王八蛋', '狗东西', '婊子', '鸡巴', 'jb', 'JB',
+  '脑残', '脑瘫', 'nt', 'NT', '智障', 'zz', 'ZZ',
+  '贱人', '贱货', '骚货', '骚逼',
+  // 色情
+  '色情', '黄色', 'av', 'AV', '黄片', '毛片', '裸体', '裸照', '做爱', '性交',
+  // 赌博
+  '赌博', '赌钱', '赌场', '下注',
+  // 毒品
+  '毒品', '吸毒', '贩毒', '海洛因', '冰毒', '大麻',
+  // 暴力
+  '杀人', '放火', '恐怖', '炸弹', '枪支', '弹药', '拿刀', '砍人',
+  // 反动
+  '反动', '颠覆', '分裂国家', '台独', '港独', '疆独', '藏独'
+];
 
 function aiCheckContent(text) {
   if (!text) return { pass: true, reason: '' };
@@ -1243,30 +1317,55 @@ function stopAdminAutoRefresh() {
 }
 
 // 公告功能
-function publishAnnouncement() {
+async function publishAnnouncement() {
   const text = document.getElementById('announcementInput').value.trim();
   if (!text) { toast('公告内容不能为空', 'error'); return; }
-  localStorage.setItem('toolbox_announcement', text);
-  loadAnnouncement();
-  toast('公告发布成功');
+  try {
+    // 先删除旧公告
+    await sb.from('announcements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    // 插入新公告
+    const { error } = await sb.from('announcements').insert({ content: text, created_by: 'admin' });
+    if (error) throw error;
+    loadAnnouncement();
+    toast('公告发布成功，所有人都能看到');
+  } catch (e) {
+    toast('发布失败：' + e.message, 'error');
+  }
 }
 
-function clearAnnouncement() {
-  localStorage.removeItem('toolbox_announcement');
-  document.getElementById('announcementInput').value = '';
-  loadAnnouncement();
-  toast('公告已清除');
+async function clearAnnouncement() {
+  try {
+    await sb.from('announcements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    document.getElementById('announcementInput').value = '';
+    loadAnnouncement();
+    toast('公告已清除');
+  } catch (e) {
+    toast('清除失败：' + e.message, 'error');
+  }
 }
 
-function loadAnnouncement() {
-  const text = localStorage.getItem('toolbox_announcement');
+async function loadAnnouncement() {
   const el = document.getElementById('announcement');
   const textEl = document.getElementById('announcementText');
-  if (text && el && textEl) {
-    textEl.textContent = text;
-    el.style.display = 'block';
-  } else if (el) {
-    el.style.display = 'none';
+  if (!el || !textEl) return;
+  try {
+    const { data, error } = await sb.from('announcements').select('*').order('created_at', { ascending: false }).limit(1);
+    if (error) throw error;
+    if (data && data.length > 0 && data[0].content) {
+      textEl.textContent = data[0].content;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  } catch (e) {
+    // 数据库表不存在时，回退到localStorage
+    const text = localStorage.getItem('toolbox_announcement');
+    if (text) {
+      textEl.textContent = text;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
   }
 }
 
@@ -1333,6 +1432,8 @@ async function deleteEcho(id) {
     await sb.from('echoes').delete().eq('id', id);
     toast('已删除');
     loadPending();
+    loadEchoes();
+    if (typeof loadAdminStats === 'function') loadAdminStats();
   } catch (e) {
     toast('删除失败', 'error');
   }
@@ -3109,6 +3210,10 @@ async function init() {
     const saved = localStorage.getItem('toolbox_user');
     if (saved) {
       currentUser = JSON.parse(saved);
+      // 如果已经登录，启动session检查
+      if (currentUser && currentUser.username !== 'admin') {
+        startSessionCheck();
+      }
     }
     updateUserUI();
     loadAnnouncement();
