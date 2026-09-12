@@ -452,6 +452,10 @@ input:focus, textarea:focus { border-color: var(--purple); }
             <div style="font-size:11px;color:var(--muted);">数据库状态</div>
           </div>
           <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--red);" id="statRedis">○</div>
+            <div style="font-size:11px;color:var(--muted);">Redis状态</div>
+          </div>
+          <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
             <div style="font-size:22px;font-weight:700;color:var(--purple2);" id="statUsers">0</div>
             <div style="font-size:11px;color:var(--muted);">用户总数</div>
           </div>
@@ -966,8 +970,21 @@ async function loadFriendList() {
   try {
     const { data, error } = await sb.from('friends').select('*').eq('user_id', currentUser.id);
     if (error) throw error;
+    
+    // AI 助手固定在最前面
+    let html = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.2));border:1px solid var(--purple);border-radius:8px;margin-bottom:8px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<span style="font-size:24px;">🤖</span>' +
+      '<div>' +
+      '<div style="font-weight:600;">AI 助手</div>' +
+      '<div style="font-size:11px;color:var(--muted);">开源大模型 · 随时聊天</div>' +
+      '</div>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
+      '</div>';
+    
     if (data && data.length > 0) {
-      contentEl.innerHTML = data.map(f =>
+      html += data.map(f =>
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg2);border-radius:8px;margin-bottom:8px;">' +
         '<div style="display:flex;align-items:center;gap:8px;">' +
         '<span style="font-size:24px;">👤</span>' +
@@ -976,12 +993,262 @@ async function loadFriendList() {
         '<button class="btn btn-primary btn-sm" onclick="openChat(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">💬 聊天</button>' +
         '</div>'
       ).join('');
+    }
+    contentEl.innerHTML = html;
+  } catch (e) {
+    // 即使出错也显示AI助手
+    contentEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(236,72,153,0.2));border:1px solid var(--purple);border-radius:8px;margin-bottom:8px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<span style="font-size:24px;">🤖</span>' +
+      '<div>' +
+      '<div style="font-weight:600;">AI 助手</div>' +
+      '<div style="font-size:11px;color:var(--muted);">开源大模型 · 随时聊天</div>' +
+      '</div>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
+      '</div>' +
+      '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
+  }
+}
+
+// AI 对话配置（硅基流动 SiliconFlow）
+const AI_CONFIG = {
+  apiKey: '', // 等你拿到API key填这里
+  model: '', // 等你选好模型填这里，比如 Qwen/Qwen2.5-7B-Instruct
+  apiUrl: 'https://api.siliconflow.cn/v1/chat/completions'
+};
+
+// 模拟 AI 回复（智能关键词匹配）
+function getMockAIReply(input) {
+  const text = input.toLowerCase();
+  
+  // 打招呼
+  if (/你好|您好|hi|hello|在吗|在不在/.test(text)) {
+    return '你好呀！我是 AI 助手，有什么可以帮你的吗？😊';
+  }
+  
+  // 问名字
+  if (/你是谁|你叫什么|你的名字/.test(text)) {
+    return '我是 ToolBox 的 AI 助手，目前是模拟版，等接入真正的大模型后会更聪明哦！';
+  }
+  
+  // 讲笑话
+  if (/笑话|讲个笑话|好笑/.test(text)) {
+    const jokes = [
+      '为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 = Dec 25！',
+      '一个 SQL 查询走进酒吧，看到两张表，问："我可以 JOIN 你们吗？"',
+      '为什么程序员喜欢黑色？因为黑色会吸引所有光，包括 bug！',
+      '有 10 种人：懂二进制的和不懂二进制的。'
+    ];
+    return jokes[Math.floor(Math.random() * jokes.length)];
+  }
+  
+  // 数学计算
+  const mathMatch = input.match(/(\d+)\s*([+\-*/])\s*(\d+)/);
+  if (mathMatch) {
+    const a = parseInt(mathMatch[1]);
+    const op = mathMatch[2];
+    const b = parseInt(mathMatch[3]);
+    let result;
+    switch(op) {
+      case '+': result = a + b; break;
+      case '-': result = a - b; break;
+      case '*': result = a * b; break;
+      case '/': result = b !== 0 ? (a / b).toFixed(2) : '不能除以0'; break;
+    }
+    return `${a} ${op} ${b} = ${result}`;
+  }
+  
+  // 问网站功能
+  if (/网站|功能|这个网站|能做什么/.test(text)) {
+    return '这个网站叫 ToolBox，功能可多啦！有加密工具箱（MD5、SHA、Base64、AES等10种）、8个小游戏（贪吃蛇、2048、扫雷、井字棋、五子棋、中国象棋、国际象棋、围棋）、回声洞、个人云盘、好友聊天，还有管理员面板哦！';
+  }
+  
+  // 问时间
+  if (/几点|时间|现在几点/.test(text)) {
+    return '现在是 ' + new Date().toLocaleString('zh-CN');
+  }
+  
+  // 感谢
+  if (/谢谢|感谢|thx|thanks/.test(text)) {
+    return '不客气！能帮到你我很开心！😄';
+  }
+  
+  // 再见
+  if (/再见|拜拜|bye|88/.test(text)) {
+    return '再见啦！随时来找我聊天哦！👋';
+  }
+  
+  // 默认回复
+  const defaults = [
+    '嗯，我明白了！你可以问我数学题、让我讲笑话，或者问我网站有什么功能哦～',
+    '收到！目前我是模拟版 AI，只能回答简单问题。等接入真正的大模型后就能聊更多啦！',
+    '有意思！你还可以试试问我"讲个笑话"或者"1+1等于几"哦～',
+    '我在听呢！有什么想聊的都可以跟我说～'
+  ];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
+
+let aiChatHistory = [];
+
+// 模拟 AI 回复（智能关键词匹配）
+function getMockAIReply(input) {
+  const text = input.toLowerCase().trim();
+  
+  // 打招呼
+  if (/^(你好|您好|hi|hello|嗨|在吗|在不在)/.test(text)) {
+    const replies = ['你好呀！我是 AI 助手，有什么可以帮你的吗？', '嗨！很高兴见到你！想聊点什么？', '你好！今天过得怎么样？'];
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+  
+  // 问名字
+  if (/你是谁|你叫什么|你的名字/.test(text)) {
+    return '我是 ToolBox 的 AI 助手，目前是模拟版，等以后接入真正的大模型会更聪明哦！';
+  }
+  
+  // 讲笑话
+  if (/笑话|讲个笑话|好笑/.test(text)) {
+    const jokes = [
+      '为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 = Dec 25！',
+      '一个 SQL 查询走进酒吧，看到两张表，问："我可以 JOIN 你们吗？"',
+      '为什么程序员喜欢黑暗模式？因为 Light 会吸引 bugs！',
+      '有 10 种人：懂二进制的和不懂二进制的。'
+    ];
+    return jokes[Math.floor(Math.random() * jokes.length)];
+  }
+  
+  // 数学计算
+  const mathMatch = text.match(/(\d+)\s*([+\-*/x])\s*(\d+)/);
+  if (mathMatch) {
+    const a = parseFloat(mathMatch[1]);
+    const op = mathMatch[2] === 'x' ? '*' : mathMatch[2];
+    const b = parseFloat(mathMatch[3]);
+    let result;
+    switch(op) {
+      case '+': result = a + b; break;
+      case '-': result = a - b; break;
+      case '*': result = a * b; break;
+      case '/': result = b !== 0 ? a / b : '不能除以0'; break;
+    }
+    return `${a} ${mathMatch[2]} ${b} = ${result}`;
+  }
+  
+  // 问网站功能
+  if (/网站|功能|工具箱|能做什么/.test(text)) {
+    return '这个网站叫 ToolBox，功能可多啦！有加密工具箱（MD5、SHA、Base64、AES等10种）、8种小游戏（贪吃蛇、2048、扫雷、井字棋、五子棋、中国象棋、国际象棋、围棋）、回声洞、个人云盘、好友聊天，还有管理员面板哦！';
+  }
+  
+  // 问时间
+  if (/几点|时间|现在/.test(text)) {
+    return '现在是 ' + new Date().toLocaleString('zh-CN') + '，快去写作业吧！';
+  }
+  
+  // 感谢
+  if (/谢谢|感谢|thx|thanks/.test(text)) {
+    return '不客气！能帮到你我很开心 😊';
+  }
+  
+  // 再见
+  if (/再见|拜拜|bye|晚安/.test(text)) {
+    return '再见！下次再来找我聊天哦！👋';
+  }
+  
+  // 默认回复
+  const defaults = [
+    '嗯，我明白了！你说的很有意思。',
+    '这个问题挺有趣的，让我想想...不过我现在是模拟版，等以后接入真正的大模型就能更好地回答你了！',
+    '收到！还有什么想聊的吗？',
+    '我正在学习中，以后会越来越聪明的！',
+    '你说的对！还有什么想知道的吗？'
+  ];
+  return defaults[Math.floor(Math.random() * defaults.length)];
+}
+
+function openAIChat() {
+  currentChatFriend = { id: 'ai-assistant', name: 'AI 助手', isAI: true };
+  aiChatHistory = [];
+  closeModal('friendListModal');
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'chatModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:500px;height:70vh;display:flex;flex-direction:column;">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+    '<h3 style="margin:0;">🤖 与 AI 助手聊天</h3>' +
+    '<button class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
+    '</div>' +
+    '<div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;">' +
+    '<div style="text-align:center;color:var(--muted);padding:20px;">你好！我是 AI 助手，有什么可以帮你的？</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+    '<input type="text" id="chatInput" placeholder="输入消息..." style="flex:1;" onkeypress="if(event.key===\'Enter\')sendAIMessage()">' +
+    '<button class="btn btn-primary" onclick="sendAIMessage()">发送</button>' +
+    '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('chatInput');
+  const content = input.value.trim();
+  if (!content) return;
+  input.value = '';
+  
+  const messagesEl = document.getElementById('chatMessages');
+  
+  // 显示用户消息
+  messagesEl.innerHTML += '<div style="margin-bottom:8px;text-align:right;">' +
+    '<div style="display:inline-block;background:var(--purple2);padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;text-align:left;">' +
+    escapeHtml(content) + '</div></div>';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  
+  // 显示"正在思考"
+  const thinkingId = 'ai-thinking-' + Date.now();
+  messagesEl.innerHTML += '<div id="' + thinkingId + '" style="margin-bottom:8px;text-align:left;">' +
+    '<div style="display:inline-block;background:var(--bg);padding:8px 12px;border-radius:12px;color:var(--muted);">正在思考...</div></div>';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  
+  aiChatHistory.push({ role: 'user', content: content });
+  
+  try {
+    if (!AI_CONFIG.apiKey || !AI_CONFIG.model) {
+      // 模拟 AI 回复（智能关键词匹配）
+      await new Promise(r => setTimeout(r, 800));
+      const reply = getMockAIReply(content);
+      document.getElementById(thinkingId).remove();
+      messagesEl.innerHTML += '<div style="margin-bottom:8px;text-align:left;">' +
+        '<div style="display:inline-block;background:var(--bg);padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;text-align:left;">' +
+        escapeHtml(reply) + '</div></div>';
+      aiChatHistory.push({ role: 'assistant', content: reply });
     } else {
-      contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
+      // 调用硅基流动 API
+      const response = await fetch(AI_CONFIG.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + AI_CONFIG.apiKey
+        },
+        body: JSON.stringify({
+          model: AI_CONFIG.model,
+          messages: aiChatHistory,
+          max_tokens: 1024,
+          temperature: 0.7
+        })
+      });
+      const data = await response.json();
+      const reply = data.choices && data.choices[0] ? data.choices[0].message.content : '抱歉，我出错了。';
+      document.getElementById(thinkingId).remove();
+      messagesEl.innerHTML += '<div style="margin-bottom:8px;text-align:left;">' +
+        '<div style="display:inline-block;background:var(--bg);padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;text-align:left;">' +
+        escapeHtml(reply) + '</div></div>';
+      aiChatHistory.push({ role: 'assistant', content: reply });
     }
   } catch (e) {
-    contentEl.innerHTML = '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
+    document.getElementById(thinkingId).remove();
+    messagesEl.innerHTML += '<div style="margin-bottom:8px;text-align:left;">' +
+      '<div style="display:inline-block;background:var(--bg);padding:8px 12px;border-radius:12px;max-width:70%;word-break:break-word;text-align:left;color:var(--red);">出错了：' + escapeHtml(e.message) + '</div></div>';
   }
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 // 聊天界面
@@ -1437,6 +1704,12 @@ let adminAutoRefresh = null;
 async function loadAdminStats() {
   try {
     document.getElementById('statDb').textContent = '●';
+    // Redis状态（暂时显示未连接，等接入后更新）
+    const redisEl = document.getElementById('statRedis');
+    if (redisEl) {
+      redisEl.textContent = '○';
+      redisEl.style.color = 'var(--red)';
+    }
     const [usersRes, echoesRes, pendingRes, approvedRes, filesRes, gamesRes, playingRes, waitingRes] = await Promise.all([
       sb.from('users').select('id', { count: 'exact', head: true }),
       sb.from('echoes').select('id', { count: 'exact', head: true }),
@@ -1509,14 +1782,35 @@ function clearAnnouncement() {
 
 function loadAnnouncement() {
   const text = localStorage.getItem('toolbox_announcement');
+  // 顶部横幅不显示了，只用弹窗
   const el = document.getElementById('announcement');
-  const textEl = document.getElementById('announcementText');
-  if (text && el && textEl) {
-    textEl.textContent = text;
-    el.style.display = 'block';
-  } else if (el) {
-    el.style.display = 'none';
+  if (el) el.style.display = 'none';
+  // 如果有公告，弹出弹窗
+  if (text) {
+    showAnnouncementModal(text);
   }
+}
+
+function showAnnouncementModal(text) {
+  // 检查是否已经弹过了（本次会话）
+  if (sessionStorage.getItem('announcement_shown')) return;
+  sessionStorage.setItem('announcement_shown', '1');
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.id = 'announcementModal';
+  modal.style.display = 'flex';
+  modal.innerHTML = '<div class="modal-content" style="max-width:450px;">' +
+    '<h3 style="color:var(--yellow);">📢 公告</h3>' +
+    '<div style="background:var(--bg2);border-radius:8px;padding:16px;margin:12px 0;line-height:1.6;white-space:pre-wrap;">' + escapeHtml(text) + '</div>' +
+    '<button class="btn btn-primary" style="width:100%;" onclick="closeAnnouncementModal()">我知道了</button>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+function closeAnnouncementModal() {
+  const modal = document.getElementById('announcementModal');
+  if (modal) modal.remove();
 }
 
 async function loadPending() {
