@@ -4,37 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>工具箱 · ToolBox</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0f0f1a;--card:#1a1a2e;--border:#2a2a4a;--accent:#6366f1;--accent2:#ec4899;--text:#e2e8f0;--muted:#94a3b8;--success:#10b981;--danger:#ef4444}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-/* 顶部 */
 .header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:20px 30px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
 .header h1{font-size:22px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header .tag{font-size:12px;color:var(--muted)}
-/* 标签导航 */
-.tabs{display:flex;gap:4px;padding:0 30px;background:var(--card);border-bottom:1px solid var(--border)}
-.tab{padding:14px 24px;cursor:pointer;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s}
+.header .user-info{display:flex;align-items:center;gap:12px;font-size:14px}
+.tabs{display:flex;gap:4px;padding:0 30px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tab{padding:14px 20px;cursor:pointer;font-size:14px;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-/* 内容区 */
 .page{display:none;padding:30px;max-width:1200px;margin:0 auto}
 .page.active{display:block}
-/* 加密工具布局 */
-.crypto-layout{display:grid;grid-template-columns:200px 1fr;gap:20px}
+.crypto-layout{display:grid;grid-template-columns:180px 1fr;gap:20px}
 .algo-list{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px}
 .algo-item{padding:12px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s;margin-bottom:4px}
 .algo-item:hover{background:rgba(99,102,241,.1)}
 .algo-item.active{background:var(--accent);color:#fff}
-.algo-item .desc{font-size:11px;color:var(--muted);margin-top:2px}
-.algo-item.active .desc{color:rgba(255,255,255,.7)}
-/* 工作区 */
 .workspace{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-.workspace h3{font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.workspace h3 .badge{font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(99,102,241,.2);color:var(--accent)}
+.workspace h3{font-size:16px;margin-bottom:16px}
 .input-group{margin-bottom:16px}
 .input-group label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-.input-group textarea,.input-group input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;font-family:'Consolas','Monaco',monospace;resize:vertical;outline:none;transition:border .2s}
+.input-group textarea,.input-group input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;font-family:'Consolas','Monaco',monospace;resize:vertical;outline:none}
 .input-group textarea:focus,.input-group input:focus{border-color:var(--accent)}
 .input-group textarea{min-height:100px}
 .btn-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
@@ -42,917 +36,649 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:#4f46e5}
 .btn-secondary{background:var(--border);color:var(--text)}
-.btn-secondary:hover{background:#3a3a5a}
 .btn-success{background:var(--success);color:#fff}
-.btn-success:hover{background:#059669}
 .btn-danger{background:var(--danger);color:#fff}
-.btn-danger:hover{background:#dc2626}
+.btn-sm{padding:6px 12px;font-size:12px}
 .output-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:60px;font-family:'Consolas','Monaco',monospace;font-size:13px;word-break:break-all;white-space:pre-wrap;color:var(--success)}
-.output-box.empty{color:var(--muted)}
-.hint{font-size:12px;color:var(--muted);margin-top:8px}
-/* 小游戏 */
-.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
-.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .3s;text-align:center}
-.game-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 10px 30px rgba(99,102,241,.2)}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+.game-card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .game-card .icon{font-size:48px;margin-bottom:12px}
-.game-card h4{font-size:16px;margin-bottom:6px}
+.game-card h3{font-size:18px;margin-bottom:8px}
 .game-card p{font-size:13px;color:var(--muted)}
-/* 游戏弹窗 */
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:90vw;max-height:90vh;overflow:auto;position:relative}
-.modal-close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer}
-.modal-close:hover{color:var(--text)}
-/* 贪吃蛇 */
-#snakeCanvas{background:#0a0a15;border-radius:8px;display:block;margin:0 auto}
-.game-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:14px}
-.game-info .score{color:var(--accent);font-weight:600}
-/* 2048 */
-.grid2048{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#0a0a15;padding:8px;border-radius:8px;width:320px;margin:0 auto}
-.cell2048{width:68px;height:68px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:#1a1a2e}
-.cell2048[data-v="2"]{background:#eee4da;color:#776e65}
-.cell2048[data-v="4"]{background:#ede0c8;color:#776e65}
-.cell2048[data-v="8"]{background:#f2b179;color:#fff}
-.cell2048[data-v="16"]{background:#f59563;color:#fff}
-.cell2048[data-v="32"]{background:#f67c5f;color:#fff}
-.cell2048[data-v="64"]{background:#f65e3b;color:#fff}
-.cell2048[data-v="128"]{background:#edcf72;color:#fff;font-size:18px}
-.cell2048[data-v="256"]{background:#edcc61;color:#fff;font-size:18px}
-.cell2048[data-v="512"]{background:#edc850;color:#fff;font-size:18px}
-.cell2048[data-v="1024"]{background:#edc53f;color:#fff;font-size:14px}
-.cell2048[data-v="2048"]{background:#edc22e;color:#fff;font-size:14px}
-.cell2048[data-v="4096"]{background:#3c3a32;color:#fff;font-size:14px}
-.controls2048{display:grid;grid-template-columns:repeat(3,50px);gap:6px;justify-content:center;margin-top:16px}
-.controls2048 button{width:50px;height:50px;border:none;border-radius:8px;background:var(--border);color:var(--text);font-size:20px;cursor:pointer}
-.controls2048 button:hover{background:var(--accent)}
-.controls2048 .empty{visibility:hidden}
-/* 扫雷 */
-.mine-grid{display:grid;gap:2px;justify-content:center;margin:0 auto}
-.mine-cell{width:28px;height:28px;background:var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
-.mine-cell.revealed{background:var(--bg)}
-.mine-cell.mine{background:var(--danger)}
-.mine-cell.flagged{background:var(--accent)}
-/* Toast */
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent);padding:12px 24px;border-radius:8px;font-size:14px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
-.toast.show{opacity:1}
-/* 回声洞 */
-.echo-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
-.echo-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;resize:vertical;min-height:80px;outline:none;margin-bottom:12px}
-.echo-input:focus{border-color:var(--accent)}
-.echo-list{display:flex;flex-direction:column;gap:12px}
-.echo-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px}
-.echo-item .echo-text{font-size:14px;margin-bottom:8px;word-break:break-all}
-.echo-item .echo-meta{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
-.echo-item .echo-del{color:var(--danger);cursor:pointer;font-size:11px}
-/* 监控面板 */
-.monitor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:20px}
-.monitor-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
-.monitor-card .icon{font-size:32px;margin-bottom:8px}
-.monitor-card .value{font-size:24px;font-weight:700;color:var(--accent)}
-.monitor-card .label{font-size:12px;color:var(--muted);margin-top:4px}
-.monitor-card .bar{height:8px;background:var(--bg);border-radius:4px;margin-top:10px;overflow:hidden}
-.monitor-card .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .5s}
-.service-list{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
-.service-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
-.service-item:last-child{border-bottom:none}
-.service-status{padding:4px 12px;border-radius:100px;font-size:12px;font-weight:600}
-.service-status.online{background:rgba(16,185,129,.2);color:var(--success)}
-.service-status.offline{background:rgba(239,68,68,.2);color:var(--danger)}
-/* 管理员登录弹窗 */
-.admin-login-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center}
-.admin-login-overlay.show{display:flex}
-.admin-login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:320px;text-align:center}
-.admin-login-box h3{margin-bottom:20px;font-size:18px}
-.admin-login-box input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:14px;margin-bottom:16px;outline:none;text-align:center}
-.admin-login-box input:focus{border-color:var(--accent)}
-.admin-badge{display:inline-block;background:var(--accent);color:#fff;font-size:10px;padding:2px 8px;border-radius:100px;margin-left:8px;vertical-align:middle}
-@media(max-width:768px){.crypto-layout{grid-template-columns:1fr}.algo-list{display:flex;flex-wrap:wrap;gap:4px}.algo-item{flex:1;min-width:100px;text-align:center}}
+.game-container{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+#snakeCanvas,#mineCanvas{background:#000;border-radius:8px;display:block;margin:0 auto}
+#game2048{display:grid;grid-template-columns:repeat(4,80px);gap:8px;justify-content:center;margin:20px auto;width:fit-content}
+.cell2048{width:80px;height:80px;background:var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold}
+.score-display{font-size:18px;margin-bottom:12px;color:var(--accent)}
+.auth-form{max-width:400px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px}
+.auth-form h2{margin-bottom:20px;text-align:center}
+.echo-list{margin-top:20px}
+.echo-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.echo-item .meta{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.echo-item .content{font-size:14px;line-height:1.6}
+.echo-item img{max-width:100%;border-radius:8px;margin-top:8px}
+.file-list{margin-top:20px}
+.file-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.file-item .name{font-size:14px}
+.file-item .size{font-size:12px;color:var(--muted)}
+.storage-bar{background:var(--border);border-radius:100px;height:8px;margin:12px 0;overflow:hidden}
+.storage-fill{background:var(--accent);height:100%;transition:width .3s}
+.admin-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.admin-section h3{margin-bottom:16px;color:var(--accent2)}
+.pending-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;animation:slideIn .3s}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.modal-content h2{margin-bottom:20px}
+.close-modal{float:right;cursor:pointer;font-size:20px;color:var(--muted)}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🧰 工具箱 ToolBox</h1>
-  <div style="display:flex;align-items:center;gap:16px">
-    <span class="tag">纯前端 · 本地运行 · 免费</span>
-    <span class="admin-btn" onclick="currentUser?logout():showLogin()" style="cursor:pointer;font-size:18px" title="登录/登出">👤</span>
+  <h1>🧰 ToolBox 工具箱</h1>
+  <div class="user-info" id="userInfo">
+    <button class="btn btn-secondary btn-sm" onclick="showAuth('login')">登录</button>
+    <button class="btn btn-primary btn-sm" onclick="showAuth('register')">注册</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" data-page="crypto">🔐 加密工具</div>
-  <div class="tab" data-page="games">🎮 小游戏</div>
-  <div class="tab" data-page="echo">💬 回声洞</div>
-  <div class="tab" data-page="cloud">☁️ 云盘</div>
-  <div class="tab" data-page="monitor" id="monitorTab" style="display:none">🖥️ 服务器监控</div>
-  <div class="tab" data-page="admin" id="adminTab" style="display:none">🛡️ 审核管理</div>
+  <div class="tab active" onclick="switchTab('crypto')">🔐 加密工具</div>
+  <div class="tab" onclick="switchTab('games')">🎮 小游戏</div>
+  <div class="tab" onclick="switchTab('echo')">📢 回声洞</div>
+  <div class="tab" onclick="switchTab('cloud')">☁️ 我的云盘</div>
+  <div class="tab" onclick="switchTab('admin')">⚙️ 管理</div>
 </div>
 
-<!-- 加密工具页 -->
+<!-- 加密工具 -->
 <div class="page active" id="page-crypto">
   <div class="crypto-layout">
     <div class="algo-list">
-      <div class="algo-item active" data-algo="md5">MD5<div class="desc">单向哈希，不可逆</div></div>
-      <div class="algo-item" data-algo="sha256">SHA-256<div class="desc">安全哈希算法</div></div>
-      <div class="algo-item" data-algo="base64">Base64<div class="desc">编码 / 解码</div></div>
-      <div class="algo-item" data-algo="unicode">Unicode<div class="desc">\uXXXX 编解码</div></div>
-      <div class="algo-item" data-algo="aes">AES<div class="desc">密钥加解密</div></div>
-      <div class="algo-item" data-algo="url">URL 编码<div class="desc">百分号编解码</div></div>
+      <div class="algo-item active" onclick="selectAlgo('md5')">MD5<div class="desc">不可逆哈希</div></div>
+      <div class="algo-item" onclick="selectAlgo('sha256')">SHA-256<div class="desc">不可逆哈希</div></div>
+      <div class="algo-item" onclick="selectAlgo('base64')">Base64<div class="desc">编码/解码</div></div>
+      <div class="algo-item" onclick="selectAlgo('unicode')">Unicode<div class="desc">编码/解码</div></div>
+      <div class="algo-item" onclick="selectAlgo('url')">URL编码<div class="desc">编码/解码</div></div>
+      <div class="algo-item" onclick="selectAlgo('aes')">AES加密<div class="desc">需密钥</div></div>
     </div>
-    <div class="workspace" id="workspace">
-      <!-- 动态内容 -->
+    <div class="workspace">
+      <h3 id="algoTitle">MD5 哈希</h3>
+      <div class="input-group">
+        <label>输入内容</label>
+        <textarea id="cryptoInput" placeholder="输入要处理的文本..."></textarea>
+      </div>
+      <div class="input-group" id="keyGroup" style="display:none">
+        <label>密钥</label>
+        <input type="text" id="cryptoKey" placeholder="输入加密密钥">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="doCrypto('encode')">加密/编码</button>
+        <button class="btn btn-secondary" id="decodeBtn" onclick="doCrypto('decode')" style="display:none">解密/解码</button>
+        <button class="btn btn-secondary" onclick="copyOutput()">复制结果</button>
+      </div>
+      <div class="output-box" id="cryptoOutput">结果将显示在这里...</div>
     </div>
   </div>
 </div>
 
-<!-- 小游戏页 -->
+<!-- 小游戏 -->
 <div class="page" id="page-games">
-  <div class="games-grid">
+  <div class="game-grid" id="gameList">
     <div class="game-card" onclick="openGame('snake')">
       <div class="icon">🐍</div>
-      <h4>贪吃蛇</h4>
-      <p>方向键 / WASD 控制，吃食物变长</p>
+      <h3>贪吃蛇</h3>
+      <p>经典贪吃蛇，方向键控制</p>
     </div>
-    <div class="game-card" onclick="openGame('g2048')">
+    <div class="game-card" onclick="openGame('2048')">
       <div class="icon">🔢</div>
-      <h4>2048</h4>
-      <p>合并相同数字，凑出 2048</p>
+      <h3>2048</h3>
+      <p>合并数字到2048</p>
     </div>
-    <div class="game-card" onclick="openGame('minesweeper')">
+    <div class="game-card" onclick="openGame('mine')">
       <div class="icon">💣</div>
-      <h4>扫雷</h4>
-      <p>左键翻开，右键插旗，避开地雷</p>
+      <h3>扫雷</h3>
+      <p>找出所有地雷</p>
     </div>
+  </div>
+  <div class="game-container" id="gameContainer" style="display:none">
+    <button class="btn btn-secondary btn-sm" onclick="closeGame()" style="float:right">返回</button>
+    <div id="gameArea"></div>
   </div>
 </div>
 
-<!-- 回声洞页面 -->
+<!-- 回声洞 -->
 <div class="page" id="page-echo">
-  <div class="echo-box">
-    <h3 style="margin-bottom:16px">💬 回声洞 <span class="admin-badge" id="adminBadge" style="display:none">管理员</span></h3>
-    <textarea class="echo-input" id="echoInput" placeholder="说点什么吧（需登录，发布后需审核）..."></textarea>
-    <input type="file" id="echoImage" accept="image/*" style="margin-bottom:12px;color:var(--muted)">
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="postEcho()">发布</button>
-      <button class="btn btn-secondary" onclick="loadEcho()">刷新</button>
-      <button class="btn btn-secondary" onclick="currentUser?logout():showLogin()" id="loginBtn">登录</button>
+  <div class="workspace">
+    <h3>📢 回声洞 - 匿名分享</h3>
+    <div class="input-group">
+      <textarea id="echoText" placeholder="说点什么吧..." style="min-height:80px"></textarea>
     </div>
+    <div class="input-group">
+      <label>上传图片（可选）</label>
+      <input type="file" id="echoImage" accept="image/*">
+    </div>
+    <button class="btn btn-primary" onclick="postEcho()">发布</button>
   </div>
-  <div class="echo-list" id="echoList">
-    <div class="echo-item"><div class="echo-text" style="color:var(--muted)">加载中...</div></div>
-  </div>
+  <div class="echo-list" id="echoList"></div>
 </div>
 
-<!-- 服务器监控页面 -->
-<div class="page" id="page-monitor">
-  <h3 style="margin-bottom:20px">🖥️ 服务器监控</h3>
-  <div class="monitor-grid">
-    <div class="monitor-card">
-      <div class="icon">⚡</div>
-      <div class="value" id="cpuVal">--%</div>
-      <div class="label">CPU 使用率</div>
-      <div class="bar"><div class="bar-fill" id="cpuBar" style="width:0%"></div></div>
-    </div>
-    <div class="monitor-card">
-      <div class="icon">🧠</div>
-      <div class="value" id="memVal">--%</div>
-      <div class="label">内存使用率</div>
-      <div class="bar"><div class="bar-fill" id="memBar" style="width:0%"></div></div>
-    </div>
-    <div class="monitor-card">
-      <div class="icon">💾</div>
-      <div class="value" id="diskVal">--%</div>
-      <div class="label">磁盘使用率</div>
-      <div class="bar"><div class="bar-fill" id="diskBar" style="width:0%"></div></div>
-    </div>
-    <div class="monitor-card">
-      <div class="icon">🌐</div>
-      <div class="value" id="netVal">--</div>
-      <div class="label">网络状态</div>
-    </div>
-  </div>
-  <div class="service-list">
-    <h4 style="margin-bottom:16px">服务状态</h4>
-    <div class="service-item"><span>🟢 Nginx 网页服务</span><span class="service-status offline" id="nginxStatus">未运行</span></div>
-    <div class="service-item"><span>🐬 MySQL 数据库</span><span class="service-status offline" id="mysqlStatus">未运行</span></div>
-    <div class="service-item"><span>🔴 Redis 缓存</span><span class="service-status offline" id="redisStatus">未运行</span></div>
-    <div class="service-item"><span>🟢 Node.js 后端</span><span class="service-status offline" id="nodeStatus">未运行</span></div>
-  </div>
-  <div class="hint" style="text-align:center;margin-top:16px">数据每秒自动刷新</div>
-</div>
-
-<!-- 云盘页面 -->
+<!-- 云盘 -->
 <div class="page" id="page-cloud">
-  <h3 style="margin-bottom:16px">☁️ 我的云盘 <span id="cloudUser" style="font-size:13px;color:var(--muted)"></span></h3>
-  <div id="cloudLoginTip" style="text-align:center;padding:60px;color:var(--muted)">
-    请先登录使用云盘<br><br>
-    <button class="btn btn-primary" onclick="showLogin()">登录 / 注册</button>
+  <div class="workspace">
+    <h3>☁️ 我的云盘 <span style="font-size:12px;color:var(--muted)">每人10MB</span></h3>
+    <div class="storage-bar"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="storageText">0 MB / 10 MB</div>
+    <input type="file" id="fileInput">
+    <button class="btn btn-primary" onclick="uploadFile()" style="margin-top:10px">上传文件</button>
   </div>
-  <div id="cloudContent" style="display:none">
-    <div class="monitor-card" style="margin-bottom:20px;text-align:left">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:14px">存储空间</span>
-        <span id="storageText" style="font-size:13px;color:var(--muted)">0 / 10 MB</span>
-      </div>
-      <div class="bar"><div class="bar-fill" id="storageBar" style="width:0%"></div></div>
-    </div>
-    <div class="echo-box" style="margin-bottom:20px">
-      <input type="file" id="fileInput" style="margin-bottom:12px;color:var(--muted)">
-      <button class="btn btn-primary" onclick="uploadFile()">上传文件</button>
-    </div>
-    <div class="service-list" id="fileList">
-      <div style="text-align:center;color:var(--muted);padding:20px">暂无文件</div>
-    </div>
-  </div>
+  <div class="file-list" id="fileList"></div>
 </div>
 
-<!-- 管理员审核页面 -->
+<!-- 管理 -->
 <div class="page" id="page-admin">
-  <h3 style="margin-bottom:16px">🛡️ 内容审核</h3>
-  <div class="btn-row">
-    <button class="btn btn-secondary" onclick="loadPending()">刷新待审核</button>
+  <div id="adminLogin" style="text-align:center;padding:40px">
+    <h3>管理员登录</h3>
+    <p style="color:var(--muted);margin:16px 0">需要管理员权限</p>
+    <input type="password" id="adminPass" placeholder="管理员密码" style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text)">
+    <button class="btn btn-primary" onclick="adminLogin()" style="margin-left:8px">登录</button>
   </div>
-  <div id="pendingList" class="echo-list">
-    <div class="echo-item"><div class="echo-text" style="color:var(--muted)">加载中...</div></div>
-  </div>
-</div>
-
-<!-- 登录弹窗 -->
-<div class="admin-login-overlay" id="loginModal">
-  <div class="admin-login-box">
-    <h3 id="loginTitle">👤 登录</h3>
-    <input type="text" id="loginUser" placeholder="用户名">
-    <input type="password" id="loginPass" placeholder="密码" onkeydown="if(event.key==='Enter')doLogin()">
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-primary" onclick="doLogin()">登录</button>
-      <button class="btn btn-secondary" onclick="doRegister()">注册</button>
-      <button class="btn btn-secondary" onclick="closeLogin()">取消</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:12px">管理员账号: admin / 520520</div>
-  </div>
-</div>
-
-<!-- 游戏弹窗 -->
-<div class="modal-overlay" id="gameModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeGame()">×</button>
-    <div id="gameContent"></div>
-  </div>
-</div>
-
-<!-- 管理员登录弹窗 -->
-<div class="admin-login-overlay" id="adminLogin">
-  <div class="admin-login-box">
-    <h3>⚙️ 管理员登录</h3>
-    <input type="password" id="adminPwd" placeholder="输入管理员密码" onkeydown="if(event.key==='Enter')doAdminLogin()">
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-primary" onclick="doAdminLogin()">登录</button>
-      <button class="btn btn-secondary" onclick="closeAdminLogin()">取消</button>
+  <div id="adminPanel" style="display:none">
+    <div class="admin-section">
+      <h3>⏳ 待审核回声</h3>
+      <div id="pendingList"></div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- 登录/注册弹窗 -->
+<div class="modal" id="authModal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeModal('authModal')">&times;</span>
+    <h2 id="authTitle">登录</h2>
+    <div class="input-group">
+      <label>用户名</label>
+      <input type="text" id="authUsername">
+    </div>
+    <div class="input-group">
+      <label>密码</label>
+      <input type="password" id="authPassword">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doAuth()">确认</button>
+  </div>
+</div>
 
 <script>
-// ========== 标签切换 ==========
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('page-'+tab.dataset.page).classList.add('active');
-  };
-});
+// Supabase 配置
+const SUPABASE_URL = 'https://gxaiupkrxgumaqirrlth.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4YWl1cGtyeGd1bWFxaXJybHRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzQwMDAsImV4cCI6MjA3ODEwMDAwMH0.placeholder';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ========== Toast ==========
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2000);
-}
+let currentUser = null;
+let currentAlgo = 'md5';
 
-// ========== MD5 实现 ==========
-function md5(s){
-  function rotl(n,s){return(n<<s)|(n>>>(32-s))}
-  function toHex(n){let s='';for(let i=0;i<4;i++){s+=((n>>(i*8+4))&15).toString(16)+((n>>(i*8))&15).toString(16)}return s}
-  function add32(a,b){return(a+b)&4294967295}
-  function cmn(q,a,b,x,s,t){return add32(rotl(add32(add32(a,q),add32(x,t)),s),b)}
-  function ff(a,b,c,d,x,s,t){return cmn((b&c)|((~b)&d),a,b,x,s,t)}
-  function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&(~d)),a,b,x,s,t)}
-  function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t)}
-  function ii(a,b,c,d,x,s,t){return cmn(c^(b|(~d)),a,b,x,s,t)}
-  const utf8=unescape(encodeURIComponent(s));
-  const msg=utf8.split('').map(c=>c.charCodeAt(0));
-  const len=msg.length;
-  msg.push(128);
-  while(msg.length%64!==56)msg.push(0);
-  for(let i=0;i<8;i++)msg.push((len*8>>>(i*8))&255);
-  let a=1732584193,b=-271733879,c=-1732584194,d=271733878;
-  for(let i=0;i<msg.length;i+=64){
-    const x=[];
-    for(let j=0;j<16;j++)x[j]=msg[i+j]|(msg[i+j+1]<<8)|(msg[i+j+2]<<16)|(msg[i+j+3]<<24);
-    const aa=a,bb=b,cc=c,dd=d;
-    a=ff(a,b,c,d,x[0],7,-680876936);d=ff(d,a,b,c,x[1],12,-389564586);c=ff(c,d,a,b,x[2],17,606105819);b=ff(b,c,d,a,x[3],22,-1044525330);
-    a=ff(a,b,c,d,x[4],7,-176418897);d=ff(d,a,b,c,x[5],12,1200080426);c=ff(c,d,a,b,x[6],17,-1473231341);b=ff(b,c,d,a,x[7],22,-45705983);
-    a=ff(a,b,c,d,x[8],7,1770035416);d=ff(d,a,b,c,x[9],12,-1958414417);c=ff(c,d,a,b,x[10],17,-42063);b=ff(b,c,d,a,x[11],22,-1990404162);
-    a=ff(a,b,c,d,x[12],7,1804603682);d=ff(d,a,b,c,x[13],12,-40341101);c=ff(c,d,a,b,x[14],17,-1502002290);b=ff(b,c,d,a,x[15],22,1236535329);
-    a=gg(a,b,c,d,x[1],5,-165796510);d=gg(d,a,b,c,x[6],9,-1069501632);c=gg(c,d,a,b,x[11],14,643717713);b=gg(b,c,d,a,x[0],20,-373897302);
-    a=gg(a,b,c,d,x[5],5,-701558691);d=gg(d,a,b,c,x[10],9,38016083);c=gg(c,d,a,b,x[15],14,-660478335);b=gg(b,c,d,a,x[4],20,-405537848);
-    a=gg(a,b,c,d,x[9],5,568446438);d=gg(d,a,b,c,x[14],9,-1019803690);c=gg(c,d,a,b,x[3],14,-187363961);b=gg(b,c,d,a,x[8],20,1163531501);
-    a=gg(a,b,c,d,x[13],5,-1444681467);d=gg(d,a,b,c,x[2],9,-51403784);c=gg(c,d,a,b,x[7],14,1735328473);b=gg(b,c,d,a,x[12],20,-1926607734);
-    a=hh(a,b,c,d,x[5],4,-378558);d=hh(d,a,b,c,x[8],11,-2022574463);c=hh(c,d,a,b,x[11],16,1839030562);b=hh(b,c,d,a,x[14],23,-35309556);
-    a=hh(a,b,c,d,x[1],4,-1530992060);d=hh(d,a,b,c,x[4],11,1272893353);c=hh(c,d,a,b,x[7],16,-155497632);b=hh(b,c,d,a,x[10],23,-1094730640);
-    a=hh(a,b,c,d,x[13],4,681279174);d=hh(d,a,b,c,x[0],11,-358537222);c=hh(c,d,a,b,x[3],16,-722521979);b=hh(b,c,d,a,x[6],23,76029189);
-    a=hh(a,b,c,d,x[9],4,-640364487);d=hh(d,a,b,c,x[12],11,-421815835);c=hh(c,d,a,b,x[15],16,530742520);b=hh(b,c,d,a,x[2],23,-995338651);
-    a=ii(a,b,c,d,x[0],6,-198630844);d=ii(d,a,b,c,x[7],10,1126891415);c=ii(c,d,a,b,x[14],15,-1416354905);b=ii(b,c,d,a,x[5],21,-57434055);
-    a=ii(a,b,c,d,x[12],6,1700485571);d=ii(d,a,b,c,x[3],10,-1894986606);c=ii(c,d,a,b,x[10],15,-1051523);b=ii(b,c,d,a,x[1],21,-2054922799);
-    a=ii(a,b,c,d,x[8],6,1873313359);d=ii(d,a,b,c,x[15],10,-30611744);c=ii(c,d,a,b,x[6],15,-1560198380);b=ii(b,c,d,a,x[13],21,1309151649);
-    a=ii(a,b,c,d,x[4],6,-145523070);d=ii(d,a,b,c,x[11],10,-1120210379);c=ii(c,d,a,b,x[2],15,718787259);b=ii(b,c,d,a,x[9],21,-343485551);
-    a=add32(a,aa);b=add32(b,bb);c=add32(c,cc);d=add32(d,dd);
+// 初始化
+async function init() {
+  // 检查登录状态
+  const saved = localStorage.getItem('scp_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    updateUserUI();
   }
-  return toHex(a)+toHex(b)+toHex(c)+toHex(d);
+  loadEchoes();
+  if (currentUser) loadFiles();
 }
 
-// ========== SHA-256 (Web Crypto) ==========
-async function sha256(s){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+// Toast提示
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
-// ========== Base64 ==========
-function base64Encode(s){return btoa(unescape(encodeURIComponent(s)))}
-function base64Decode(s){
-  try{return decodeURIComponent(escape(atob(s.trim())))}
-  catch(e){throw new Error('无效的 Base64 字符串')}
+// 标签切换
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'echo') loadEchoes();
+  if (name === 'cloud' && currentUser) loadFiles();
+  if (name === 'games') closeGame();
 }
 
-// ========== Unicode ==========
-function unicodeEncode(s){return s.split('').map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join('')}
-function unicodeDecode(s){
-  try{return s.replace(/\\u([0-9a-fA-F]{4})/g,(_,h)=>String.fromCharCode(parseInt(h,16)))}
-  catch(e){throw new Error('无效的 Unicode 字符串')}
+// ========== 加密工具 ==========
+function selectAlgo(algo) {
+  currentAlgo = algo;
+  document.querySelectorAll('.algo-item').forEach(i => i.classList.remove('active'));
+  event.target.closest('.algo-item').classList.add('active');
+  const titles = {md5:'MD5 哈希',sha256:'SHA-256 哈希',base64:'Base64 编解码',unicode:'Unicode 编解码',url:'URL 编解码',aes:'AES 加解密'};
+  document.getElementById('algoTitle').textContent = titles[algo];
+  document.getElementById('keyGroup').style.display = algo === 'aes' ? 'block' : 'none';
+  document.getElementById('decodeBtn').style.display = (algo === 'base64' || algo === 'unicode' || algo === 'url' || algo === 'aes') ? 'inline-block' : 'none';
 }
 
-// ========== URL 编码 ==========
-function urlEncode(s){return encodeURIComponent(s)}
-function urlDecode(s){
-  try{return decodeURIComponent(s)}
-  catch(e){throw new Error('无效的 URL 编码字符串')}
-}
-
-// ========== AES (Web Crypto) ==========
-async function aesEncrypt(text,password){
-  const enc=new TextEncoder();
-  const keyMaterial=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
-  const salt=enc.encode('toolbox-salt-2026');
-  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},keyMaterial,{name:'AES-CBC',length:256},false,['encrypt']);
-  const iv=crypto.getRandomValues(new Uint8Array(16));
-  const encrypted=await crypto.subtle.encrypt({name:'AES-CBC',iv},key,enc.encode(text));
-  const combined=new Uint8Array(iv.length+encrypted.byteLength);
-  combined.set(iv);combined.set(new Uint8Array(encrypted),iv.length);
-  return btoa(String.fromCharCode(...combined));
-}
-async function aesDecrypt(ciphertext,password){
-  const enc=new TextEncoder();
-  const keyMaterial=await crypto.subtle.importKey('raw',enc.encode(password),{name:'PBKDF2'},false,['deriveKey']);
-  const salt=enc.encode('toolbox-salt-2026');
-  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},keyMaterial,{name:'AES-CBC',length:256},false,['decrypt']);
-  const combined=Uint8Array.from(atob(ciphertext.trim()),c=>c.charCodeAt(0));
-  const iv=combined.slice(0,16);
-  const data=combined.slice(16);
-  const decrypted=await crypto.subtle.decrypt({name:'AES-CBC',iv},key,data);
-  return new TextDecoder().decode(decrypted);
-}
-
-// ========== 工作区渲染 ==========
-const workspace=document.getElementById('workspace');
-let currentAlgo='md5';
-
-function renderWorkspace(algo){
-  currentAlgo=algo;
-  let html='';
-  if(algo==='md5'){
-    html=`<h3>MD5 加密 <span class="badge">不可逆</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入要加密的内容..."></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doMd5()">加密</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>MD5 结果（32位小写）</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">MD5 是单向哈希函数，无法解密回原文。相同输入永远得到相同结果。</div>`;
-  }else if(algo==='sha256'){
-    html=`<h3>SHA-256 加密 <span class="badge">不可逆</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入要加密的内容..."></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doSha256()">加密</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>SHA-256 结果（64位）</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">SHA-256 比 MD5 更安全，常用于密码存储、数字签名等场景。</div>`;
-  }else if(algo==='base64'){
-    html=`<h3>Base64 编解码 <span class="badge">可逆</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入明文或 Base64 字符串..."></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doBase64('enc')">编码</button><button class="btn btn-success" onclick="doBase64('dec')">解码</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>结果</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">Base64 不是加密，只是编码方式，任何人都可以解码。</div>`;
-  }else if(algo==='unicode'){
-    html=`<h3>Unicode 编解码 <span class="badge">可逆</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入明文或 \\uXXXX 格式..."></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doUnicode('enc')">编码</button><button class="btn btn-success" onclick="doUnicode('dec')">解码</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>结果</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">将中文等字符转为 \\uXXXX 格式，常见于 JSON、编程场景。</div>`;
-  }else if(algo==='aes'){
-    html=`<h3>AES 加解密 <span class="badge">需要密钥</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入明文或密文..."></textarea></div>
-      <div class="input-group"><label>密钥（密码）</label><input type="password" id="aesKey" placeholder="输入加密/解密用的密码"></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doAes('enc')">加密</button><button class="btn btn-success" onclick="doAes('dec')">解密</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>结果</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">AES-256-CBC 加密，使用 PBKDF2 派生密钥。解密时必须使用相同的密码。</div>`;
-  }else if(algo==='url'){
-    html=`<h3>URL 编码 <span class="badge">可逆</span></h3>
-      <div class="input-group"><label>输入文本</label><textarea id="inputText" placeholder="输入明文或 URL 编码字符串..."></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="doUrl('enc')">编码</button><button class="btn btn-success" onclick="doUrl('dec')">解码</button><button class="btn btn-secondary" onclick="clearAll()">清空</button></div>
-      <div class="input-group"><label>结果</label><div class="output-box empty" id="output">结果将显示在这里</div></div>
-      <div class="hint">将特殊字符转为 %XX 格式，用于 URL 参数传递。</div>`;
-  }
-  workspace.innerHTML=html;
-}
-
-function setOutput(text){
-  const el=document.getElementById('output');
-  el.textContent=text;
-  el.classList.remove('empty');
-}
-function clearAll(){
-  document.getElementById('inputText').value='';
-  const el=document.getElementById('output');
-  el.textContent='结果将显示在这里';
-  el.classList.add('empty');
-}
-function copyOutput(){
-  const el=document.getElementById('output');
-  if(el.classList.contains('empty'))return;
-  navigator.clipboard.writeText(el.textContent).then(()=>toast('已复制到剪贴板'));
-}
-
-function doMd5(){
-  const v=document.getElementById('inputText').value;
-  if(!v){toast('请输入内容');return}
-  setOutput(md5(v));
-}
-async function doSha256(){
-  const v=document.getElementById('inputText').value;
-  if(!v){toast('请输入内容');return}
-  setOutput(await sha256(v));
-}
-function doBase64(mode){
-  const v=document.getElementById('inputText').value;
-  if(!v){toast('请输入内容');return}
-  try{setOutput(mode==='enc'?base64Encode(v):base64Decode(v))}
-  catch(e){toast(e.message)}
-}
-function doUnicode(mode){
-  const v=document.getElementById('inputText').value;
-  if(!v){toast('请输入内容');return}
-  try{setOutput(mode==='enc'?unicodeEncode(v):unicodeDecode(v))}
-  catch(e){toast(e.message)}
-}
-function doUrl(mode){
-  const v=document.getElementById('inputText').value;
-  if(!v){toast('请输入内容');return}
-  try{setOutput(mode==='enc'?urlEncode(v):urlDecode(v))}
-  catch(e){toast(e.message)}
-}
-async function doAes(mode){
-  const v=document.getElementById('inputText').value;
-  const key=document.getElementById('aesKey').value;
-  if(!v){toast('请输入内容');return}
-  if(!key){toast('请输入密钥');return}
-  try{
-    setOutput(mode==='enc'?await aesEncrypt(v,key):await aesDecrypt(v,key));
-  }catch(e){toast('操作失败：密钥错误或密文无效')}
-}
-
-// 算法列表切换
-document.querySelectorAll('.algo-item').forEach(item=>{
-  item.onclick=()=>{
-    document.querySelectorAll('.algo-item').forEach(i=>i.classList.remove('active'));
-    item.classList.add('active');
-    renderWorkspace(item.dataset.algo);
-  };
-});
-renderWorkspace('md5');
-
-// 点击输出框复制
-workspace.addEventListener('click',e=>{
-  if(e.target.id==='output')copyOutput();
-});
-
-// ========== 贪吃蛇 ==========
-let snakeGame=null;
-function initSnake(){
-  const content=document.getElementById('gameContent');
-  content.innerHTML=`<h3 style="margin-bottom:16px;text-align:center">🐍 贪吃蛇</h3>
-    <div class="game-info"><span>分数：<span class="score" id="snakeScore">0</span></span><span>最高分：<span class="score" id="snakeBest">0</span></span></div>
-    <canvas id="snakeCanvas" width="320" height="320"></canvas>
-    <div class="btn-row" style="justify-content:center;margin-top:16px"><button class="btn btn-primary" id="snakeStart">开始 / 重开</button></div>
-    <div class="hint" style="text-align:center">方向键或 WASD 控制，空格暂停</div>`;
-  const canvas=document.getElementById('snakeCanvas');
-  const ctx=canvas.getContext('2d');
-  const grid=16,size=20;
-  let snake,dir,food,score,best=parseInt(localStorage.getItem('snakeBest')||'0'),running,timer;
-  document.getElementById('snakeBest').textContent=best;
-  function reset(){
-    snake=[{x:10,y:10}];dir={x:1,y:0};score=0;
-    placeFood();document.getElementById('snakeScore').textContent=0;
-  }
-  function placeFood(){
-    do{food={x:Math.floor(Math.random()*grid),y:Math.floor(Math.random()*grid)}}
-    while(snake.some(s=>s.x===food.x&&s.y===food.y));
-  }
-  function draw(){
-    ctx.fillStyle='#0a0a15';ctx.fillRect(0,0,320,320);
-    ctx.fillStyle='#ef4444';ctx.fillRect(food.x*size+2,food.y*size+2,size-4,size-4);
-    snake.forEach((s,i)=>{
-      ctx.fillStyle=i===0?'#6366f1':'#818cf8';
-      ctx.fillRect(s.x*size+1,s.y*size+1,size-2,size-2);
-    });
-  }
-  function step(){
-    const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
-    if(head.x<0||head.x>=grid||head.y<0||head.y>=grid||snake.some(s=>s.x===head.x&&s.y===head.y)){
-      gameOver();return;
+function doCrypto(mode) {
+  const input = document.getElementById('cryptoInput').value;
+  const key = document.getElementById('cryptoKey').value;
+  let output = '';
+  try {
+    switch(currentAlgo) {
+      case 'md5': output = CryptoJS.MD5(input).toString(); break;
+      case 'sha256': output = CryptoJS.SHA256(input).toString(); break;
+      case 'base64': output = mode === 'encode' ? btoa(unescape(encodeURIComponent(input))) : decodeURIComponent(escape(atob(input))); break;
+      case 'unicode': output = mode === 'encode' ? input.split('').map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0')).join('') : input.replace(/\\u([0-9a-fA-F]{4})/g, (_,h) => String.fromCharCode(parseInt(h,16))); break;
+      case 'url': output = mode === 'encode' ? encodeURIComponent(input) : decodeURIComponent(input); break;
+      case 'aes':
+        if (!key) { toast('请输入密钥', 'error'); return; }
+        output = mode === 'encode' ? CryptoJS.AES.encrypt(input, key).toString() : CryptoJS.AES.decrypt(input, key).toString(CryptoJS.enc.Utf8);
+        break;
     }
-    snake.unshift(head);
-    if(head.x===food.x&&head.y===food.y){
-      score+=10;document.getElementById('snakeScore').textContent=score;
-      if(score>best){best=score;localStorage.setItem('snakeBest',best);document.getElementById('snakeBest').textContent=best}
-      placeFood();
-    }else snake.pop();
-    draw();
+    document.getElementById('cryptoOutput').textContent = output;
+  } catch(e) {
+    document.getElementById('cryptoOutput').textContent = '错误: ' + e.message;
   }
-  function gameOver(){
-    running=false;clearInterval(timer);
-    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,320,320);
-    ctx.fillStyle='#fff';ctx.font='24px sans-serif';ctx.textAlign='center';
-    ctx.fillText('游戏结束',160,140);
-    ctx.font='16px sans-serif';ctx.fillText('得分：'+score,160,170);
-  }
-  document.getElementById('snakeStart').onclick=()=>{
-    reset();running=true;draw();
-    clearInterval(timer);timer=setInterval(step,200);
-  };
-  document.addEventListener('keydown',e=>{
-    if(!document.getElementById('gameModal').classList.contains('show'))return;
-    const k=e.key.toLowerCase();
-    if((k==='arrowup'||k==='w')&&dir.y!==1)dir={x:0,y:-1};
-    else if((k==='arrowdown'||k==='s')&&dir.y!==-1)dir={x:0,y:1};
-    else if((k==='arrowleft'||k==='a')&&dir.x!==1)dir={x:-1,y:0};
-    else if((k==='arrowright'||k==='d')&&dir.x!==-1)dir={x:1,y:0};
-    else if(k===' '){e.preventDefault();if(running){clearInterval(timer);running=false}else{timer=setInterval(step,200);running=true}}
-  });
-  reset();draw();
 }
 
-// ========== 2048 ==========
-function init2048(){
-  const content=document.getElementById('gameContent');
-  content.innerHTML=`<h3 style="margin-bottom:16px;text-align:center">🔢 2048</h3>
-    <div class="game-info" style="justify-content:center;gap:30px"><span>分数：<span class="score" id="score2048">0</span></span></div>
-    <div class="grid2048" id="grid2048"></div>
-    <div class="controls2048">
-      <div class="empty"></div><button onclick="move2048('up')">↑</button><div class="empty"></div>
-      <button onclick="move2048('left')">←</button><button onclick="move2048('down')">↓</button><button onclick="move2048('right')">→</button>
-    </div>
-    <div class="btn-row" style="justify-content:center;margin-top:16px"><button class="btn btn-primary" onclick="reset2048()">重新开始</button></div>
-    <div class="hint" style="text-align:center">也可以用方向键操作</div>`;
-  let grid,score;
-  function render(){
-    const el=document.getElementById('grid2048');
-    el.innerHTML='';
-    for(let i=0;i<16;i++){
-      const cell=document.createElement('div');
-      cell.className='cell2048';
-      const v=grid[Math.floor(i/4)][i%4];
-      if(v){cell.dataset.v=v;cell.textContent=v}
-      el.appendChild(cell);
-    }
-    document.getElementById('score2048').textContent=score;
-  }
-  function addRandom(){
-    const empty=[];
-    for(let r=0;r<4;r++)for(let c=0;c<4;c++)if(!grid[r][c])empty.push([r,c]);
-    if(empty.length){const[r,c]=empty[Math.floor(Math.random()*empty.length)];grid[r][c]=Math.random()<0.9?2:4}
-  }
-  window.reset2048=function(){grid=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];score=0;addRandom();addRandom();render()};
-  function slide(row){
-    let arr=row.filter(v=>v);
-    for(let i=0;i<arr.length-1;i++){
-      if(arr[i]===arr[i+1]){arr[i]*=2;score+=arr[i];arr.splice(i+1,1)}
-    }
-    while(arr.length<4)arr.push(0);
-    return arr;
-  }
-  function move(dir){
-    const before=JSON.stringify(grid);
-    if(dir==='left'){for(let r=0;r<4;r++)grid[r]=slide(grid[r])}
-    else if(dir==='right'){for(let r=0;r<4;r++)grid[r]=slide(grid[r].reverse()).reverse()}
-    else if(dir==='up'){for(let c=0;c<4;c++){let col=slide([grid[0][c],grid[1][c],grid[2][c],grid[3][c]]);for(let r=0;r<4;r++)grid[r][c]=col[r]}}
-    else if(dir==='down'){for(let c=0;c<4;c++){let col=slide([grid[3][c],grid[2][c],grid[1][c],grid[0][c]]);for(let r=0;r<4;r++)grid[3-r][c]=col[r]}}
-    if(JSON.stringify(grid)!==before){addRandom();render();checkEnd()}
-  }
-  window.move2048=move;
-  function checkEnd(){
-    for(let r=0;r<4;r++)for(let c=0;c<4;c++){
-      if(!grid[r][c])return;
-      if(c<3&&grid[r][c]===grid[r][c+1])return;
-      if(r<3&&grid[r][c]===grid[r+1][c])return;
-    }
-    setTimeout(()=>toast('游戏结束！最终得分：'+score),100);
-  }
-  document.addEventListener('keydown',e=>{
-    if(!document.getElementById('gameModal').classList.contains('show'))return;
-    if(!document.getElementById('grid2048'))return;
-    const k=e.key;
-    if(k==='ArrowUp'){e.preventDefault();move('up')}
-    else if(k==='ArrowDown'){e.preventDefault();move('down')}
-    else if(k==='ArrowLeft'){e.preventDefault();move('left')}
-    else if(k==='ArrowRight'){e.preventDefault();move('right')}
-  });
-  reset2048();
+function copyOutput() {
+  const text = document.getElementById('cryptoOutput').textContent;
+  navigator.clipboard.writeText(text);
+  toast('已复制');
 }
 
-// ========== 扫雷 ==========
-function initMinesweeper(){
-  const content=document.getElementById('gameContent');
-  content.innerHTML=`<h3 style="margin-bottom:16px;text-align:center">💣 扫雷</h3>
-    <div class="game-info" style="justify-content:center;gap:30px"><span>剩余雷：<span class="score" id="mineCount">10</span></span><span>用时：<span class="score" id="mineTime">0</span>s</span></div>
-    <div class="mine-grid" id="mineGrid" style="grid-template-columns:repeat(9,28px)"></div>
-    <div class="btn-row" style="justify-content:center;margin-top:16px"><button class="btn btn-primary" onclick="resetMinesweeper()">重新开始</button></div>
-    <div class="hint" style="text-align:center">左键翻开，右键插旗</div>`;
-  const ROWS=9,COLS=9,MINES=10;
-  let board,revealed,flagged,gameOver,firstClick,timer,time;
-  function render(){
-    const el=document.getElementById('mineGrid');
-    el.innerHTML='';
-    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-      const cell=document.createElement('div');
-      cell.className='mine-cell';
-      cell.dataset.r=r;cell.dataset.c=c;
-      if(revealed[r][c]){
-        cell.classList.add('revealed');
-        if(board[r][c]===-1){cell.classList.add('mine');cell.textContent='💣'}
-        else if(board[r][c]>0){cell.textContent=board[r][c];cell.style.color=['','#3b82f6','#10b981','#ef4444','#8b5cf6','#f59e0b','#06b6d4','#ec4899','#6b7280'][board[r][c]]}
-      }else if(flagged[r][c]){cell.classList.add('flagged');cell.textContent='🚩'}
-      cell.onclick=()=>reveal(r,c);
-      cell.oncontextmenu=e=>{e.preventDefault();toggleFlag(r,c)};
-      el.appendChild(cell);
-    }
-    document.getElementById('mineCount').textContent=MINES-flagged.flat().filter(Boolean).length;
-  }
-  function placeMines(sr,sc){
-    board=Array.from({length:ROWS},()=>Array(COLS).fill(0));
-    let placed=0;
-    while(placed<MINES){
-      const r=Math.floor(Math.random()*ROWS),c=Math.floor(Math.random()*COLS);
-      if(board[r][c]!==-1&&!(Math.abs(r-sr)<=1&&Math.abs(c-sc)<=1)){
-        board[r][c]=-1;placed++;
-      }
-    }
-    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-      if(board[r][c]===-1)continue;
-      let count=0;
-      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-        const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&board[nr][nc]===-1)count++;
-      }
-      board[r][c]=count;
-    }
-  }
-  function reveal(r,c){
-    if(gameOver||revealed[r][c]||flagged[r][c])return;
-    if(firstClick){placeMines(r,c);firstClick=false;startTimer()}
-    revealed[r][c]=true;
-    if(board[r][c]===-1){gameOver=true;clearInterval(timer);for(let i=0;i<ROWS;i++)for(let j=0;j<COLS;j++)if(board[i][j]===-1)revealed[i][j]=true;render();toast('💥 踩到雷了！');return}
-    if(board[r][c]===0){
-      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-        const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&!revealed[nr][nc])reveal(nr,nc);
-      }
-    }
-    render();
-    checkWin();
-  }
-  function toggleFlag(r,c){
-    if(gameOver||revealed[r][c])return;
-    flagged[r][c]=!flagged[r][c];render();
-  }
-  function checkWin(){
-    let unrevealed=0;
-    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(!revealed[r][c])unrevealed++;
-    if(unrevealed===MINES){gameOver=true;clearInterval(timer);toast('🎉 恭喜通关！用时 '+time+' 秒')}
-  }
-  function startTimer(){time=0;timer=setInterval(()=>{time++;document.getElementById('mineTime').textContent=time},1000)}
-  window.resetMinesweeper=function(){
-    revealed=Array.from({length:ROWS},()=>Array(COLS).fill(false));
-    flagged=Array.from({length:ROWS},()=>Array(COLS).fill(false));
-    gameOver=false;firstClick=true;clearInterval(timer);time=0;
-    document.getElementById('mineTime').textContent=0;
-    render();
-  };
-  resetMinesweeper();
+// ========== 用户系统 ==========
+let authMode = 'login';
+function showAuth(mode) {
+  authMode = mode;
+  document.getElementById('authTitle').textContent = mode === 'login' ? '登录' : '注册';
+  document.getElementById('authModal').classList.add('active');
 }
 
-// ========== 游戏弹窗控制 ==========
-function openGame(game){
-  document.getElementById('gameModal').classList.add('show');
-  if(game==='snake')initSnake();
-  else if(game==='g2048')init2048();
-  else if(game==='minesweeper')initMinesweeper();
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
 }
-function closeGame(){
-  document.getElementById('gameModal').classList.remove('show');
-  document.getElementById('gameContent').innerHTML='';
-}
-document.getElementById('gameModal').onclick=e=>{if(e.target.id==='gameModal')closeGame()};
 
-// ========== 管理员登录 ==========
-let isAdmin=false;
-const API_BASE=window.location.origin+'/api';
-function showAdminLogin(){document.getElementById('adminLogin').classList.add('show');document.getElementById('adminPwd').value='';document.getElementById('adminPwd').focus()}
-function closeAdminLogin(){document.getElementById('adminLogin').classList.remove('show')}
-function doAdminLogin(){
-  if(document.getElementById('adminPwd').value==='520520'){
-    isAdmin=true;document.getElementById('adminBadge').style.display='inline-block';
-    document.getElementById('monitorTab').style.display='block';
-    closeAdminLogin();toast('管理员登录成功');loadEcho();loadMonitor();
-  }else toast('密码错误');
+async function doAuth() {
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if (!username || !password) { toast('请填写完整', 'error'); return; }
+  const hash = CryptoJS.SHA256(password).toString();
+  
+  if (authMode === 'register') {
+    const { data, error } = await supabase.from('users').insert([{ username, password: hash }]);
+    if (error) { toast('用户名已存在', 'error'); return; }
+    toast('注册成功，请登录');
+    closeModal('authModal');
+  } else {
+    const { data, error } = await supabase.from('users').select('*').eq('username', username).eq('password', hash);
+    if (error || !data.length) { toast('用户名或密码错误', 'error'); return; }
+    currentUser = data[0];
+    localStorage.setItem('scp_user', JSON.stringify(currentUser));
+    updateUserUI();
+    closeModal('authModal');
+    toast('登录成功');
+    loadFiles();
+  }
 }
-function adminLogout(){
-  isAdmin=false;document.getElementById('adminBadge').style.display='none';
-  document.getElementById('monitorTab').style.display='none';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelector('.tab[data-page="crypto"]').classList.add('active');
-  document.getElementById('page-crypto').classList.add('active');
-  toast('已退出管理员');
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('scp_user');
+  updateUserUI();
+  toast('已退出');
+}
+
+function updateUserUI() {
+  const el = document.getElementById('userInfo');
+  if (currentUser) {
+    el.innerHTML = `<span>👤 ${currentUser.username}</span><button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>`;
+  } else {
+    el.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="showAuth('login')">登录</button><button class="btn btn-primary btn-sm" onclick="showAuth('register')">注册</button>`;
+  }
 }
 
 // ========== 回声洞 ==========
-function escapeHtml(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-async function postEcho(){
-  const text=document.getElementById('echoInput').value.trim();
-  if(!text){toast('说点什么吧');return}
-  try{
-    await fetch(API_BASE+'/echo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
-    document.getElementById('echoInput').value='';loadEcho();
-  }catch(e){
-    const list=JSON.parse(localStorage.getItem('echoList')||'[]');
-    list.unshift({text,time:new Date().toLocaleString(),id:Date.now()});
-    localStorage.setItem('echoList',JSON.stringify(list));
-    document.getElementById('echoInput').value='';loadEcho();
-  }
-}
-async function loadEcho(){
-  const listEl=document.getElementById('echoList');
-  try{
-    const res=await fetch(API_BASE+'/echo');const data=await res.json();renderEcho(data);
-  }catch(e){
-    renderEcho(JSON.parse(localStorage.getItem('echoList')||'[]'));
-  }
-}
-function renderEcho(list){
-  const listEl=document.getElementById('echoList');
-  if(!list.length){listEl.innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">还没有留言，来说点什么吧~</div></div>';return}
-  listEl.innerHTML=list.map(item=>`<div class="echo-item"><div class="echo-text">${escapeHtml(item.text)}</div><div class="echo-meta"><span>${item.time||''}</span>${isAdmin?`<span class="echo-del" onclick="delEcho(${item.id})">删除</span>`:''}</div></div>`).join('');
-}
-async function delEcho(id){
-  try{await fetch(API_BASE+'/echo/'+id,{method:'DELETE'})}
-  catch(e){const list=JSON.parse(localStorage.getItem('echoList')||'[]');localStorage.setItem('echoList',JSON.stringify(list.filter(i=>i.id!==id)))}
-  loadEcho();
+async function loadEchoes() {
+  const { data, error } = await supabase.from('echoes').select('*').eq('status', 'approved').order('id', { ascending: false }).limit(100);
+  const list = document.getElementById('echoList');
+  if (error || !data.length) { list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">还没有内容，来发布第一条吧！</p>'; return; }
+  list.innerHTML = data.map(e => `
+    <div class="echo-item">
+      <div class="meta"><span>👤 ${e.username || '匿名'}</span><span>${e.time}</span></div>
+      <div class="content">${e.text || ''}</div>
+      ${e.image ? `<img src="${e.image}" alt="图片">` : ''}
+    </div>
+  `).join('');
 }
 
-// ========== 服务器监控 ==========
-async function loadMonitor(){
-  try{
-    const res=await fetch(API_BASE+'/status');const d=await res.json();
-    document.getElementById('cpuVal').textContent=d.cpu+'%';document.getElementById('cpuBar').style.width=d.cpu+'%';
-    document.getElementById('memVal').textContent=d.mem+'%';document.getElementById('memBar').style.width=d.mem+'%';
-    document.getElementById('diskVal').textContent=d.disk+'%';document.getElementById('diskBar').style.width=d.disk+'%';
-    document.getElementById('netVal').textContent=d.net;
-    ['nginx','mysql','redis','node'].forEach(s=>{
-      const el=document.getElementById(s+'Status');
-      el.textContent=d[s]?'运行中':'未运行';el.className='service-status '+(d[s]?'online':'offline');
-    });
-  }catch(e){
-    document.getElementById('cpuVal').textContent='--';document.getElementById('memVal').textContent='--';
-    document.getElementById('diskVal').textContent='--';document.getElementById('netVal').textContent='后端未连接';
+async function postEcho() {
+  if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+  const text = document.getElementById('echoText').value.trim();
+  const imgFile = document.getElementById('echoImage').files[0];
+  if (!text && !imgFile) { toast('内容不能为空', 'error'); return; }
+  
+  let imageUrl = null;
+  if (imgFile) {
+    const ext = imgFile.name.split('.').pop();
+    const path = `echoes/${Date.now()}-${Math.random().toString(36).substr(2,8)}.${ext}`;
+    const { error } = await supabase.storage.from('uploads').upload(path, imgFile);
+    if (!error) {
+      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+      imageUrl = data.publicUrl;
+    }
   }
+  
+  const time = new Date().toLocaleString('zh-CN');
+  const { error } = await supabase.from('echoes').insert([{ text, image: imageUrl, username: currentUser.username, time, status: 'pending' }]);
+  if (error) { toast('发布失败', 'error'); return; }
+  toast('发布成功，等待审核');
+  document.getElementById('echoText').value = '';
+  document.getElementById('echoImage').value = '';
 }
-setInterval(loadMonitor,1000);
-loadEcho();
-
-// ========== 用户系统 ==========
-let userToken=localStorage.getItem('token')||'';
-let currentUser=localStorage.getItem('username')||'';
-function showLogin(){document.getElementById('loginModal').classList.add('show');document.getElementById('loginUser').focus()}
-function closeLogin(){document.getElementById('loginModal').classList.remove('show')}
-async function doLogin(){
-  const u=document.getElementById('loginUser').value.trim();
-  const p=document.getElementById('loginPass').value;
-  if(!u||!p){toast('请输入用户名密码');return}
-  try{
-    const res=await fetch(API_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
-    const data=await res.json();
-    if(data.token){
-      userToken=data.token;currentUser=data.username;
-      localStorage.setItem('token',userToken);localStorage.setItem('username',currentUser);
-      closeLogin();toast('登录成功');updateUI();
-      if(currentUser==='admin'){isAdmin=true;document.getElementById('adminBadge').style.display='inline-block';document.getElementById('monitorTab').style.display='block';document.getElementById('adminTab').style.display='block';loadMonitor()}
-    }else toast(data.error||'登录失败');
-  }catch(e){toast('服务器未连接')}
-}
-async function doRegister(){
-  const u=document.getElementById('loginUser').value.trim();
-  const p=document.getElementById('loginPass').value;
-  if(!u||!p){toast('请输入用户名密码');return}
-  try{
-    const res=await fetch(API_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
-    const data=await res.json();
-    if(data.success){toast('注册成功，请登录');document.getElementById('loginPass').value=''}
-    else toast(data.error||'注册失败');
-  }catch(e){toast('服务器未连接')}
-}
-function logout(){userToken='';currentUser='';localStorage.removeItem('token');localStorage.removeItem('username');isAdmin=false;document.getElementById('adminBadge').style.display='none';document.getElementById('monitorTab').style.display='none';document.getElementById('adminTab').style.display='none';updateUI();toast('已退出');switchTab('crypto')}
-function updateUI(){
-  if(currentUser){document.getElementById('cloudLoginTip').style.display='none';document.getElementById('cloudContent').style.display='block';document.getElementById('cloudUser').textContent=' - '+currentUser;loadFiles()}
-  else{document.getElementById('cloudLoginTip').style.display='block';document.getElementById('cloudContent').style.display='none'}
-}
-if(currentUser&&currentUser==='admin'){isAdmin=true;document.getElementById('adminBadge').style.display='inline-block';document.getElementById('monitorTab').style.display='block';document.getElementById('adminTab').style.display='block'}
-if(currentUser)updateUI();
 
 // ========== 云盘 ==========
-async function loadFiles(){
-  if(!userToken)return;
-  try{
-    const res=await fetch(API_BASE+'/files',{headers:{'Authorization':'Bearer '+userToken}});
-    const data=await res.json();
-    const usedMB=(data.used/1024/1024).toFixed(2);
-    document.getElementById('storageText').textContent=usedMB+' / 10 MB';
-    document.getElementById('storageBar').style.width=(data.used/data.limit*100)+'%';
-    const list=document.getElementById('fileList');
-    if(!data.files.length){list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">暂无文件</div>';return}
-    list.innerHTML=data.files.map(f=>`<div class="service-item"><span>📄 ${f.filename} <span style="color:var(--muted);font-size:11px">(${(f.filesize/1024).toFixed(1)}KB)</span></span><div><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px" onclick="downloadFile(${f.id})">下载</button> <button class="btn btn-danger" style="padding:4px 12px;font-size:12px" onclick="deleteFile(${f.id})">删除</button></div></div>`).join('');
-  }catch(e){document.getElementById('fileList').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">服务器未连接</div>'}
-}
-async function uploadFile(){
-  const input=document.getElementById('fileInput');
-  if(!input.files[0]){toast('请选择文件');return}
-  const fd=new FormData();fd.append('file',input.files[0]);
-  try{
-    const res=await fetch(API_BASE+'/files',{method:'POST',headers:{'Authorization':'Bearer '+userToken},body:fd});
-    const data=await res.json();
-    if(data.success){toast('上传成功');input.value='';loadFiles()}
-    else toast(data.error||'上传失败');
-  }catch(e){toast('服务器未连接')}
-}
-async function downloadFile(id){window.open(API_BASE+'/files/'+id+'?token='+userToken,'_blank')}
-async function deleteFile(id){
-  if(!confirm('确定删除？'))return;
-  await fetch(API_BASE+'/files/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+userToken}});
-  loadFiles();toast('已删除');
+const STORAGE_LIMIT = 10 * 1024 * 1024;
+
+async function loadFiles() {
+  if (!currentUser) return;
+  const { data, error } = await supabase.from('files').select('*').eq('user_id', currentUser.id).order('id', { ascending: false });
+  const list = document.getElementById('fileList');
+  if (error || !data.length) { list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">还没有文件</p>'; }
+  else {
+    list.innerHTML = data.map(f => `
+      <div class="file-item">
+        <div><div class="name">📄 ${f.filename}</div><div class="size">${(f.filesize/1024).toFixed(1)} KB</div></div>
+        <div>
+          <button class="btn btn-primary btn-sm" onclick="downloadFile(${f.id}, '${f.filename}')">下载</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteFile(${f.id})">删除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  // 计算已用空间
+  const used = data ? data.reduce((s, f) => s + Number(f.filesize), 0) : 0;
+  document.getElementById('storageFill').style.width = (used / STORAGE_LIMIT * 100) + '%';
+  document.getElementById('storageText').textContent = (used / 1024 / 1024).toFixed(2) + ' MB / 10 MB';
 }
 
-// ========== 回声洞（带图+登录） ==========
-async function postEcho(){
-  if(!userToken){toast('请先登录');showLogin();return}
-  const text=document.getElementById('echoInput').value.trim();
-  const imgInput=document.getElementById('echoImage');
-  if(!text&&!imgInput.files[0]){toast('说点什么或发张图吧');return}
-  const fd=new FormData();
-  if(text)fd.append('text',text);
-  if(imgInput.files[0])fd.append('image',imgInput.files[0]);
-  try{
-    const res=await fetch(API_BASE+'/echo',{method:'POST',headers:{'Authorization':'Bearer '+userToken},body:fd});
-    const data=await res.json();
-    if(data.success){toast(data.message||'发布成功');document.getElementById('echoInput').value='';imgInput.value='';loadEcho()}
-    else toast(data.error||'发布失败');
-  }catch(e){toast('服务器未连接')}
-}
-function renderEcho(list){
-  const listEl=document.getElementById('echoList');
-  if(!list.length){listEl.innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">还没有留言，来说点什么吧~</div></div>';return}
-  listEl.innerHTML=list.map(item=>`<div class="echo-item"><div class="echo-text">${escapeHtml(item.text||'')}</div>${item.image?`<img src="${API_BASE.replace('/api','')}${item.image}" style="max-width:100%;border-radius:8px;margin:8px 0">`:''}<div class="echo-meta"><span>${item.username||'匿名'} · ${item.time||''}</span>${isAdmin?`<span class="echo-del" onclick="delEcho(${item.id})">删除</span>`:''}</div></div>`).join('');
+async function uploadFile() {
+  if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) { toast('请选择文件', 'error'); return; }
+  if (file.size > STORAGE_LIMIT) { toast('文件超过10MB', 'error'); return; }
+  
+  const path = `userfiles/${currentUser.id}/${Date.now()}-${file.name}`;
+  const { error: uploadError } = await supabase.storage.from('uploads').upload(path, file);
+  if (uploadError) { toast('上传失败', 'error'); return; }
+  
+  const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+  await supabase.from('files').insert([{ user_id: currentUser.id, filename: file.name, filesize: file.size, filetype: file.type, stored_name: path }]);
+  toast('上传成功');
+  document.getElementById('fileInput').value = '';
+  loadFiles();
 }
 
-// ========== 管理员审核 ==========
-async function loadPending(){
-  if(!isAdmin)return;
-  try{
-    const res=await fetch(API_BASE+'/admin/echo/pending',{headers:{'Authorization':'Bearer '+userToken}});
-    const data=await res.json();
-    const list=document.getElementById('pendingList');
-    if(!data.length){list.innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">没有待审核内容</div></div>';return}
-    list.innerHTML=data.map(item=>`<div class="echo-item"><div class="echo-text">${escapeHtml(item.text||'')}</div>${item.image?`<img src="${API_BASE.replace('/api','')}${item.image}" style="max-width:100%;border-radius:8px;margin:8px 0">`:''}<div class="echo-meta"><span>${item.username} · ${item.time}</span><div><button class="btn btn-success" style="padding:4px 10px;font-size:11px" onclick="approveEcho(${item.id})">通过</button> <button class="btn btn-danger" style="padding:4px 10px;font-size:11px" onclick="adminDelEcho(${item.id})">删除</button></div></div></div>`).join('');
-  }catch(e){document.getElementById('pendingList').innerHTML='<div class="echo-item"><div class="echo-text" style="color:var(--muted)">加载失败</div></div>'}
+async function downloadFile(id, filename) {
+  const { data } = await supabase.from('files').select('*').eq('id', id).single();
+  if (!data) return;
+  const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(data.stored_name);
+  const a = document.createElement('a');
+  a.href = publicUrl;
+  a.download = filename;
+  a.click();
 }
-async function approveEcho(id){await fetch(API_BASE+'/admin/echo/'+id+'/approve',{method:'POST',headers:{'Authorization':'Bearer '+userToken}});loadPending();loadEcho();toast('已通过')}
-async function adminDelEcho(id){await fetch(API_BASE+'/admin/echo/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+userToken}});loadPending();loadEcho();toast('已删除')}
+
+async function deleteFile(id) {
+  const { data } = await supabase.from('files').select('*').eq('id', id).single();
+  if (data) {
+    await supabase.storage.from('uploads').remove([data.stored_name]);
+    await supabase.from('files').delete().eq('id', id);
+  }
+  toast('已删除');
+  loadFiles();
+}
+
+// ========== 管理员 ==========
+function adminLogin() {
+  const pass = document.getElementById('adminPass').value;
+  if (pass === '520520') {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadPending();
+    toast('管理员登录成功');
+  } else {
+    toast('密码错误', 'error');
+  }
+}
+
+async function loadPending() {
+  const { data, error } = await supabase.from('echoes').select('*').eq('status', 'pending').order('id', { ascending: false });
+  const list = document.getElementById('pendingList');
+  if (error || !data.length) { list.innerHTML = '<p style="color:var(--muted)">没有待审核内容</p>'; return; }
+  list.innerHTML = data.map(e => `
+    <div class="pending-item">
+      <div class="meta"><span>${e.username}</span><span>${e.time}</span></div>
+      <div style="margin:8px 0">${e.text || ''}</div>
+      ${e.image ? `<img src="${e.image}" style="max-width:200px;border-radius:8px">` : ''}
+      <div style="margin-top:8px">
+        <button class="btn btn-success btn-sm" onclick="approveEcho(${e.id})">通过</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEcho(${e.id})">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveEcho(id) {
+  await supabase.from('echoes').update({ status: 'approved' }).eq('id', id);
+  toast('已通过');
+  loadPending();
+}
+
+async function deleteEcho(id) {
+  const { data } = await supabase.from('echoes').select('*').eq('id', id).single();
+  if (data?.image) {
+    const path = data.image.split('/uploads/')[1];
+    if (path) await supabase.storage.from('uploads').remove([path]);
+  }
+  await supabase.from('echoes').delete().eq('id', id);
+  toast('已删除');
+  loadPending();
+}
+
+// ========== 小游戏 ==========
+function openGame(game) {
+  document.getElementById('gameList').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  const area = document.getElementById('gameArea');
+  if (game === 'snake') initSnake(area);
+  if (game === '2048') init2048(area);
+  if (game === 'mine') initMine(area);
+}
+
+function closeGame() {
+  document.getElementById('gameList').style.display = 'grid';
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('gameArea').innerHTML = '';
+}
+
+// 贪吃蛇
+function initSnake(area) {
+  area.innerHTML = '<div class="score-display">分数: <span id="snakeScore">0</span></div><canvas id="snakeCanvas" width="400" height="400"></canvas>';
+  const canvas = document.getElementById('snakeCanvas');
+  const ctx = canvas.getContext('2d');
+  let snake = [{x:10,y:10}], food = {x:15,y:15}, dir = {x:1,y:0}, score = 0, gameLoop;
+  
+  function draw() {
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,400,400);
+    ctx.fillStyle = '#ef4444'; ctx.fillRect(food.x*20, food.y*20, 18, 18);
+    ctx.fillStyle = '#10b981';
+    snake.forEach(s => ctx.fillRect(s.x*20, s.y*20, 18, 18));
+  }
+  
+  function update() {
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+    if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x===head.x && s.y===head.y)) {
+      clearInterval(gameLoop);
+      toast('游戏结束！分数: ' + score);
+      return;
+    }
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+      score += 10;
+      document.getElementById('snakeScore').textContent = score;
+      food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
+    } else snake.pop();
+    draw();
+  }
+  
+  document.onkeydown = (e) => {
+    if (e.key === 'ArrowUp' && dir.y !== 1) dir = {x:0,y:-1};
+    if (e.key === 'ArrowDown' && dir.y !== -1) dir = {x:0,y:1};
+    if (e.key === 'ArrowLeft' && dir.x !== 1) dir = {x:-1,y:0};
+    if (e.key === 'ArrowRight' && dir.x !== -1) dir = {x:1,y:0};
+  };
+  
+  draw();
+  gameLoop = setInterval(update, 200);
+}
+
+// 2048
+function init2048(area) {
+  area.innerHTML = '<div class="score-display">分数: <span id="score2048">0</span></div><div id="game2048"></div>';
+  let grid = Array(4).fill(null).map(() => Array(4).fill(0));
+  let score = 0;
+  
+  function addTile() {
+    const empty = [];
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if (!grid[i][j]) empty.push([i,j]);
+    if (!empty.length) return;
+    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+    grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+  }
+  
+  function render() {
+    const colors = {2:'#eee4da',4:'#ede0c8',8:'#f2b179',16:'#f59563',32:'#f67c5f',64:'#f65e3b',128:'#edcf72',256:'#edcc61',512:'#edc850',1024:'#edc53f',2048:'#edc22e'};
+    document.getElementById('game2048').innerHTML = grid.flat().map(v => 
+      `<div class="cell2048" style="background:${colors[v]||'#2a2a4a'};color:${v>4?'#fff':'#776e65'}">${v||''}</div>`
+    ).join('');
+    document.getElementById('score2048').textContent = score;
+  }
+  
+  function move(dir) {
+    let moved = false;
+    const rotate = (g) => g[0].map((_,i) => g.map(row => row[i]).reverse());
+    if (dir === 'up') grid = rotate(rotate(rotate(grid)));
+    if (dir === 'down') grid = rotate(grid);
+    if (dir === 'right') grid = rotate(rotate(grid));
+    
+    for (let i = 0; i < 4; i++) {
+      let row = grid[i].filter(x => x);
+      for (let j = 0; j < row.length - 1; j++) {
+        if (row[j] === row[j+1]) { row[j] *= 2; score += row[j]; row.splice(j+1, 1); moved = true; }
+      }
+      while (row.length < 4) row.push(0);
+      if (grid[i].join() !== row.join()) moved = true;
+      grid[i] = row;
+    }
+    
+    if (dir === 'up') grid = rotate(grid);
+    if (dir === 'down') grid = rotate(rotate(rotate(grid)));
+    if (dir === 'right') grid = rotate(rotate(grid));
+    
+    if (moved) { addTile(); render(); }
+  }
+  
+  document.onkeydown = (e) => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      move(e.key.replace('Arrow','').toLowerCase());
+    }
+  };
+  
+  addTile(); addTile(); render();
+}
+
+// 扫雷
+function initMine(area) {
+  area.innerHTML = '<div class="score-display">剩余雷数: <span id="mineCount">10</span></div><canvas id="mineCanvas" width="300" height="300"></canvas>';
+  const canvas = document.getElementById('mineCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 10, MINES = 10;
+  let grid = [], revealed = [], flagged = [], gameOver = false;
+  
+  for (let i = 0; i < SIZE; i++) {
+    grid[i] = []; revealed[i] = []; flagged[i] = [];
+    for (let j = 0; j < SIZE; j++) { grid[i][j] = 0; revealed[i][j] = false; flagged[i][j] = false; }
+  }
+  
+  let placed = 0;
+  while (placed < MINES) {
+    const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
+    if (grid[r][c] !== -1) { grid[r][c] = -1; placed++; }
+  }
+  
+  for (let i = 0; i < SIZE; i++) for (let j = 0; j < SIZE; j++) {
+    if (grid[i][j] === -1) continue;
+    let count = 0;
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+      const ni = i+di, nj = j+dj;
+      if (ni >= 0 && ni < SIZE && nj >= 0 && nj < SIZE && grid[ni][nj] === -1) count++;
+    }
+    grid[i][j] = count;
+  }
+  
+  function draw() {
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0,0,300,300);
+    for (let i = 0; i < SIZE; i++) for (let j = 0; j < SIZE; j++) {
+      const x = j*30, y = i*30;
+      ctx.strokeStyle = '#2a2a4a'; ctx.strokeRect(x,y,30,30);
+      if (revealed[i][j]) {
+        ctx.fillStyle = '#0f0f1a'; ctx.fillRect(x+1,y+1,28,28);
+        if (grid[i][j] === -1) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x+15,y+15,8,0,Math.PI*2); ctx.fill(); }
+        else if (grid[i][j] > 0) { ctx.fillStyle = '#6366f1'; ctx.font = '16px Arial'; ctx.fillText(grid[i][j], x+10, y+20); }
+      } else if (flagged[i][j]) {
+        ctx.fillStyle = '#f59e0b'; ctx.font = '18px Arial'; ctx.fillText('🚩', x+6, y+22);
+      }
+    }
+  }
+  
+  function reveal(r, c) {
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || revealed[r][c] || flagged[r][c]) return;
+    revealed[r][c] = true;
+    if (grid[r][c] === -1) { gameOver = true; toast('踩到雷了！游戏结束', 'error'); return; }
+    if (grid[r][c] === 0) {
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) reveal(r+di, c+dj);
+    }
+  }
+  
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left) / 30), r = Math.floor((e.clientY - rect.top) / 30);
+    reveal(r, c);
+    draw();
+  };
+  
+  canvas.oncontextmenu = (e) => {
+    e.preventDefault();
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left) / 30), r = Math.floor((e.clientY - rect.top) / 30);
+    if (!revealed[r][c]) flagged[r][c] = !flagged[r][c];
+    draw();
+  };
+  
+  draw();
+}
+
+init();
 </script>
 </body>
 </html>
