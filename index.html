@@ -899,7 +899,50 @@ input:focus, textarea:focus { border-color: var(--purple); }
         </div>
       </div>
 
-      <!-- 各房间实时监控 -->
+      <!-- 高级控制面板 -->
+      <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
+        <h3 style="margin-bottom:10px;font-size:14px;">🎛️ 高级控制（20项）</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:6px;">
+          <button class="btn btn-sm" style="background:#2a4a6a;" onclick="Nuclear.adjustBoron(100)">🧪 硼化+100ppm</button>
+          <button class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.adjustBoron(-100)">💧 稀释-100ppm</button>
+          <button class="btn btn-sm" style="background:#4a2a6a;" onclick="Nuclear.togglePressurizer()">⚡ 稳压器加热器</button>
+          <button class="btn btn-sm" style="background:#6a4a2a;" onclick="Nuclear.toggleSpray()">💦 稳压器喷淋</button>
+          <button class="btn btn-sm" style="background:#2a6a6a;" onclick="Nuclear.toggleSafetyInjection()">🚨 安全注入</button>
+          <button class="btn btn-sm" style="background:#6a2a4a;" onclick="Nuclear.toggleContainmentSpray()">🌧️ 安全壳喷淋</button>
+          <button class="btn btn-sm" style="background:#4a6a2a;" onclick="Nuclear.toggleDiesel()">🔋 应急柴油机</button>
+          <button class="btn btn-sm" style="background:#6a6a2a;" onclick="Nuclear.toggleRHR()">❄️ 余热排出</button>
+          <button class="btn btn-sm" style="background:#2a2a6a;" onclick="Nuclear.toggleCCW()">🔄 设备冷却水</button>
+          <button class="btn btn-sm" style="background:#6a2a2a;" onclick="Nuclear.toggleCVS()">⚗️ 化容系统</button>
+          <button class="btn btn-sm" style="background:#2a6a2a;" onclick="Nuclear.toggleGroupRod('A')">📊 A组控制棒</button>
+          <button class="btn btn-sm" style="background:#4a2a4a;" onclick="Nuclear.toggleGroupRod('B')">📊 B组控制棒</button>
+          <button class="btn btn-sm" style="background:#2a4a4a;" onclick="Nuclear.toggleGroupRod('C')">📊 C组控制棒</button>
+          <button class="btn btn-sm" style="background:#4a4a2a;" onclick="Nuclear.toggleGroupRod('D')">📊 D组控制棒</button>
+          <button class="btn btn-sm" style="background:#6a4a4a;" onclick="Nuclear.toggleNeutronSource()">☢️ 中子源</button>
+          <button class="btn btn-sm" style="background:#4a6a6a;" onclick="Nuclear.toggleSteamDrain()">💨 蒸汽排放</button>
+          <button class="btn btn-sm" style="background:#6a2a6a;" onclick="Nuclear.toggleFeedwater()">🚰 给水调节</button>
+          <button class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.toggleHydrogenRecombiner()">🔥 氢复合器</button>
+          <button class="btn btn-sm" style="background:#4a4a6a;" onclick="Nuclear.toggleFilteredVent()">🌬️ 过滤排气</button>
+          <button class="btn btn-sm" style="background:#6a6a4a;" onclick="Nuclear.toggleFireWater()">🧯 消防水</button>
+        </div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:8px;">
+          <div style="background:var(--bg);padding:8px;border-radius:6px;">
+            <div style="font-size:11px;color:var(--muted);">硼浓度</div>
+            <div style="font-size:14px;font-weight:700;color:var(--cyan);"><span id="boronConcentration">800</span> ppm</div>
+          </div>
+          <div style="background:var(--bg);padding:8px;border-radius:6px;">
+            <div style="font-size:11px;color:var(--muted);">稳压器压力</div>
+            <div style="font-size:14px;font-weight:700;color:var(--orange);"><span id="pressurizerPressure">15.5</span> MPa</div>
+          </div>
+          <div style="background:var(--bg);padding:8px;border-radius:6px;">
+            <div style="font-size:11px;color:var(--muted);">给水流量</div>
+            <div style="font-size:14px;font-weight:700;color:var(--blue);"><span id="feedwaterFlow">0</span> kg/s</div>
+          </div>
+          <div style="background:var(--bg);padding:8px;border-radius:6px;">
+            <div style="font-size:11px;color:var(--muted);">安全壳压力</div>
+            <div style="font-size:14px;font-weight:700;color:var(--pink);"><span id="containmentPressure">0.1</span> MPa</div>
+          </div>
+        </div>
+      </div>
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
         <h3 style="margin-bottom:12px;font-size:16px;">🏭 各房间实时监控（20间）</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px;">
@@ -1437,6 +1480,16 @@ const Nuclear = {
   canvas: null,
   ctx: null,
   alarms: [],              // 报警列表
+  groupRods: {A: true, B: true, C: true, D: true}, // 控制棒分组
+  neutronSourceOn: false,  // 中子源
+  steamDrainOn: false,     // 蒸汽排放
+  feedwaterOn: false,      // 给水调节
+  hydrogenRecombinerOn: false, // 氢复合器
+  filteredVentOn: false,   // 过滤排气
+  fireWaterOn: false,      // 消防水
+  ccwOn: false,            // 设备冷却水
+  cvsOn: false,            // 化容系统
+  rhROn: false,            // 余热排出
 
   // 选择堆型
   selectReactorType(type) {
@@ -3396,6 +3449,96 @@ const Nuclear = {
     this.drawPrimaryLoop();
     this.drawPerfChart();
     this.perfHistory = [];
+  },
+
+  // 高级控制方法
+  adjustBoron(amount) {
+    this.boronConcentration = Math.max(0, Math.min(2500, this.boronConcentration + amount));
+    const effect = amount > 0 ? '硼化（负反应性）' : '稀释（正反应性）';
+    this.reactivity -= amount * 0.0005;
+    this.addLog('操作', `${effect}，硼浓度: ${Math.round(this.boronConcentration)}ppm`);
+    this.updateDisplay();
+  },
+  togglePressurizer() {
+    this.heaterOn = !this.heaterOn;
+    this.addLog('操作', `稳压器加热器${this.heaterOn ? '开启' : '关闭'}`);
+    this.updateDisplay();
+  },
+  toggleSpray() {
+    this.sprayOn = !this.sprayOn;
+    this.addLog('操作', `稳压器喷淋${this.sprayOn ? '开启' : '关闭'}`);
+    this.updateDisplay();
+  },
+  toggleSafetyInjection() {
+    this.safetyInjectionOn = !this.safetyInjectionOn;
+    this.addLog('操作', `安全注入系统${this.safetyInjectionOn ? '启动' : '停止'}`);
+    if (this.safetyInjectionOn) this.boronConcentration = Math.min(2500, this.boronConcentration + 500);
+    this.updateDisplay();
+  },
+  toggleContainmentSpray() {
+    this.containmentSprayOn = !this.containmentSprayOn;
+    this.addLog('操作', `安全壳喷淋${this.containmentSprayOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleDiesel() {
+    this.diesel1On = !this.diesel1On;
+    this.diesel2On = this.diesel1On;
+    this.addLog('操作', `应急柴油发电机${this.diesel1On ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleRHR() {
+    this.rhROn = !this.rhROn;
+    this.addLog('操作', `余热排出系统${this.rhROn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleCCW() {
+    this.ccwOn = !this.ccwOn;
+    this.addLog('操作', `设备冷却水系统${this.ccwOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleCVS() {
+    this.cvsOn = !this.cvsOn;
+    this.addLog('操作', `化学容积控制系统${this.cvsOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleGroupRod(group) {
+    this.groupRods[group] = !this.groupRods[group];
+    const avg = Object.values(this.groupRods).filter(v => v).length / 4;
+    this.rodPosition = avg * 100;
+    document.getElementById('rodControl').value = this.rodPosition;
+    this.addLog('操作', `${group}组控制棒${this.groupRods[group] ? '提出' : '插入'}`);
+    this.updateDisplay();
+  },
+  toggleNeutronSource() {
+    this.neutronSourceOn = !this.neutronSourceOn;
+    this.addLog('操作', `启动中子源${this.neutronSourceOn ? '开启' : '关闭'}`);
+    if (this.neutronSourceOn) this.neutronFlux = Math.max(this.neutronFlux, 0.1);
+    this.updateDisplay();
+  },
+  toggleSteamDrain() {
+    this.steamDrainOn = !this.steamDrainOn;
+    this.addLog('操作', `蒸汽排放阀${this.steamDrainOn ? '开启' : '关闭'}`);
+    this.updateDisplay();
+  },
+  toggleFeedwater() {
+    this.feedwaterOn = !this.feedwaterOn;
+    this.addLog('操作', `给水调节系统${this.feedwaterOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleHydrogenRecombiner() {
+    this.hydrogenRecombinerOn = !this.hydrogenRecombinerOn;
+    this.addLog('操作', `氢气复合器${this.hydrogenRecombinerOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleFilteredVent() {
+    this.filteredVentOn = !this.filteredVentOn;
+    this.addLog('操作', `过滤排气系统${this.filteredVentOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleFireWater() {
+    this.fireWaterOn = !this.fireWaterOn;
+    this.addLog('操作', `消防水系统${this.fireWaterOn ? '启动' : '停止'}`);
+    this.updateDisplay();
   },
 
   // 添加日志
