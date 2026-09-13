@@ -2868,7 +2868,8 @@ const Nuclear = {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = 320, h = 200;
-    canvas.width = w; canvas.height = h;
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
     ctx.fillStyle = '#0a0a15';
     ctx.fillRect(0, 0, w, h);
     // 网格
@@ -2954,7 +2955,8 @@ const Nuclear = {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = 320, h = 200;
-    canvas.width = w; canvas.height = h;
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
     ctx.fillStyle = '#050510';
     ctx.fillRect(0, 0, w, h);
     const cx = w/2, cy = h/2;
@@ -3015,7 +3017,8 @@ const Nuclear = {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = 320, h = 200;
-    canvas.width = w; canvas.height = h;
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
     ctx.fillStyle = '#0a0a15'; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = 'rgba(0,200,255,0.1)'; ctx.lineWidth = 1;
     for (let i = 0; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
