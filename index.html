@@ -323,6 +323,26 @@ input:focus, textarea:focus { border-color: var(--purple); }
 </head>
 <body>
 
+<!-- 新消息通知条（微信风格） -->
+<div id="messageNotification" style="display:none;position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,var(--green),var(--cyan));color:#fff;padding:12px 20px;z-index:9999;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:slideDown 0.3s ease;" onclick="jumpToChatFromNotification()">
+  <div style="display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">💬</span>
+      <div>
+        <div style="font-weight:700;font-size:14px;" id="notifSender">新消息</div>
+        <div style="font-size:12px;opacity:0.9;" id="notifContent"></div>
+      </div>
+    </div>
+    <span onclick="event.stopPropagation();closeMessageNotification()" style="font-size:18px;opacity:0.8;">✕</span>
+  </div>
+</div>
+<style>
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+</style>
+
 <div class="header">
   <h1>🧰 ToolBox</h1>
   <div class="user-info" id="userInfo"></div>
@@ -334,6 +354,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
   <div class="tab" onclick="switchTab('echo', event)">📢 回声洞</div>
   <div class="tab" onclick="switchTab('cloud', event)">☁️ 我的云盘</div>
   <div class="tab" onclick="openChatFromNav()">💬 好友聊天</div>
+  <div class="tab" onclick="switchTab('nuclear', event)">☢️ 核电站</div>
   <div class="tab" onclick="switchTab('admin', event)">⚙️ 管理</div>
 </div>
 
@@ -429,6 +450,231 @@ input:focus, textarea:focus { border-color: var(--purple); }
   </div>
 
   <!-- 管理员 -->
+  <!-- 核电站模拟器 -->
+  <div class="page" id="page-nuclear">
+    <div class="card">
+      <h2>☢️ 核电站模拟器 <span style="font-size:12px;color:var(--muted);">（多堆型 · 真实物理模拟）</span></h2>
+      
+      <!-- 堆型选择 -->
+      <div style="background:var(--bg2);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div>
+            <label style="font-size:13px;color:var(--muted);margin-right:8px;">反应堆类型:</label>
+            <select id="reactorType" onchange="Nuclear.selectReactorType(this.value)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;max-width:280px;">
+              <optgroup label="第二代反应堆">
+                <option value="rbmk">RBMK 石墨慢化轻水堆（苏联）</option>
+                <option value="pwr">压水堆 PWR（最主流）</option>
+                <option value="bwr">沸水堆 BWR（通用电气）</option>
+                <option value="candu">重水堆 CANDU（加拿大）</option>
+                <option value="agr">先进气冷堆 AGR（英国）</option>
+                <option value="vver">VVER 压水堆（俄罗斯）</option>
+              </optgroup>
+              <optgroup label="第三代反应堆">
+                <option value="epr">EPR 欧洲压水堆（法德）</option>
+                <option value="ap1000">AP1000 非能动压水堆（美国）</option>
+                <option value="hualong">华龙一号 HPR1000（中国）</option>
+                <option value="esbwr">ESBWR 经济简化沸水堆</option>
+              </optgroup>
+              <optgroup label="第四代/先进反应堆">
+                <option value="fbr">快中子增殖堆 FBR</option>
+                <option value="htgr">高温气冷堆 HTGR</option>
+                <option value="msr">熔盐堆 MSR</option>
+                <option value="smr">小型模块化堆 SMR</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:13px;color:var(--muted);margin-right:8px;">核电站:</label>
+            <select id="plantSelect" onchange="Nuclear.selectPlant(this.value)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;max-width:240px;">
+              <optgroup label="事故核电站">
+                <option value="chernobyl">切尔诺贝利 4号（RBMK）</option>
+                <option value="fukushima">福岛 1号（BWR）</option>
+                <option value="three_mile">三里岛 2号（PWR）</option>
+              </optgroup>
+              <optgroup label="中国核电站">
+                <option value="dayawan">大亚湾核电站（PWR）</option>
+                <option value="qinshan">秦山核电站（PWR）</option>
+                <option value="fuqing">福清核电站（华龙一号）</option>
+                <option value="shidaowan">石岛湾（高温气冷堆）</option>
+              </optgroup>
+              <optgroup label="世界著名核电站">
+                <option value="bruce">布鲁斯核电站（CANDU）</option>
+                <option value="paluel">帕吕埃尔核电站（PWR）</option>
+                <option value="kashiwazaki">柏崎刈羽（BWR）</option>
+                <option value="generic">通用核电站</option>
+              </optgroup>
+            </select>
+          </div>
+          <div style="flex:1;"></div>
+          <button class="btn btn-primary btn-sm" onclick="Nuclear.startupReactor()">🚀 开堆</button>
+          <button class="btn btn-secondary btn-sm" onclick="Nuclear.normalShutdown()">⏻ 正常停堆</button>
+        </div>
+        <div id="reactorInfo" style="margin-top:12px;font-size:12px;color:var(--muted);padding:8px;background:var(--bg);border-radius:6px;">
+          RBMK-1000 石墨慢化轻水冷却反应堆 | 额定功率: 3200 MWth | 切尔诺贝利核电站4号机组
+        </div>
+      </div>
+      
+      <!-- 状态指示灯 -->
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="background:var(--bg2);padding:8px 16px;border-radius:8px;display:flex;align-items:center;gap:8px;">
+          <span id="reactorStatusLight" style="width:12px;height:12px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+          <span id="reactorStatusText">反应堆正常</span>
+        </div>
+        <div style="background:var(--bg2);padding:8px 16px;border-radius:8px;">
+          功率: <span id="nucPower" style="color:var(--cyan);font-weight:700;">0</span> MW
+        </div>
+        <div style="background:var(--bg2);padding:8px 16px;border-radius:8px;">
+          发电量: <span id="nucOutput" style="color:var(--green);font-weight:700;">0</span> MWh
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <!-- 左侧：反应堆可视化 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
+          <h3 style="margin-bottom:12px;font-size:16px;">🔥 反应堆堆芯</h3>
+          <canvas id="reactorCanvas" width="300" height="300" style="background:#000;border-radius:8px;display:block;margin:0 auto;"></canvas>
+          <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted);">
+            控制棒插入深度: <span id="rodDepth">100</span>% | 反应性: <span id="reactivity">0</span>
+          </div>
+        </div>
+
+        <!-- 右侧：监控面板 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
+          <h3 style="margin-bottom:12px;font-size:16px;">📊 实时监控</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">堆芯温度</div>
+              <div style="font-size:20px;font-weight:700;color:var(--yellow);" id="coreTemp">280</div>
+              <div style="font-size:10px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">一回路压力</div>
+              <div style="font-size:20px;font-weight:700;color:var(--blue);" id="pressure">10</div>
+              <div style="font-size:10px;color:var(--muted);">MPa</div>
+            </div>
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">冷却剂流量</div>
+              <div style="font-size:20px;font-weight:700;color:var(--cyan);" id="coolantFlow">0</div>
+              <div style="font-size:10px;color:var(--muted);">m³/h</div>
+            </div>
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">辐射水平</div>
+              <div style="font-size:20px;font-weight:700;color:var(--green);" id="radiation">0.1</div>
+              <div style="font-size:10px;color:var(--muted);">μSv/h</div>
+            </div>
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">蒸汽发生器</div>
+              <div style="font-size:20px;font-weight:700;color:var(--orange);" id="steamGen">0</div>
+              <div style="font-size:10px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:10px;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);">涡轮机转速</div>
+              <div style="font-size:20px;font-weight:700;color:var(--pink);" id="turbineRPM">0</div>
+              <div style="font-size:10px;color:var(--muted);">RPM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 控制面板 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;">
+        <!-- 控制棒控制 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
+          <h3 style="margin-bottom:12px;font-size:16px;">⚙️ 控制棒控制</h3>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;color:var(--muted);">控制棒位置</label>
+            <input type="range" id="rodControl" min="0" max="100" value="100" style="width:100%;" oninput="updateRodPosition(this.value)">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
+              <span>完全拔出(0%)</span>
+              <span>完全插入(100%)</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="setRodPosition(0)">↑ 全拔</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="setRodPosition(50)">半插</button>
+            <button class="btn btn-danger btn-sm" style="flex:1;" onclick="setRodPosition(100)">↓ 全插</button>
+          </div>
+        </div>
+
+        <!-- 冷却系统 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
+          <h3 style="margin-bottom:12px;font-size:16px;">💧 冷却系统</h3>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;">主冷却泵</span>
+              <button class="btn btn-sm" id="pumpBtn" onclick="togglePump()" style="background:var(--red);">关闭</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;">备用冷却泵</span>
+              <button class="btn btn-sm" id="backupPumpBtn" onclick="toggleBackupPump()" style="background:var(--red);">关闭</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;">应急冷却</span>
+              <button class="btn btn-sm" id="emergencyCoolBtn" onclick="toggleEmergencyCool()" style="background:var(--red);">关闭</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 涡轮机 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
+          <h3 style="margin-bottom:12px;font-size:16px;">⚡ 涡轮发电机</h3>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;">1号涡轮机</span>
+              <button class="btn btn-sm" id="turbine1Btn" onclick="toggleTurbine(1)" style="background:var(--red);">关闭</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;">2号涡轮机</span>
+              <button class="btn btn-sm" id="turbine2Btn" onclick="toggleTurbine(2)" style="background:var(--red);">关闭</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;">并网开关</span>
+              <button class="btn btn-sm" id="gridBtn" onclick="toggleGrid()" style="background:var(--red);">断开</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 紧急控制 -->
+      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;">
+        <button class="btn btn-danger" style="padding:14px;font-size:16px;font-weight:700;" onclick="Nuclear.AZ5shutdown()">
+          ☢️ AZ5 紧急停堆
+        </button>
+        <button class="btn" style="padding:14px;font-size:14px;background:var(--yellow);color:#000;" onclick="Nuclear.AZ3powerDown()">
+          ⬇️ AZ3 自动降功率
+        </button>
+        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('steam_explosion')">
+          💥 蒸汽爆炸
+        </button>
+        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('coolant_loss')">
+          🌡️ 失冷事故
+        </button>
+        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('rod_ejection')">
+          ⬆️ 弹棒事故
+        </button>
+        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('station_blackout')">
+          ⚡ 全厂断电
+        </button>
+        <button class="btn btn-primary" style="padding:14px;" onclick="Nuclear.toggleSpray()">
+          🚿 安全壳喷淋
+        </button>
+        <button class="btn btn-primary" style="padding:14px;" onclick="Nuclear.resetReactor()">
+          🔄 重置反应堆
+        </button>
+      </div>
+
+      <!-- 事件日志 -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
+        <h3 style="margin-bottom:12px;font-size:16px;">📋 事件日志</h3>
+        <div id="nuclearLog" style="background:#000;color:var(--green);font-family:monospace;font-size:12px;padding:12px;border-radius:6px;height:150px;overflow-y:auto;">
+          [系统] RBMK 反应堆模拟器已启动<br>
+          [系统] 反应堆处于冷停堆状态<br>
+          [提示] 拔出控制棒以提升功率，开启冷却泵和涡轮机
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="page" id="page-admin">
     <div class="card" id="adminLogin">
       <h2>⚙️ 管理员登录</h2>
@@ -537,6 +783,637 @@ let currentUser = null;
 let currentAlgo = 'md5';
 let gameInterval = null;
 
+// ==================== 安全防护 ====================
+const Security = {
+  requestLog: [],
+  maxRequestsPerMinute: 60, // 每分钟最多60次请求
+  blockedUntil: 0,
+  
+  // 检查是否允许请求
+  checkRequest() {
+    const now = Date.now();
+    if (now < this.blockedUntil) {
+      const wait = Math.ceil((this.blockedUntil - now) / 1000);
+      toast('请求过于频繁，请等待 ' + wait + ' 秒', 'error');
+      return false;
+    }
+    // 清理1分钟前的记录
+    this.requestLog = this.requestLog.filter(t => now - t < 60000);
+    if (this.requestLog.length >= this.maxRequestsPerMinute) {
+      this.blockedUntil = now + 10000; // 阻止10秒
+      toast('请求过于频繁，已暂时限制10秒', 'error');
+      return false;
+    }
+    this.requestLog.push(now);
+    return true;
+  },
+  
+  // 输入过滤，防止XSS
+  sanitizeInput(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
+      .replace(/on\w+="[^"]*"/gi, '')
+      .replace(/javascript:/gi, '');
+  },
+  
+  // 检查是否包含危险内容
+  isDangerousInput(str) {
+    if (!str) return false;
+    const dangerous = [
+      /<script/i,
+      /<iframe/i,
+      /javascript:/i,
+      /onerror=/i,
+      /onload=/i,
+      /eval\(/i,
+      /document\.cookie/i
+    ];
+    return dangerous.some(pattern => pattern.test(str));
+  }
+};
+
+// ==================== 核电站模拟器 ====================
+const REACTOR_TYPES = {
+  rbmk: { name: 'RBMK 石墨慢化轻水堆', power: 3200, coolant: '轻水', moderator: '石墨', pressure: 10, temp: 280, risk: '高', voidCoeff: '正' },
+  pwr: { name: '压水堆 PWR', power: 3000, coolant: '轻水', moderator: '轻水', pressure: 15.5, temp: 320, risk: '低', voidCoeff: '负' },
+  bwr: { name: '沸水堆 BWR', power: 3300, coolant: '轻水', moderator: '轻水', pressure: 7, temp: 285, risk: '中', voidCoeff: '负' },
+  candu: { name: '重水堆 CANDU', power: 2500, coolant: '重水', moderator: '重水', pressure: 10, temp: 260, risk: '低', voidCoeff: '负' },
+  agr: { name: '先进气冷堆 AGR', power: 1500, coolant: '二氧化碳', moderator: '石墨', pressure: 4, temp: 650, risk: '低', voidCoeff: '负' },
+  vver: { name: 'VVER 压水堆', power: 3000, coolant: '轻水', moderator: '轻水', pressure: 16, temp: 320, risk: '低', voidCoeff: '负' },
+  epr: { name: 'EPR 欧洲压水堆', power: 4200, coolant: '轻水', moderator: '轻水', pressure: 15.5, temp: 325, risk: '极低', voidCoeff: '负' },
+  ap1000: { name: 'AP1000 非能动压水堆', power: 3400, coolant: '轻水', moderator: '轻水', pressure: 15.5, temp: 320, risk: '极低', voidCoeff: '负' },
+  hualong: { name: '华龙一号 HPR1000', power: 3050, coolant: '轻水', moderator: '轻水', pressure: 15.5, temp: 320, risk: '极低', voidCoeff: '负' },
+  esbwr: { name: 'ESBWR 经济简化沸水堆', power: 4500, coolant: '轻水', moderator: '轻水', pressure: 7, temp: 285, risk: '极低', voidCoeff: '负' },
+  fbr: { name: '快中子增殖堆 FBR', power: 2500, coolant: '液态钠', moderator: '无', pressure: 1, temp: 550, risk: '中', voidCoeff: '负' },
+  htgr: { name: '高温气冷堆 HTGR', power: 600, coolant: '氦气', moderator: '石墨', pressure: 5, temp: 950, risk: '极低', voidCoeff: '负' },
+  msr: { name: '熔盐堆 MSR', power: 1000, coolant: '熔盐', moderator: '石墨', pressure: 1, temp: 700, risk: '低', voidCoeff: '负' },
+  smr: { name: '小型模块化堆 SMR', power: 300, coolant: '轻水', moderator: '轻水', pressure: 15, temp: 310, risk: '极低', voidCoeff: '负' }
+};
+
+const PLANTS = {
+  chernobyl: { name: '切尔诺贝利 4号机组', type: 'rbmk', location: '乌克兰普里皮亚季', year: 1983, status: '已损毁' },
+  fukushima: { name: '福岛 1号机组', type: 'bwr', location: '日本福岛', year: 1971, status: '已损毁' },
+  three_mile: { name: '三里岛 2号机组', type: 'pwr', location: '美国宾夕法尼亚', year: 1978, status: '已停运' },
+  dayawan: { name: '大亚湾核电站', type: 'pwr', location: '中国广东', year: 1994, status: '运行中' },
+  qinshan: { name: '秦山核电站', type: 'pwr', location: '中国浙江', year: 1991, status: '运行中' },
+  fuqing: { name: '福清核电站', type: 'hualong', location: '中国福建', year: 2020, status: '运行中' },
+  shidaowan: { name: '石岛湾核电站', type: 'htgr', location: '中国山东', year: 2023, status: '运行中' },
+  bruce: { name: '布鲁斯核电站', type: 'candu', location: '加拿大安大略', year: 1977, status: '运行中' },
+  paluel: { name: '帕吕埃尔核电站', type: 'pwr', location: '法国诺曼底', year: 1985, status: '运行中' },
+  kashiwazaki: { name: '柏崎刈羽核电站', type: 'bwr', location: '日本新潟', year: 1985, status: '停运中' },
+  generic: { name: '通用核电站', type: 'pwr', location: '未知', year: 2020, status: '运行中' }
+};
+
+const Nuclear = {
+  // 状态变量
+  reactorType: 'rbmk',
+  plant: 'chernobyl',
+  rodPosition: 100,        // 控制棒插入深度 0-100
+  reactivity: 0,           // 反应性
+  power: 0,                // 功率 MW
+  coreTemp: 280,           // 堆芯温度 °C
+  pressure: 10,            // 一回路压力 MPa
+  coolantFlow: 0,          // 冷却剂流量 m³/h
+  radiation: 0.1,          // 辐射水平 μSv/h
+  steamGenTemp: 0,         // 蒸汽发生器温度 °C
+  turbineRPM: 0,           // 涡轮机转速 RPM
+  output: 0,               // 累计发电量 MWh
+  boronConcentration: 1000, // 硼浓度 ppm
+  pumpOn: false,           // 主冷却泵
+  backupPumpOn: false,     // 备用冷却泵
+  emergencyCoolOn: false,  // 应急冷却
+  sprayOn: false,          // 安全壳喷淋
+  turbine1On: false,       // 1号涡轮机
+  turbine2On: false,       // 2号涡轮机
+  gridConnected: false,    // 并网
+  reactorRunning: false,   // 反应堆是否运行
+  startupPhase: 0,         // 开堆阶段 0=停堆 1=升温 2=升压 3=临界 4=功率运行
+  accidentType: null,      // 事故类型
+  simulationInterval: null,
+  canvas: null,
+  ctx: null,
+  alarms: [],              // 报警列表
+
+  // 选择堆型
+  selectReactorType(type) {
+    this.reactorType = type;
+    const rt = REACTOR_TYPES[type];
+    const plant = PLANTS[this.plant];
+    document.getElementById('reactorInfo').textContent = 
+      `${rt.name} | 额定功率: ${rt.power} MWth | 冷却剂: ${rt.coolant} | 慢化剂: ${rt.moderator} | 空泡系数: ${rt.voidCoeff} | 安全风险: ${rt.risk}`;
+    this.addLog('系统', `已切换为 ${rt.name}`);
+    this.resetReactor();
+  },
+
+  // 选择核电站
+  selectPlant(plant) {
+    this.plant = plant;
+    const p = PLANTS[plant];
+    const rt = REACTOR_TYPES[p.type];
+    document.getElementById('reactorInfo').textContent = 
+      `${p.name} | 位置: ${p.location} | 投运: ${p.year}年 | ${rt.name} | 额定功率: ${rt.power} MWth`;
+    // 自动切换堆型
+    document.getElementById('reactorType').value = p.type;
+    this.reactorType = p.type;
+    this.addLog('系统', `已选择 ${p.name}`);
+    this.resetReactor();
+  },
+
+  // 开堆（完整流程）
+  startupReactor() {
+    if (this.reactorRunning) {
+      toast('反应堆已在运行', 'error');
+      return;
+    }
+    this.addLog('操作', '开始开堆程序...');
+    this.startupPhase = 1;
+    
+    // 阶段1：启动冷却泵
+    setTimeout(() => {
+      this.pumpOn = true;
+      document.getElementById('pumpBtn').textContent = '运行';
+      document.getElementById('pumpBtn').style.background = 'var(--green)';
+      this.addLog('阶段1', '主冷却泵已启动');
+      this.startupPhase = 2;
+    }, 1000);
+
+    // 阶段2：升温升压
+    setTimeout(() => {
+      this.addLog('阶段2', '一回路升温升压中...');
+      this.startupPhase = 3;
+    }, 2500);
+
+    // 阶段3：临界
+    setTimeout(() => {
+      this.rodPosition = 80;
+      document.getElementById('rodControl').value = 80;
+      this.addLog('阶段3', '控制棒提升，反应堆达到临界');
+      this.startupPhase = 4;
+      if (!this.simulationInterval) this.startSimulation();
+    }, 4000);
+
+    // 阶段4：提升功率
+    setTimeout(() => {
+      this.rodPosition = 50;
+      document.getElementById('rodControl').value = 50;
+      this.addLog('阶段4', '功率提升至 50% 额定功率');
+      this.reactorRunning = true;
+      toast('开堆完成！反应堆已并网运行');
+    }, 5500);
+  },
+
+  // 正常停堆
+  normalShutdown() {
+    if (!this.reactorRunning && this.power < 10) {
+      toast('反应堆已处于停堆状态', 'error');
+      return;
+    }
+    this.addLog('操作', '开始正常停堆程序...');
+    
+    // 解列
+    this.gridConnected = false;
+    document.getElementById('gridBtn').textContent = '断开';
+    document.getElementById('gridBtn').style.background = 'var(--red)';
+    this.addLog('步骤1', '发电机解列');
+
+    // 降功率
+    setTimeout(() => {
+      this.rodPosition = 90;
+      document.getElementById('rodControl').value = 90;
+      this.addLog('步骤2', '控制棒插入，功率降至 10%');
+    }, 1000);
+
+    // 停堆
+    setTimeout(() => {
+      this.rodPosition = 100;
+      document.getElementById('rodControl').value = 100;
+      this.power = 0;
+      this.reactorRunning = false;
+      this.addLog('步骤3', '反应堆已停堆，进入余热冷却');
+    }, 2500);
+
+    // 停冷却泵
+    setTimeout(() => {
+      this.pumpOn = false;
+      document.getElementById('pumpBtn').textContent = '关闭';
+      document.getElementById('pumpBtn').style.background = 'var(--red)';
+      this.addLog('步骤4', '主冷却泵停止，正常停堆完成');
+      toast('正常停堆完成');
+    }, 4000);
+  },
+
+  // AZ3 自动降功率
+  AZ3powerDown() {
+    this.addLog('保护', 'AZ3 自动降功率系统触发');
+    const targetPower = this.power * 0.5;
+    const rodTarget = Math.min(100, this.rodPosition + 20);
+    this.rodPosition = rodTarget;
+    document.getElementById('rodControl').value = rodTarget;
+    this.addLog('保护', `控制棒插入至 ${rodTarget}%，功率降至 50%`);
+  },
+
+  // 安全壳喷淋
+  toggleSpray() {
+    this.sprayOn = !this.sprayOn;
+    this.addLog('安全', `安全壳喷淋系统${this.sprayOn ? '启动' : '停止'}`);
+    if (this.sprayOn) {
+      this.radiation *= 0.5;
+      this.pressure *= 0.8;
+    }
+  },
+
+  // 报警系统
+  addAlarm(type, message) {
+    const time = new Date().toLocaleTimeString();
+    this.alarms.unshift({ time, type, message });
+    if (this.alarms.length > 20) this.alarms.pop();
+    this.updateAlarms();
+  },
+
+  updateAlarms() {
+    // 可以在界面上显示报警列表
+  },
+
+  // 初始化
+  init() {
+    this.canvas = document.getElementById('reactorCanvas');
+    if (this.canvas) {
+      this.ctx = this.canvas.getContext('2d');
+      this.drawReactor();
+    }
+    this.addLog('系统', 'RBMK 反应堆模拟器已启动');
+    this.addLog('系统', '反应堆处于冷停堆状态');
+    this.addLog('提示', '拔出控制棒以提升功率，开启冷却泵和涡轮机');
+  },
+
+  // 启动模拟
+  startSimulation() {
+    if (this.simulationInterval) return;
+    this.simulationInterval = setInterval(() => this.tick(), 500);
+  },
+
+  // 停止模拟
+  stopSimulation() {
+    if (this.simulationInterval) {
+      clearInterval(this.simulationInterval);
+      this.simulationInterval = null;
+    }
+  },
+
+  // 物理模拟 tick
+  tick() {
+    const rt = REACTOR_TYPES[this.reactorType];
+    const maxPower = rt.power;
+
+    // 计算反应性（控制棒拔出越多，反应性越高；硼浓度越高，反应性越低）
+    const rodEffect = (100 - this.rodPosition) / 100;
+    const boronEffect = this.boronConcentration / 2000;
+    this.reactivity = rodEffect * 1.5 - boronEffect - 0.3;
+
+    // RBMK 有正空泡系数，温度升高反应性上升（危险！）
+    if (this.reactorType === 'rbmk' && this.coreTemp > 300) {
+      this.reactivity += (this.coreTemp - 300) * 0.001;
+    }
+
+    // 功率变化
+    if (this.reactivity > 0) {
+      this.power += this.reactivity * 50;
+      this.reactorRunning = true;
+    } else {
+      this.power += this.reactivity * 30;
+    }
+    this.power = Math.max(0, Math.min(maxPower * 1.5, this.power)); // 超功率可达150%
+
+    // 堆芯温度变化
+    const targetTemp = rt.temp + (this.power / maxPower) * 200;
+    this.coreTemp += (targetTemp - this.coreTemp) * 0.1;
+
+    // 冷却效果
+    let coolingEffect = 0;
+    if (this.pumpOn) coolingEffect += 50;
+    if (this.backupPumpOn) coolingEffect += 30;
+    if (this.emergencyCoolOn) coolingEffect += 80;
+    if (this.sprayOn) coolingEffect += 20;
+    this.coolantFlow = coolingEffect * 10;
+    this.coreTemp -= coolingEffect * 0.05;
+    this.coreTemp = Math.max(20, this.coreTemp);
+
+    // 压力变化
+    const targetPressure = rt.pressure + (this.coreTemp - rt.temp) * 0.05;
+    this.pressure += (targetPressure - this.pressure) * 0.1;
+    this.pressure = Math.max(0, this.pressure);
+
+    // 辐射水平
+    this.radiation = 0.1 + (this.power / maxPower) * 0.5;
+    if (this.coreTemp > 1000) this.radiation += (this.coreTemp - 1000) * 0.1;
+    if (this.accidentType === 'fuel_melt') this.radiation += 100;
+
+    // 蒸汽发生器
+    this.steamGenTemp = Math.max(0, this.coreTemp - 150);
+
+    // 涡轮机
+    const targetRPM = (this.turbine1On ? 1500 : 0) + (this.turbine2On ? 1500 : 0);
+    if (this.steamGenTemp > 100) {
+      this.turbineRPM += (targetRPM - this.turbineRPM) * 0.05;
+    } else {
+      this.turbineRPM *= 0.95;
+    }
+
+    // 发电量
+    if (this.gridConnected && this.turbineRPM > 1000) {
+      this.output += this.turbineRPM * 0.0001 * (this.power / maxPower);
+    }
+
+    // 事故处理
+    if (this.accidentType === 'steam_explosion') {
+      this.pressure += 2;
+      this.coreTemp += 20;
+      if (this.pressure > rt.pressure * 2) {
+        this.addLog('危险', '一回路超压！蒸汽爆炸！安全壳失效！');
+        this.radiation += 50;
+        this.accidentType = 'containment_failure';
+      }
+    }
+    if (this.accidentType === 'coolant_loss') {
+      this.coolantFlow *= 0.3;
+      this.pressure *= 0.95;
+      this.coreTemp += 15;
+      if (this.coreTemp > 1200) {
+        this.addLog('危险', '堆芯熔毁！燃料棒熔化！');
+        this.accidentType = 'fuel_melt';
+      }
+    }
+    if (this.accidentType === 'rod_ejection') {
+      this.rodPosition = Math.max(0, this.rodPosition - 30);
+      document.getElementById('rodControl').value = this.rodPosition;
+      this.reactivity += 0.5;
+      this.addLog('事故', '控制棒弹出！功率急剧上升！');
+      this.accidentType = null; // 一次性事件
+    }
+    if (this.accidentType === 'station_blackout') {
+      this.pumpOn = false;
+      this.backupPumpOn = false;
+      this.turbine1On = false;
+      this.turbine2On = false;
+      document.getElementById('pumpBtn').textContent = '关闭';
+      document.getElementById('pumpBtn').style.background = 'var(--red)';
+      this.addLog('事故', '全厂断电！冷却泵停运！堆芯升温中！');
+      this.coreTemp += 10;
+    }
+
+    // 超温报警
+    if (this.coreTemp > rt.temp + 200 && this.coreTemp <= 1000) {
+      this.updateStatus('warning', '温度偏高');
+    } else if (this.coreTemp > 1000) {
+      this.updateStatus('danger', '危险！堆芯过热');
+    } else if (this.power > maxPower * 1.1) {
+      this.updateStatus('danger', '超功率！');
+    } else if (this.power > 0) {
+      this.updateStatus('running', `运行中 ${Math.round(this.power/maxPower*100)}%`);
+    } else {
+      this.updateStatus('normal', '反应堆停堆');
+    }
+
+    this.updateDisplay();
+    this.drawReactor();
+  },
+
+  // 更新显示
+  updateDisplay() {
+    document.getElementById('nucPower').textContent = Math.round(this.power);
+    document.getElementById('nucOutput').textContent = this.output.toFixed(1);
+    document.getElementById('coreTemp').textContent = Math.round(this.coreTemp);
+    document.getElementById('pressure').textContent = this.pressure.toFixed(1);
+    document.getElementById('coolantFlow').textContent = Math.round(this.coolantFlow);
+    document.getElementById('radiation').textContent = this.radiation.toFixed(2);
+    document.getElementById('steamGen').textContent = Math.round(this.steamGenTemp);
+    document.getElementById('turbineRPM').textContent = Math.round(this.turbineRPM);
+    document.getElementById('rodDepth').textContent = this.rodPosition;
+    document.getElementById('reactivity').textContent = this.reactivity.toFixed(2);
+  },
+
+  // 更新状态灯
+  updateStatus(type, text) {
+    const light = document.getElementById('reactorStatusLight');
+    const statusText = document.getElementById('reactorStatusText');
+    if (!light || !statusText) return;
+    const colors = { normal: 'var(--green)', running: 'var(--cyan)', warning: 'var(--yellow)', danger: 'var(--red)' };
+    light.style.background = colors[type] || 'var(--green)';
+    statusText.textContent = text;
+  },
+
+  // 绘制反应堆
+  drawReactor() {
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const w = 300, h = 300;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+
+    // 堆芯外圈
+    const cx = w/2, cy = h/2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 120, 0, Math.PI*2);
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // 堆芯内部（根据功率发光）
+    const intensity = Math.min(1, this.power / 3200);
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 110);
+    glow.addColorStop(0, `rgba(255, ${Math.round(100 + intensity*100)}, 0, ${0.3 + intensity*0.7})`);
+    glow.addColorStop(0.5, `rgba(255, 50, 0, ${intensity*0.5})`);
+    glow.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx-120, cy-120, 240, 240);
+
+    // 燃料棒（16根）
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 60;
+      const fx = cx + Math.cos(angle) * r;
+      const fy = cy + Math.sin(angle) * r;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 8, 0, Math.PI*2);
+      ctx.fillStyle = intensity > 0.1 ? `rgb(255, ${Math.round(150 + intensity*100)}, 50)` : '#666';
+      ctx.fill();
+    }
+
+    // 控制棒（根据插入深度显示）
+    const rodLength = this.rodPosition * 0.8;
+    ctx.fillStyle = '#888';
+    ctx.fillRect(cx - 15, cy - rodLength, 30, rodLength * 2);
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - 15, cy - rodLength, 30, rodLength * 2);
+
+    // 中心
+    ctx.beginPath();
+    ctx.arc(cx, cy, 15, 0, Math.PI*2);
+    ctx.fillStyle = intensity > 0.3 ? '#ff0' : '#555';
+    ctx.fill();
+
+    // 温度颜色叠加
+    if (this.coreTemp > 500) {
+      ctx.fillStyle = `rgba(255, 0, 0, ${(this.coreTemp - 500) / 2000})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+  },
+
+  // 控制棒位置更新
+  updateRodPosition(value) {
+    this.rodPosition = parseInt(value);
+    if (!this.simulationInterval) this.startSimulation();
+  },
+
+  setRodPosition(value) {
+    this.rodPosition = value;
+    document.getElementById('rodControl').value = value;
+    if (!this.simulationInterval) this.startSimulation();
+    this.addLog('操作', `控制棒位置设置为 ${value}%`);
+  },
+
+  // 冷却泵
+  togglePump() {
+    this.pumpOn = !this.pumpOn;
+    const btn = document.getElementById('pumpBtn');
+    btn.textContent = this.pumpOn ? '运行' : '关闭';
+    btn.style.background = this.pumpOn ? 'var(--green)' : 'var(--red)';
+    this.addLog('操作', `主冷却泵${this.pumpOn ? '启动' : '停止'}`);
+    if (!this.simulationInterval) this.startSimulation();
+  },
+
+  toggleBackupPump() {
+    this.backupPumpOn = !this.backupPumpOn;
+    const btn = document.getElementById('backupPumpBtn');
+    btn.textContent = this.backupPumpOn ? '运行' : '关闭';
+    btn.style.background = this.backupPumpOn ? 'var(--green)' : 'var(--red)';
+    this.addLog('操作', `备用冷却泵${this.backupPumpOn ? '启动' : '停止'}`);
+  },
+
+  toggleEmergencyCool() {
+    this.emergencyCoolOn = !this.emergencyCoolOn;
+    const btn = document.getElementById('emergencyCoolBtn');
+    btn.textContent = this.emergencyCoolOn ? '运行' : '关闭';
+    btn.style.background = this.emergencyCoolOn ? 'var(--green)' : 'var(--red)';
+    this.addLog('警告', `应急冷却系统${this.emergencyCoolOn ? '启动' : '停止'}`);
+  },
+
+  // 涡轮机
+  toggleTurbine(num) {
+    if (num === 1) {
+      this.turbine1On = !this.turbine1On;
+      const btn = document.getElementById('turbine1Btn');
+      btn.textContent = this.turbine1On ? '运行' : '关闭';
+      btn.style.background = this.turbine1On ? 'var(--green)' : 'var(--red)';
+      this.addLog('操作', `1号涡轮机${this.turbine1On ? '启动' : '停止'}`);
+    } else {
+      this.turbine2On = !this.turbine2On;
+      const btn = document.getElementById('turbine2Btn');
+      btn.textContent = this.turbine2On ? '运行' : '关闭';
+      btn.style.background = this.turbine2On ? 'var(--green)' : 'var(--red)';
+      this.addLog('操作', `2号涡轮机${this.turbine2On ? '启动' : '停止'}`);
+    }
+  },
+
+  toggleGrid() {
+    this.gridConnected = !this.gridConnected;
+    const btn = document.getElementById('gridBtn');
+    btn.textContent = this.gridConnected ? '并网' : '断开';
+    btn.style.background = this.gridConnected ? 'var(--green)' : 'var(--red)';
+    this.addLog('操作', `发电机${this.gridConnected ? '并网' : '解列'}`);
+  },
+
+  // AZ5 紧急停堆
+  AZ5shutdown() {
+    this.rodPosition = 100;
+    document.getElementById('rodControl').value = 100;
+    this.accidentType = null;
+    this.addLog('紧急', 'AZ5 紧急停堆已触发！所有控制棒完全插入');
+    this.updateStatus('warning', '紧急停堆中');
+  },
+
+  // 触发事故
+  triggerAccident(type) {
+    this.accidentType = type;
+    if (type === 'steam_explosion') {
+      this.addLog('事故', '蒸汽管道破裂！蒸汽爆炸模拟已启动');
+    } else if (type === 'coolant_loss') {
+      this.addLog('事故', '冷却剂流失事故已启动！');
+    }
+  },
+
+  // 重置反应堆
+  resetReactor() {
+    const rt = REACTOR_TYPES[this.reactorType];
+    this.rodPosition = 100;
+    this.reactivity = 0;
+    this.power = 0;
+    this.coreTemp = rt.temp;
+    this.pressure = rt.pressure;
+    this.coolantFlow = 0;
+    this.radiation = 0.1;
+    this.steamGenTemp = 0;
+    this.turbineRPM = 0;
+    this.output = 0;
+    this.boronConcentration = 1000;
+    this.pumpOn = false;
+    this.backupPumpOn = false;
+    this.emergencyCoolOn = false;
+    this.sprayOn = false;
+    this.turbine1On = false;
+    this.turbine2On = false;
+    this.gridConnected = false;
+    this.reactorRunning = false;
+    this.startupPhase = 0;
+    this.accidentType = null;
+    this.alarms = [];
+    document.getElementById('rodControl').value = 100;
+    ['pumpBtn', 'backupPumpBtn', 'emergencyCoolBtn', 'turbine1Btn', 'turbine2Btn'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) { btn.textContent = '关闭'; btn.style.background = 'var(--red)'; }
+    });
+    const gridBtn = document.getElementById('gridBtn');
+    if (gridBtn) { gridBtn.textContent = '断开'; gridBtn.style.background = 'var(--red)'; }
+    this.addLog('系统', `反应堆已重置为冷停堆状态 (${rt.name})`);
+    this.updateDisplay();
+    this.drawReactor();
+  },
+
+  // 添加日志
+  addLog(type, message) {
+    const log = document.getElementById('nuclearLog');
+    if (!log) return;
+    const time = new Date().toLocaleTimeString();
+    const colors = {
+      '系统': 'var(--cyan)',
+      '操作': 'var(--green)',
+      '警告': 'var(--yellow)',
+      '紧急': 'var(--red)',
+      '事故': 'var(--red)',
+      '危险': 'var(--red)',
+      '提示': 'var(--muted)'
+    };
+    const color = colors[type] || 'var(--green)';
+    log.innerHTML += `<br>[${time}] <span style="color:${color};">[${type}]</span> ${message}`;
+    log.scrollTop = log.scrollHeight;
+  }
+};
+
+// 核电站模拟器全局函数别名
+function updateRodPosition(v) { Nuclear.updateRodPosition(v); }
+function setRodPosition(v) { Nuclear.setRodPosition(v); }
+function togglePump() { Nuclear.togglePump(); }
+function toggleBackupPump() { Nuclear.toggleBackupPump(); }
+function toggleEmergencyCool() { Nuclear.toggleEmergencyCool(); }
+function toggleTurbine(n) { Nuclear.toggleTurbine(n); }
+function toggleGrid() { Nuclear.toggleGrid(); }
+function AZ5shutdown() { Nuclear.AZ5shutdown(); }
+function triggerAccident(t) { Nuclear.triggerAccident(t); }
+function resetReactor() { Nuclear.resetReactor(); }
+
 // ==================== 工具函数 ====================
 function toast(msg, type = 'success') {
   const t = document.createElement('div');
@@ -561,6 +1438,9 @@ function switchTab(name, ev) {
   if (name === 'echo') loadEchoes();
   if (name === 'cloud' && currentUser) loadFiles();
   if (name === 'games') closeGame();
+  if (name === 'nuclear') {
+    setTimeout(() => Nuclear.init(), 100);
+  }
   if (name === 'admin') {
     if (currentUser && currentUser.isAdmin) {
       document.getElementById('adminLogin').style.display = 'none';
@@ -739,6 +1619,7 @@ async function doAuth() {
       toast('登录成功');
       loadFiles();
       startSessionCheck();
+      startMessageCheck();
     }
   } catch (e) {
     toast('操作失败: ' + e.message, 'error');
@@ -1091,6 +1972,81 @@ function getMockAIReply(input) {
 
 let aiChatHistory = [];
 
+// 新消息通知
+let lastMessageCheckTime = new Date().toISOString();
+let messageCheckInterval = null;
+let pendingChatFriend = null;
+
+function startMessageCheck() {
+  if (messageCheckInterval) clearInterval(messageCheckInterval);
+  lastMessageCheckTime = new Date().toISOString();
+  messageCheckInterval = setInterval(checkNewMessages, 5000); // 每5秒检查一次
+}
+
+async function checkNewMessages() {
+  if (!currentUser) return;
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await sb.from('messages')
+      .select('*')
+      .eq('receiver_id', currentUser.id)
+      .gt('created_at', lastMessageCheckTime)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    if (error) throw error;
+    if (data && data.length > 0) {
+      const msg = data[0];
+      // 不显示自己发的消息
+      if (msg.sender_id !== currentUser.id) {
+        showMessageNotification(msg);
+      }
+    }
+    lastMessageCheckTime = now;
+  } catch (e) {
+    // 静默失败
+  }
+}
+
+function showMessageNotification(msg) {
+  const notif = document.getElementById('messageNotification');
+  if (!notif) return;
+  // 获取发送者名字
+  let senderName = '好友';
+  // 从消息内容判断是否是文件
+  let content = msg.content;
+  try {
+    const parsed = JSON.parse(msg.content);
+    if (parsed.type && parsed.url) {
+      if (parsed.type === 'image') content = '[图片]';
+      else if (parsed.type === 'video') content = '[视频]';
+      else content = '[文件] ' + (parsed.name || '');
+    }
+  } catch (e) {}
+  
+  document.getElementById('notifSender').textContent = '💬 新消息';
+  document.getElementById('notifContent').textContent = content.substring(0, 50);
+  pendingChatFriend = { id: msg.sender_id, name: senderName };
+  notif.style.display = 'block';
+  
+  // 5秒后自动关闭
+  setTimeout(() => {
+    closeMessageNotification();
+  }, 5000);
+}
+
+function closeMessageNotification() {
+  const notif = document.getElementById('messageNotification');
+  if (notif) notif.style.display = 'none';
+  pendingChatFriend = null;
+}
+
+function jumpToChatFromNotification() {
+  if (pendingChatFriend) {
+    closeMessageNotification();
+    openChat(pendingChatFriend.id, pendingChatFriend.name);
+  }
+}
+
 // 模拟 AI 回复（智能关键词匹配）
 function getMockAIReply(input) {
   const text = input.toLowerCase().trim();
@@ -1426,6 +2382,7 @@ async function sendMessage() {
   const input = document.getElementById('chatInput');
   const content = input.value.trim();
   if (!content || !currentChatFriend) return;
+  if (!Security.checkRequest()) return;
   input.value = '';
   try {
     const { error } = await sb.from('messages').insert({
@@ -1530,6 +2487,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function postEcho() {
   try {
     if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+    if (!Security.checkRequest()) return;
     const text = document.getElementById('echoText').value.trim();
     const imgFile = document.getElementById('echoImage').files[0];
     const videoFile = document.getElementById('echoVideo').files[0];
@@ -3669,6 +4627,10 @@ async function init() {
       // 如果已经登录，启动session检查
       if (currentUser && currentUser.username !== 'admin') {
         startSessionCheck();
+      }
+      // 启动新消息检查
+      if (currentUser) {
+        startMessageCheck();
       }
     }
     updateUserUI();
