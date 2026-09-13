@@ -453,7 +453,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
   <!-- 管理员 -->
   <!-- 核电站模拟器 -->
   <div class="page" id="page-nuclear">
-    <div class="card">
+    <div class="card" style="max-height:calc(100vh - 100px);overflow-y:auto;padding:20px;">
       <h2>☢️ 核电站模拟器 <span style="font-size:12px;color:var(--muted);">（多堆型 · 真实物理模拟）</span></h2>
       
       <!-- 堆型选择 -->
@@ -541,7 +541,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
 
         <!-- 右侧：监控面板 -->
         <div style="background:var(--bg2);border-radius:10px;padding:16px;">
-          <h3 style="margin-bottom:12px;font-size:16px;">📊 实时监控（20项）</h3>
+          <h3 style="margin-bottom:12px;font-size:16px;">📊 实时监控（30项）</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
             <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
               <div style="font-size:10px;color:var(--muted);">堆芯温度</div>
@@ -633,38 +633,93 @@ input:focus, textarea:focus { border-color: var(--purple); }
               <div style="font-size:16px;font-weight:700;color:var(--pink);" id="reactivityDisplay">0</div>
               <div style="font-size:9px;color:var(--muted);">β</div>
             </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">包壳温度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--orange);" id="cladTemp">300</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">DNBR</div>
+              <div style="font-size:16px;font-weight:700;color:var(--green);" id="dnbr">2.5</div>
+              <div style="font-size:9px;color:var(--muted);">比值</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">线功率密度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--yellow);" id="linearPower">0</div>
+              <div style="font-size:9px;color:var(--muted);">kW/m</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">氙毒浓度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--purple2);" id="xenon">0</div>
+              <div style="font-size:9px;color:var(--muted);">%</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">钐毒浓度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--purple2);" id="samarium">0</div>
+              <div style="font-size:9px;color:var(--muted);">%</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">功率区段</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="powerRange">0</div>
+              <div style="font-size:9px;color:var(--muted);">%FP</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">源区段</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="sourceRange">0</div>
+              <div style="font-size:9px;color:var(--muted);">cps</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">安全壳氢浓</div>
+              <div style="font-size:16px;font-weight:700;color:var(--green);" id="h2Concentration">0</div>
+              <div style="font-size:9px;color:var(--muted);">%</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">设备冷却水</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="compCoolantTemp">35</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">重要厂用水</div>
+              <div style="font-size:16px;font-weight:700;color:var(--blue);" id="essentialWaterTemp">25</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">主泵电流</div>
+              <div style="font-size:16px;font-weight:700;color:var(--yellow);" id="pumpCurrent">0</div>
+              <div style="font-size:9px;color:var(--muted);">A</div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 3D立体反应堆可视化 -->
-      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
-        <h3 style="margin-bottom:12px;font-size:16px;">🏗️ 3D立体反应堆视图</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:12px;">
+        <h3 style="margin-bottom:10px;font-size:15px;">🏗️ 3D立体反应堆视图</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
           <!-- 3D立体图 -->
-          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">立体视图</div>
-            <canvas id="reactor3D" width="280" height="280"></canvas>
+          <div style="background:#000;border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">立体视图</div>
+            <canvas id="reactor3D" width="280" height="280" style="max-width:100%;height:auto;"></canvas>
           </div>
           <!-- 剖面图 -->
-          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">纵向剖面图</div>
-            <canvas id="reactorSection" width="280" height="280"></canvas>
+          <div style="background:#000;border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">纵向剖面图</div>
+            <canvas id="reactorSection" width="280" height="280" style="max-width:100%;height:auto;"></canvas>
           </div>
           <!-- 俯视图 -->
-          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
-            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">俯视图</div>
-            <canvas id="reactorTop" width="280" height="280"></canvas>
+          <div style="background:#000;border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">俯视图</div>
+            <canvas id="reactorTop" width="280" height="280" style="max-width:100%;height:auto;"></canvas>
           </div>
         </div>
         <!-- 爆炸特效层 -->
         <div id="explosionOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle, rgba(255,100,0,0.8) 0%, rgba(255,0,0,0.6) 50%, transparent 70%);z-index:9999;pointer-events:none;"></div>
       </div>
 
-      <!-- 九宫格房间监控 -->
+      <!-- 各房间实时监控 -->
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
-        <h3 style="margin-bottom:12px;font-size:16px;">🏭 各房间实时监控（九宫格）</h3>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <h3 style="margin-bottom:12px;font-size:16px;">🏭 各房间实时监控（20间）</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px;">
           <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--red);">
             <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🔥 反应堆室</div>
             <div style="font-size:11px;color:var(--muted);">温度: <span id="roomReactorTemp" style="color:var(--yellow);">280°C</span></div>
@@ -718,6 +773,72 @@ input:focus, textarea:focus { border-color: var(--purple); }
             <div style="font-size:11px;color:var(--muted);">1号机: <span id="roomDiesel1" style="color:var(--red);">备用</span></div>
             <div style="font-size:11px;color:var(--muted);">2号机: <span id="roomDiesel2" style="color:var(--red);">备用</span></div>
             <div style="font-size:11px;color:var(--muted);">状态: <span id="roomDieselStatus" style="color:var(--muted);">待机</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--green);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🧪 化学实验室</div>
+            <div style="font-size:11px;color:var(--muted);">硼浓度: <span id="roomChemBoron" style="color:var(--cyan);">1000ppm</span></div>
+            <div style="font-size:11px;color:var(--muted);">水质: <span id="roomChemQuality" style="color:var(--green);">合格</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">运行</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--red);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">☢️ 辐射监测室</div>
+            <div style="font-size:11px;color:var(--muted);">区域辐射: <span id="roomRadArea" style="color:var(--green);">0.1μSv</span></div>
+            <div style="font-size:11px;color:var(--muted);">废气: <span id="roomRadGas" style="color:var(--green);">正常</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">正常</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--orange);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🗑️ 废物处理间</div>
+            <div style="font-size:11px;color:var(--muted);">废液: <span id="roomWasteLiquid" style="color:var(--cyan);">低</span></div>
+            <div style="font-size:11px;color:var(--muted);">废固: <span id="roomWasteSolid" style="color:var(--green);">低</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">运行</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--purple2);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🔋 燃料操作间</div>
+            <div style="font-size:11px;color:var(--muted);">新燃料: <span id="roomFuelNew" style="color:var(--green);">充足</span></div>
+            <div style="font-size:11px;color:var(--muted);">辐照燃料: <span id="roomFuelUsed" style="color:var(--orange);">储存</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">安全</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--cyan);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💉 安全注入间</div>
+            <div style="font-size:11px;color:var(--muted);">安注箱: <span id="roomSITank" style="color:var(--green);">就绪</span></div>
+            <div style="font-size:11px;color:var(--muted);">高压安注: <span id="roomSIHigh" style="color:var(--red);"> standby</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">备用</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--blue);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🚰 辅助给水间</div>
+            <div style="font-size:11px;color:var(--muted);">给水泵: <span id="roomAuxPump" style="color:var(--red);">停运</span></div>
+            <div style="font-size:11px;color:var(--muted);">水箱: <span id="roomAuxTank" style="color:var(--cyan);">100%</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">备用</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--cyan);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🌊 循环水泵房</div>
+            <div style="font-size:11px;color:var(--muted);">循环泵: <span id="roomCircPump" style="color:var(--red);">停运</span></div>
+            <div style="font-size:11px;color:var(--muted);">流量: <span id="roomCircFlow" style="color:var(--cyan);">0m³/h</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--muted);">停运</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--blue);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🏗️ 冷却塔</div>
+            <div style="font-size:11px;color:var(--muted);">进水: <span id="roomCoolIn" style="color:var(--cyan);">25°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">出水: <span id="roomCoolOut" style="color:var(--orange);">35°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">运行</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--yellow);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">⚡ 开关站</div>
+            <div style="font-size:11px;color:var(--muted);">出线: <span id="roomSwitchOut" style="color:var(--green);">2回</span></div>
+            <div style="font-size:11px;color:var(--muted);">负荷: <span id="roomSwitchLoad" style="color:var(--yellow);">0MW</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">运行</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--green);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🔋 蓄电池室</div>
+            <div style="font-size:11px;color:var(--muted);">电压: <span id="roomBatteryVolt" style="color:var(--green);">220V</span></div>
+            <div style="font-size:11px;color:var(--muted);">容量: <span id="roomBatteryCap" style="color:var(--green);">100%</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">浮充</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--cyan);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💨 通风系统间</div>
+            <div style="font-size:11px;color:var(--muted);">送风机: <span id="roomVentSupply" style="color:var(--green);">运行</span></div>
+            <div style="font-size:11px;color:var(--muted);">排风机: <span id="roomVentExhaust" style="color:var(--green);">运行</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">正常</span></div>
           </div>
         </div>
       </div>
@@ -2003,6 +2124,19 @@ const Nuclear = {
     set('condenserVacuum', this.condenserVacuum.toFixed(1));
     set('feedwaterFlow', this.feedwaterFlow.toFixed(1));
     set('steamFlow', this.steamFlow.toFixed(1));
+    // 新增12项专业参数
+    const powerRatio = Math.min(1, this.power / (REACTOR_TYPES[this.reactorType].power || 3000));
+    set('cladTemp', Math.round(this.coreTemp * 1.15));
+    set('dnbr', Math.max(1.2, 3.0 - powerRatio * 1.5).toFixed(2));
+    set('linearPower', Math.round(powerRatio * 400));
+    set('xenon', (this.reactorRunning ? Math.min(100, this.power / 30) : 0).toFixed(1));
+    set('samarium', (this.reactorRunning ? Math.min(50, this.power / 60) : 0).toFixed(1));
+    set('powerRange', (powerRatio * 100).toFixed(1));
+    set('sourceRange', this.power < 1 ? Math.round(100 + this.neutronFlux * 10) : 0);
+    set('h2Concentration', this.coreTemp > 1000 ? Math.min(10, (this.coreTemp - 1000) / 100).toFixed(1) : '0');
+    set('compCoolantTemp', Math.round(35 + this.coreTemp * 0.02));
+    set('essentialWaterTemp', Math.round(25 + this.steamGenTemp * 0.05));
+    set('pumpCurrent', this.pumpOn ? Math.round(200 + this.coolantFlow * 0.5) : 0);
   },
 
   // 更新九宫格房间监控
@@ -2042,6 +2176,39 @@ const Nuclear = {
     set('roomDiesel1', this.diesel1On ? '运行' : '备用');
     set('roomDiesel2', this.diesel2On ? '运行' : '备用');
     set('roomDieselStatus', this.diesel1On || this.diesel2On ? '供电' : '待机');
+    // 化学实验室
+    set('roomChemBoron', this.boronConcentration + 'ppm');
+    set('roomChemQuality', this.coreTemp < 500 ? '合格' : '异常');
+    // 辐射监测室
+    set('roomRadArea', this.radiation.toFixed(1) + 'μSv');
+    set('roomRadGas', this.radiation < 1 ? '正常' : '超标');
+    // 废物处理间
+    set('roomWasteLiquid', this.radiation > 1 ? '中' : '低');
+    set('roomWasteSolid', this.radiation > 1 ? '中' : '低');
+    // 燃料操作间
+    set('roomFuelNew', '充足');
+    set('roomFuelUsed', this.spentFuelTemp > 50 ? '升温' : '储存');
+    // 安全注入间
+    set('roomSITank', '就绪');
+    set('roomSIHigh', this.safetyInjectionOn ? '注入' : '备用');
+    // 辅助给水间
+    set('roomAuxPump', this.auxFeedOn ? '运行' : '停运');
+    set('roomAuxTank', '100%');
+    // 循环水泵房
+    set('roomCircPump', this.condenserOn ? '运行' : '停运');
+    set('roomCircFlow', this.condenserOn ? Math.round(this.coolantFlow * 0.5) : 0);
+    // 冷却塔
+    set('roomCoolIn', '25°C');
+    set('roomCoolOut', this.condenserOn ? Math.round(25 + this.steamGenTemp * 0.1) + '°C' : '25°C');
+    // 开关站
+    set('roomSwitchOut', '2回');
+    set('roomSwitchLoad', this.gridConnected ? Math.round(this.electricPower) + 'MW' : '0MW');
+    // 蓄电池室
+    set('roomBatteryVolt', this.gridConnected || this.diesel1On || this.diesel2On ? '220V' : '210V');
+    set('roomBatteryCap', this.gridConnected ? '100%' : (this.diesel1On || this.diesel2On ? '95%' : '80%'));
+    // 通风系统间
+    set('roomVentSupply', '运行');
+    set('roomVentExhaust', this.radiation > 1 ? '高速' : '运行');
   },
 
   // 更新状态灯
