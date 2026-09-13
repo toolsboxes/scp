@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ToolBox - 工具箱</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -795,7 +796,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
           <!-- 3D立体图 -->
           <div style="background:#000;border-radius:8px;padding:8px;text-align:center;">
             <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">立体视图</div>
-            <canvas id="reactor3D" width="350" height="350" style="max-width:100%;height:auto;"></canvas>
+            <div id="reactor3D" style="width:100%;height:350px;background:#000;border-radius:8px;position:relative;overflow:hidden;"></div>
           </div>
           <!-- 剖面图 -->
           <div style="background:#000;border-radius:8px;padding:8px;text-align:center;">
@@ -1995,198 +1996,139 @@ const Nuclear = {
     if (d2) { d2.textContent = this.diesel2On ? '运行' : '备用'; d2.style.background = this.diesel2On ? 'var(--green)' : 'var(--red)'; }
   },
 
-  // 绘制3D立体反应堆
-  draw3D() {
-    const canvas = document.getElementById('reactor3D');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = 350, h = 350;
-    canvas.width = w; canvas.height = h;
-    ctx.fillStyle = '#050508';
-    ctx.fillRect(0, 0, w, h);
+  // Three.js 3D反应堆
+  threeInited: false,
+  threeScene: null,
+  threeCamera: null,
+  threeRenderer: null,
+  threeReactor: null,
+  threeRods: [],
+  threeFuel: null,
+  threeRotation: 0,
+  threeAutoRotate: true,
+  threePointLight: null,
 
-    // 网格背景（科技感）
-    ctx.strokeStyle = 'rgba(0,150,255,0.08)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < w; i += 20) {
-      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
-    }
-    for (let i = 0; i < h; i += 20) {
-      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
-    }
-
-    const cx = w/2, cy = h/2 + 30;
-    const powerRatio = Math.min(1, this.power / (REACTOR_TYPES[this.reactorType].power * 1.5));
-    const rodPull = (100 - this.rodPosition) / 100; // 0=全插, 1=全拔
-
-    // === 安全壳（透视圆柱）===
-    const shellW = 130, shellH = 160, shellTop = cy - 100;
-    // 安全壳侧面（金属渐变）
-    const shellGrad = ctx.createLinearGradient(cx - shellW, 0, cx + shellW, 0);
-    shellGrad.addColorStop(0, '#1a1a2e');
-    shellGrad.addColorStop(0.3, '#3a3a5e');
-    shellGrad.addColorStop(0.5, '#5a5a8e');
-    shellGrad.addColorStop(0.7, '#3a3a5e');
-    shellGrad.addColorStop(1, '#1a1a2e');
-    ctx.fillStyle = shellGrad;
-    ctx.fillRect(cx - shellW, shellTop, shellW*2, shellH);
-    // 安全壳顶部椭圆
-    ctx.fillStyle = '#4a4a7e';
-    ctx.beginPath();
-    ctx.ellipse(cx, shellTop, shellW, 35, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 安全壳底部椭圆
-    ctx.fillStyle = '#2a2a4e';
-    ctx.beginPath();
-    ctx.ellipse(cx, shellTop + shellH, shellW, 35, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 安全壳焊缝（金属纹理）
-    ctx.strokeStyle = 'rgba(100,100,150,0.3)';
-    ctx.lineWidth = 1;
-    for (let i = 1; i < 5; i++) {
-      ctx.beginPath();
-      ctx.moveTo(cx - shellW, shellTop + (shellH/5)*i);
-      ctx.lineTo(cx + shellW, shellTop + (shellH/5)*i);
-      ctx.stroke();
-    }
-
-    // === 反应堆压力容器（内部，透视圆柱）===
-    const vesselW = 55, vesselH = 110, vesselTop = cy - 50;
-    const vesselGrad = ctx.createLinearGradient(cx - vesselW, 0, cx + vesselW, 0);
-    vesselGrad.addColorStop(0, '#2a2a3a');
-    vesselGrad.addColorStop(0.3, '#5a5a7a');
-    vesselGrad.addColorStop(0.5, '#8a8aaa');
-    vesselGrad.addColorStop(0.7, '#5a5a7a');
-    vesselGrad.addColorStop(1, '#2a2a3a');
-    ctx.fillStyle = vesselGrad;
-    ctx.fillRect(cx - vesselW, vesselTop, vesselW*2, vesselH);
-    // 压力容器顶部
-    ctx.fillStyle = '#7a7a9a';
-    ctx.beginPath();
-    ctx.ellipse(cx, vesselTop, vesselW, 15, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 压力容器底部
-    ctx.fillStyle = '#3a3a5a';
-    ctx.beginPath();
-    ctx.ellipse(cx, vesselTop + vesselH, vesselW, 15, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 法兰盘
-    ctx.strokeStyle = '#9a9aba';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(cx, vesselTop + 10, vesselW + 5, 17, 0, 0, Math.PI*2);
-    ctx.stroke();
-
-    // === 堆芯辐射辉光（透过压力容器）===
-    if (powerRatio > 0.05) {
-      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
-      glow.addColorStop(0, `rgba(255, ${Math.round(100 + powerRatio*155)}, 0, ${powerRatio * 0.6})`);
-      glow.addColorStop(0.5, `rgba(255, 100, 0, ${powerRatio * 0.3})`);
-      glow.addColorStop(1, 'rgba(255,0,0,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(cx - 70, cy - 70, 140, 140);
-    }
-
-    // === 控制棒驱动机构（顶部，能看到上下移动）===
-    const rodDriveY = vesselTop - 20 - rodPull * 60;
-    // 驱动机构外壳
-    ctx.fillStyle = '#4a4a6a';
-    ctx.fillRect(cx - 18, rodDriveY - 25, 36, 25);
-    ctx.fillStyle = '#6a6a8a';
-    ctx.beginPath();
-    ctx.ellipse(cx, rodDriveY - 25, 18, 6, 0, 0, Math.PI*2);
-    ctx.fill();
-    // 控制棒（从顶部插入压力容器）
-    const rodLength = 80 + rodPull * 50;
-    ctx.fillStyle = '#8a8aaa';
-    ctx.fillRect(cx - 6, rodDriveY, 12, rodLength);
-    // 控制棒金属纹理
-    const rodGrad = ctx.createLinearGradient(cx - 6, 0, cx + 6, 0);
-    rodGrad.addColorStop(0, '#6a6a8a');
-    rodGrad.addColorStop(0.5, '#aaaaca');
-    rodGrad.addColorStop(1, '#6a6a8a');
-    ctx.fillStyle = rodGrad;
-    ctx.fillRect(cx - 6, rodDriveY, 12, rodLength);
-    // 控制棒吸收体尖端（黑色）
-    ctx.fillStyle = '#1a1a2a';
-    ctx.fillRect(cx - 6, rodDriveY + rodLength - 15, 12, 15);
-
-    // === 冷却剂主管道（3D效果）===
-    const pipeColor = this.coolantFlow > 0 ? '#3a8aff' : '#3a3a4a';
-    const pipeGlow = this.coolantFlow > 0 ? 'rgba(58,138,255,0.4)' : 'transparent';
-    ctx.strokeStyle = pipeColor;
-    ctx.lineWidth = 10;
-    ctx.shadowColor = pipeGlow;
-    ctx.shadowBlur = this.coolantFlow > 0 ? 10 : 0;
-    // 左侧热管
-    ctx.beginPath();
-    ctx.moveTo(cx - vesselW, cy - 15);
-    ctx.lineTo(cx - vesselW - 40, cy - 15);
-    ctx.lineTo(cx - vesselW - 40, cy + 25);
-    ctx.lineTo(cx - vesselW, cy + 25);
-    ctx.stroke();
-    // 右侧冷管
-    ctx.beginPath();
-    ctx.moveTo(cx + vesselW, cy - 15);
-    ctx.lineTo(cx + vesselW + 40, cy - 15);
-    ctx.lineTo(cx + vesselW + 40, cy + 25);
-    ctx.lineTo(cx + vesselW, cy + 25);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    // 管道法兰
-    ctx.fillStyle = '#5a5a7a';
-    ctx.fillRect(cx - vesselW - 45, cy - 20, 6, 50);
-    ctx.fillRect(cx + vesselW + 39, cy - 20, 6, 50);
-
-    // === 蒸汽发生器（两侧）===
-    for (let side of [-1, 1]) {
-      const sgX = cx + side * (vesselW + 55);
-      const sgGrad = ctx.createLinearGradient(sgX - 18, 0, sgX + 18, 0);
-      sgGrad.addColorStop(0, '#3a3a5a');
-      sgGrad.addColorStop(0.5, '#6a6a8a');
-      sgGrad.addColorStop(1, '#3a3a5a');
-      ctx.fillStyle = sgGrad;
-      ctx.fillRect(sgX - 18, cy - 30, 36, 70);
-      ctx.fillStyle = '#5a5a7a';
-      ctx.beginPath();
-      ctx.ellipse(sgX, cy - 30, 18, 6, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(sgX, cy + 40, 18, 6, 0, 0, Math.PI*2);
-      ctx.fill();
-      // 蒸汽发生器水位
-      if (this.steamGenTemp > 0) {
-        ctx.fillStyle = `rgba(100,200,255,${0.3 + this.steamGenTemp/500})`;
-        ctx.fillRect(sgX - 16, cy + 10, 32, 28);
+  initThreeJS() {
+    if (this.threeInited) return;
+    const container = document.getElementById('reactor3D');
+    if (!container || typeof THREE === 'undefined') return;
+    try {
+      this.threeScene = new THREE.Scene();
+      this.threeScene.background = new THREE.Color(0x050510);
+      this.threeCamera = new THREE.PerspectiveCamera(60, container.clientWidth / 350, 0.1, 1000);
+      this.threeCamera.position.set(8, 6, 8);
+      this.threeCamera.lookAt(0, 0, 0);
+      this.threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+      this.threeRenderer.setSize(container.clientWidth, 350);
+      this.threeRenderer.shadowMap.enabled = true;
+      container.appendChild(this.threeRenderer.domElement);
+      const ambient = new THREE.AmbientLight(0x404060, 0.5);
+      this.threeScene.add(ambient);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(5, 10, 5);
+      this.threeScene.add(dirLight);
+      const pointLight = new THREE.PointLight(0xff6600, 1, 20);
+      pointLight.position.set(0, 0, 0);
+      this.threeScene.add(pointLight);
+      this.threePointLight = pointLight;
+      this.threeReactor = new THREE.Group();
+      const shellGeo = new THREE.CylinderGeometry(4, 4.5, 8, 32);
+      const shellMat = new THREE.MeshPhongMaterial({ color: 0x4a6a8a, transparent: true, opacity: 0.3, shininess: 100 });
+      const shell = new THREE.Mesh(shellGeo, shellMat);
+      this.threeReactor.add(shell);
+      const domeGeo = new THREE.SphereGeometry(4.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const dome = new THREE.Mesh(domeGeo, shellMat);
+      dome.position.y = 4;
+      this.threeReactor.add(dome);
+      const vesselGeo = new THREE.CylinderGeometry(2, 2, 5, 32);
+      const vesselMat = new THREE.MeshPhongMaterial({ color: 0x8aaaca, shininess: 100 });
+      const vessel = new THREE.Mesh(vesselGeo, vesselMat);
+      vessel.position.y = -0.5;
+      this.threeReactor.add(vessel);
+      const topGeo = new THREE.SphereGeometry(2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const top = new THREE.Mesh(topGeo, vesselMat);
+      top.position.y = 2;
+      this.threeReactor.add(top);
+      const coreGeo = new THREE.BoxGeometry(2.5, 2, 2.5);
+      const coreMat = new THREE.MeshBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.8 });
+      this.threeFuel = new THREE.Mesh(coreGeo, coreMat);
+      this.threeFuel.position.y = -1;
+      this.threeReactor.add(this.threeFuel);
+      this.threeRods = [];
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        const r = 1.2;
+        const rodGeo = new THREE.CylinderGeometry(0.08, 0.08, 3, 8);
+        const rodMat = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+        const rod = new THREE.Mesh(rodGeo, rodMat);
+        rod.position.set(Math.cos(angle) * r, 1, Math.sin(angle) * r);
+        this.threeRods.push(rod);
+        this.threeReactor.add(rod);
       }
-    }
-
-    // === 温度/辐射颜色叠加 ===
-    if (this.coreTemp > 800) {
-      ctx.fillStyle = `rgba(255,50,0,${Math.min(0.4, (this.coreTemp - 800)/2000)})`;
-      ctx.fillRect(0, 0, w, h);
-    }
-    if (this.radiation > 10) {
-      ctx.fillStyle = `rgba(0,255,0,${Math.min(0.2, this.radiation/100)})`;
-      ctx.fillRect(0, 0, w, h);
-    }
-
-    // === HUD信息 ===
-    ctx.fillStyle = '#0f0';
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText('POWER: ' + Math.round(this.power) + ' MW', 10, 20);
-    ctx.fillText('CORE: ' + Math.round(this.coreTemp) + '°C', 10, 36);
-    ctx.fillText('RODS: ' + this.rodPosition + '% inserted', 10, 52);
-    ctx.fillText('FLOW: ' + Math.round(this.coolantFlow) + ' m³/h', 10, 68);
-    // 扫描线效果
-    ctx.strokeStyle = 'rgba(0,255,0,0.1)';
-    ctx.lineWidth = 1;
-    const scanY = (Date.now() / 20) % h;
-    ctx.beginPath();
-    ctx.moveTo(0, scanY);
-    ctx.lineTo(w, scanY);
-    ctx.stroke();
+      for (let side of [-1, 1]) {
+        const sgGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.5, 16);
+        const sgMat = new THREE.MeshPhongMaterial({ color: 0x6a8aaa });
+        const sg = new THREE.Mesh(sgGeo, sgMat);
+        sg.position.set(side * 4, -0.5, 0);
+        this.threeReactor.add(sg);
+      }
+      const floorGeo = new THREE.PlaneGeometry(20, 20);
+      const floorMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2a });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -3.5;
+      this.threeReactor.add(floor);
+      const grid = new THREE.GridHelper(20, 20, 0x004466, 0x002233);
+      grid.position.y = -3.49;
+      this.threeReactor.add(grid);
+      this.threeScene.add(this.threeReactor);
+      let isDragging = false, prevX = 0, prevY = 0;
+      container.addEventListener('mousedown', (e) => { isDragging = true; prevX = e.clientX; prevY = e.clientY; this.threeAutoRotate = false; });
+      container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevX, dy = e.clientY - prevY;
+        this.threeRotation += dx * 0.01;
+        this.threeCamera.position.y = Math.max(2, Math.min(15, this.threeCamera.position.y - dy * 0.05));
+        prevX = e.clientX; prevY = e.clientY;
+      });
+      container.addEventListener('mouseup', () => { isDragging = false; setTimeout(() => this.threeAutoRotate = true, 3000); });
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const dist = this.threeCamera.position.length();
+        const newDist = Math.max(5, Math.min(25, dist + e.deltaY * 0.01));
+        this.threeCamera.position.normalize().multiplyScalar(newDist);
+      });
+      this.threeInited = true;
+      this.animateThreeJS();
+    } catch(e) { console.log('ThreeJS init failed:', e); }
   },
+
+  animateThreeJS() {
+    if (!this.threeInited) return;
+    requestAnimationFrame(() => this.animateThreeJS());
+    if (this.threeAutoRotate) this.threeRotation += 0.005;
+    this.threeReactor.rotation.y = this.threeRotation;
+    const dist = this.threeCamera.position.length();
+    this.threeCamera.position.x = Math.sin(this.threeRotation) * dist * 0.7;
+    this.threeCamera.position.z = Math.cos(this.threeRotation) * dist * 0.7;
+    this.threeCamera.lookAt(0, 0, 0);
+    if (this.threeFuel) {
+      const powerRatio = Math.min(1, this.power / 3000);
+      this.threeFuel.material.opacity = 0.3 + powerRatio * 0.7;
+      this.threeFuel.material.color.setHSL(0.08 + powerRatio * 0.05, 1, 0.5);
+      this.threePointLight.intensity = 0.5 + powerRatio * 2;
+    }
+    const rodHeight = (this.rodPosition / 100) * 2.5;
+    this.threeRods.forEach((rod, i) => {
+      rod.position.y = 1 - rodHeight + (i % 3) * 0.1;
+    });
+    this.threeRenderer.render(this.threeScene, this.threeCamera);
+  },
+
+  draw3D() {
+    if (!this.threeInited) this.initThreeJS();
+  },
+
 
   // 绘制剖面图
   drawSection() {
