@@ -540,132 +540,325 @@ input:focus, textarea:focus { border-color: var(--purple); }
 
         <!-- 右侧：监控面板 -->
         <div style="background:var(--bg2);border-radius:10px;padding:16px;">
-          <h3 style="margin-bottom:12px;font-size:16px;">📊 实时监控</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">堆芯温度</div>
-              <div style="font-size:20px;font-weight:700;color:var(--yellow);" id="coreTemp">280</div>
-              <div style="font-size:10px;color:var(--muted);">°C</div>
+          <h3 style="margin-bottom:12px;font-size:16px;">📊 实时监控（20项）</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">堆芯温度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--yellow);" id="coreTemp">280</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
             </div>
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">一回路压力</div>
-              <div style="font-size:20px;font-weight:700;color:var(--blue);" id="pressure">10</div>
-              <div style="font-size:10px;color:var(--muted);">MPa</div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">一回路压力</div>
+              <div style="font-size:16px;font-weight:700;color:var(--blue);" id="pressure">10</div>
+              <div style="font-size:9px;color:var(--muted);">MPa</div>
             </div>
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">冷却剂流量</div>
-              <div style="font-size:20px;font-weight:700;color:var(--cyan);" id="coolantFlow">0</div>
-              <div style="font-size:10px;color:var(--muted);">m³/h</div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">冷却剂流量</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="coolantFlow">0</div>
+              <div style="font-size:9px;color:var(--muted);">m³/h</div>
             </div>
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">辐射水平</div>
-              <div style="font-size:20px;font-weight:700;color:var(--green);" id="radiation">0.1</div>
-              <div style="font-size:10px;color:var(--muted);">μSv/h</div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">辐射水平</div>
+              <div style="font-size:16px;font-weight:700;color:var(--green);" id="radiation">0.1</div>
+              <div style="font-size:9px;color:var(--muted);">μSv/h</div>
             </div>
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">蒸汽发生器</div>
-              <div style="font-size:20px;font-weight:700;color:var(--orange);" id="steamGen">0</div>
-              <div style="font-size:10px;color:var(--muted);">°C</div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">蒸汽发生器</div>
+              <div style="font-size:16px;font-weight:700;color:var(--orange);" id="steamGen">0</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
             </div>
-            <div style="background:var(--bg);padding:10px;border-radius:6px;">
-              <div style="font-size:11px;color:var(--muted);">涡轮机转速</div>
-              <div style="font-size:20px;font-weight:700;color:var(--pink);" id="turbineRPM">0</div>
-              <div style="font-size:10px;color:var(--muted);">RPM</div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">涡轮机转速</div>
+              <div style="font-size:16px;font-weight:700;color:var(--pink);" id="turbineRPM">0</div>
+              <div style="font-size:9px;color:var(--muted);">RPM</div>
             </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">稳压器水位</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="pressurizerLevel">50</div>
+              <div style="font-size:9px;color:var(--muted);">%</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">稳压器压力</div>
+              <div style="font-size:16px;font-weight:700;color:var(--blue);" id="pressurizerPressure">10</div>
+              <div style="font-size:9px;color:var(--muted);">MPa</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">中子通量</div>
+              <div style="font-size:16px;font-weight:700;color:var(--yellow);" id="neutronFlux">0</div>
+              <div style="font-size:9px;color:var(--muted);">%</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">硼浓度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--purple2);" id="boronDisplay">1000</div>
+              <div style="font-size:9px;color:var(--muted);">ppm</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">电功率</div>
+              <div style="font-size:16px;font-weight:700;color:var(--green);" id="electricPower">0</div>
+              <div style="font-size:9px;color:var(--muted);">MWe</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">安全壳压力</div>
+              <div style="font-size:16px;font-weight:700;color:var(--orange);" id="containmentPressure">0.1</div>
+              <div style="font-size:9px;color:var(--muted);">MPa</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">安全壳温度</div>
+              <div style="font-size:16px;font-weight:700;color:var(--red);" id="containmentTemp">25</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">乏燃料池</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="spentFuelTemp">30</div>
+              <div style="font-size:9px;color:var(--muted);">°C</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">冷凝器真空</div>
+              <div style="font-size:16px;font-weight:700;color:var(--blue);" id="condenserVacuum">0</div>
+              <div style="font-size:9px;color:var(--muted);">kPa</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">给水流量</div>
+              <div style="font-size:16px;font-weight:700;color:var(--cyan);" id="feedwaterFlow">0</div>
+              <div style="font-size:9px;color:var(--muted);">kg/s</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">主蒸汽流量</div>
+              <div style="font-size:16px;font-weight:700;color:var(--orange);" id="steamFlow">0</div>
+              <div style="font-size:9px;color:var(--muted);">kg/s</div>
+            </div>
+            <div style="background:var(--bg);padding:8px;border-radius:6px;text-align:center;">
+              <div style="font-size:10px;color:var(--muted);">反应性</div>
+              <div style="font-size:16px;font-weight:700;color:var(--pink);" id="reactivityDisplay">0</div>
+              <div style="font-size:9px;color:var(--muted);">β</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 九宫格房间监控 -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
+        <h3 style="margin-bottom:12px;font-size:16px;">🏭 各房间实时监控（九宫格）</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--red);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🔥 反应堆室</div>
+            <div style="font-size:11px;color:var(--muted);">温度: <span id="roomReactorTemp" style="color:var(--yellow);">280°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">辐射: <span id="roomReactorRad" style="color:var(--green);">0.1μSv</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomReactorStatus" style="color:var(--green);">正常</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--cyan);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">⚡ 涡轮机室</div>
+            <div style="font-size:11px;color:var(--muted);">转速: <span id="roomTurbineRPM" style="color:var(--pink);">0RPM</span></div>
+            <div style="font-size:11px;color:var(--muted);">振动: <span id="roomTurbineVib" style="color:var(--green);">正常</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomTurbineStatus" style="color:var(--muted);">停运</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--orange);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💨 蒸汽发生器室</div>
+            <div style="font-size:11px;color:var(--muted);">温度: <span id="roomSteamTemp" style="color:var(--orange);">0°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">水位: <span id="roomSteamLevel" style="color:var(--cyan);">50%</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomSteamStatus" style="color:var(--muted);">停运</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--yellow);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🔌 电气室</div>
+            <div style="font-size:11px;color:var(--muted);">电压: <span id="roomElecVoltage" style="color:var(--yellow);">0kV</span></div>
+            <div style="font-size:11px;color:var(--muted);">频率: <span id="roomElecFreq" style="color:var(--green);">0Hz</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomElecStatus" style="color:var(--muted);">断电</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--blue);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎛️ 控制室</div>
+            <div style="font-size:11px;color:var(--muted);">操作员: <span style="color:var(--cyan);">在岗</span></div>
+            <div style="font-size:11px;color:var(--muted);">报警数: <span id="roomControlAlarms" style="color:var(--green);">0</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span style="color:var(--green);">正常</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--purple2);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🛡️ 安全壳</div>
+            <div style="font-size:11px;color:var(--muted);">压力: <span id="roomContainPressure" style="color:var(--orange);">0.1MPa</span></div>
+            <div style="font-size:11px;color:var(--muted);">温度: <span id="roomContainTemp" style="color:var(--red);">25°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomContainStatus" style="color:var(--green);">完整</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--green);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">☢️ 乏燃料池</div>
+            <div style="font-size:11px;color:var(--muted);">温度: <span id="roomSpentTemp" style="color:var(--cyan);">30°C</span></div>
+            <div style="font-size:11px;color:var(--muted);">水位: <span id="roomSpentLevel" style="color:var(--blue);">正常</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomSpentStatus" style="color:var(--green);">正常</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--cyan);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">💧 冷却泵房</div>
+            <div style="font-size:11px;color:var(--muted);">主泵: <span id="roomPumpMain" style="color:var(--red);">停运</span></div>
+            <div style="font-size:11px;color:var(--muted);">备用泵: <span id="roomPumpBackup" style="color:var(--red);">停运</span></div>
+            <div style="font-size:11px;color:var(--muted);">流量: <span id="roomPumpFlow" style="color:var(--cyan);">0m³/h</span></div>
+          </div>
+          <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--yellow);">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🚨 应急柴油发电机</div>
+            <div style="font-size:11px;color:var(--muted);">1号机: <span id="roomDiesel1" style="color:var(--red);">备用</span></div>
+            <div style="font-size:11px;color:var(--muted);">2号机: <span id="roomDiesel2" style="color:var(--red);">备用</span></div>
+            <div style="font-size:11px;color:var(--muted);">状态: <span id="roomDieselStatus" style="color:var(--muted);">待机</span></div>
           </div>
         </div>
       </div>
 
       <!-- 控制面板 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;">
         <!-- 控制棒控制 -->
-        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
-          <h3 style="margin-bottom:12px;font-size:16px;">⚙️ 控制棒控制</h3>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;color:var(--muted);">控制棒位置</label>
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">⚙️ 控制棒</h3>
+          <div style="margin-bottom:10px;">
             <input type="range" id="rodControl" min="0" max="100" value="100" style="width:100%;" oninput="updateRodPosition(this.value)">
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
-              <span>完全拔出(0%)</span>
-              <span>完全插入(100%)</span>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);">
+              <span>全拔</span><span id="rodDepth">100%</span><span>全插</span>
             </div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="setRodPosition(0)">↑ 全拔</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="setRodPosition(50)">半插</button>
-            <button class="btn btn-danger btn-sm" style="flex:1;" onclick="setRodPosition(100)">↓ 全插</button>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(0)">全拔</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(50)">半插</button>
+            <button class="btn btn-danger btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(100)">全插</button>
           </div>
         </div>
 
         <!-- 冷却系统 -->
-        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
-          <h3 style="margin-bottom:12px;font-size:16px;">💧 冷却系统</h3>
-          <div style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:13px;">主冷却泵</span>
-              <button class="btn btn-sm" id="pumpBtn" onclick="togglePump()" style="background:var(--red);">关闭</button>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:13px;">备用冷却泵</span>
-              <button class="btn btn-sm" id="backupPumpBtn" onclick="toggleBackupPump()" style="background:var(--red);">关闭</button>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:13px;">应急冷却</span>
-              <button class="btn btn-sm" id="emergencyCoolBtn" onclick="toggleEmergencyCool()" style="background:var(--red);">关闭</button>
-            </div>
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">💧 冷却系统</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">主冷却泵</span>
+            <button class="btn btn-sm" id="pumpBtn" onclick="togglePump()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">备用冷却泵</span>
+            <button class="btn btn-sm" id="backupPumpBtn" onclick="toggleBackupPump()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">应急冷却</span>
+            <button class="btn btn-sm" id="emergencyCoolBtn" onclick="toggleEmergencyCool()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
-        <!-- 涡轮机 -->
-        <div style="background:var(--bg2);border-radius:10px;padding:16px;">
-          <h3 style="margin-bottom:12px;font-size:16px;">⚡ 涡轮发电机</h3>
-          <div style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:13px;">1号涡轮机</span>
-              <button class="btn btn-sm" id="turbine1Btn" onclick="toggleTurbine(1)" style="background:var(--red);">关闭</button>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-size:13px;">2号涡轮机</span>
-              <button class="btn btn-sm" id="turbine2Btn" onclick="toggleTurbine(2)" style="background:var(--red);">关闭</button>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:13px;">并网开关</span>
-              <button class="btn btn-sm" id="gridBtn" onclick="toggleGrid()" style="background:var(--red);">断开</button>
-            </div>
+        <!-- 涡轮发电机 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">⚡ 涡轮发电</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">1号涡轮机</span>
+            <button class="btn btn-sm" id="turbine1Btn" onclick="toggleTurbine(1)" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">2号涡轮机</span>
+            <button class="btn btn-sm" id="turbine2Btn" onclick="toggleTurbine(2)" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">并网开关</span>
+            <button class="btn btn-sm" id="gridBtn" onclick="toggleGrid()" style="background:var(--red);font-size:11px;">断开</button>
+          </div>
+        </div>
+
+        <!-- 化学控制 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🧪 化学控制</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">硼浓度: <span id="boronValue">1000</span>ppm</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(-100)">减硼</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(100)">加硼</button>
+          </div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">稳压器加热器</span>
+            <button class="btn btn-sm" id="heaterBtn" onclick="Nuclear.toggleHeater()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+        </div>
+
+        <!-- 安全系统 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🛡️ 安全系统</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">安全壳喷淋</span>
+            <button class="btn btn-sm" id="sprayBtn" onclick="Nuclear.toggleSpray()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">安全注射</span>
+            <button class="btn btn-sm" id="safetyInjectionBtn" onclick="Nuclear.toggleSafetyInjection()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">余热排出</span>
+            <button class="btn btn-sm" id="decayHeatBtn" onclick="Nuclear.toggleDecayHeat()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+        </div>
+
+        <!-- 应急电源 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🚨 应急电源</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">1号柴油机</span>
+            <button class="btn btn-sm" id="diesel1Btn" onclick="Nuclear.toggleDiesel(1)" style="background:var(--red);font-size:11px;">备用</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">2号柴油机</span>
+            <button class="btn btn-sm" id="diesel2Btn" onclick="Nuclear.toggleDiesel(2)" style="background:var(--red);font-size:11px;">备用</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">辅助给水</span>
+            <button class="btn btn-sm" id="auxFeedBtn" onclick="Nuclear.toggleAuxFeedwater()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+        </div>
+
+        <!-- 蒸汽系统 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">💨 蒸汽系统</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">主蒸汽阀</span>
+            <button class="btn btn-sm" id="steamValveBtn" onclick="Nuclear.toggleSteamValve()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;">给水调节阀</span>
+            <button class="btn btn-sm" id="feedValveBtn" onclick="Nuclear.toggleFeedValve()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">冷凝器</span>
+            <button class="btn btn-sm" id="condenserBtn" onclick="Nuclear.toggleCondenser()" style="background:var(--red);font-size:11px;">关闭</button>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:14px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🎮 快捷操作</h3>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.startupReactor()">🚀 开堆</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.normalShutdown()">⏻ 停堆</button>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button class="btn btn-sm" style="flex:1;font-size:11px;background:var(--yellow);color:#000;" onclick="Nuclear.AZ3powerDown()">AZ3降功率</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.resetReactor()">🔄 重置</button>
+          </div>
+          <button class="btn btn-danger btn-sm" style="width:100%;font-size:11px;" onclick="Nuclear.AZ5shutdown()">☢️ AZ5紧急停堆</button>
         </div>
       </div>
 
-      <!-- 紧急控制 -->
-      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:center;">
-        <button class="btn btn-danger" style="padding:14px;font-size:16px;font-weight:700;" onclick="Nuclear.AZ5shutdown()">
-          ☢️ AZ5 紧急停堆
-        </button>
-        <button class="btn" style="padding:14px;font-size:14px;background:var(--yellow);color:#000;" onclick="Nuclear.AZ3powerDown()">
-          ⬇️ AZ3 自动降功率
-        </button>
-        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('steam_explosion')">
-          💥 蒸汽爆炸
-        </button>
-        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('coolant_loss')">
-          🌡️ 失冷事故
-        </button>
-        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('rod_ejection')">
-          ⬆️ 弹棒事故
-        </button>
-        <button class="btn btn-secondary" style="padding:14px;" onclick="Nuclear.triggerAccident('station_blackout')">
-          ⚡ 全厂断电
-        </button>
-        <button class="btn btn-primary" style="padding:14px;" onclick="Nuclear.toggleSpray()">
-          🚿 安全壳喷淋
-        </button>
-        <button class="btn btn-primary" style="padding:14px;" onclick="Nuclear.resetReactor()">
-          🔄 重置反应堆
-        </button>
+      <!-- 事故模拟 -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
+        <h3 style="margin-bottom:12px;font-size:16px;">💥 事故模拟（15种）</h3>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_explosion')">💥 蒸汽爆炸</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('coolant_loss')">🌡️ 失冷事故</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('rod_ejection')">⬆️ 弹棒事故</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('station_blackout')">⚡ 全厂断电</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('sgtr')">🔧 蒸汽发生器管破</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('safety_valve')">🔓 安全阀卡开</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('pump_seizure')">🔧 主泵卡转子</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('feedwater_loss')">💧 给水丧失</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_line_break')">💨 蒸汽管道破</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('primary_break')">🔴 一回路破口</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('spent_fuel_loss')">☢️ 乏燃料失冷</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('earthquake')">🌍 地震</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('tsunami')">🌊 海啸</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('plane_crash')">✈️ 飞机撞击</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('hydrogen_explosion')">💨 氢气爆炸</button>
+        </div>
       </div>
 
       <!-- 事件日志 -->
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
-        <h3 style="margin-bottom:12px;font-size:16px;">📋 事件日志</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 style="font-size:16px;margin:0;">📋 事件日志</h3>
+          <button class="btn btn-secondary btn-sm" onclick="Nuclear.clearLog()">🗑️ 清除日志</button>
+        </div>
         <div id="nuclearLog" style="background:#000;color:var(--green);font-family:monospace;font-size:12px;padding:12px;border-radius:6px;height:150px;overflow-y:auto;">
           [系统] RBMK 反应堆模拟器已启动<br>
           [系统] 反应堆处于冷停堆状态<br>
@@ -872,7 +1065,8 @@ const Nuclear = {
   plant: 'chernobyl',
   rodPosition: 100,        // 控制棒插入深度 0-100
   reactivity: 0,           // 反应性
-  power: 0,                // 功率 MW
+  power: 0,                // 热功率 MW
+  electricPower: 0,        // 电功率 MWe
   coreTemp: 280,           // 堆芯温度 °C
   pressure: 10,            // 一回路压力 MPa
   coolantFlow: 0,          // 冷却剂流量 m³/h
@@ -885,12 +1079,31 @@ const Nuclear = {
   backupPumpOn: false,     // 备用冷却泵
   emergencyCoolOn: false,  // 应急冷却
   sprayOn: false,          // 安全壳喷淋
+  safetyInjectionOn: false, // 安全注射
+  decayHeatOn: false,      // 余热排出
+  heaterOn: false,         // 稳压器加热器
+  diesel1On: false,        // 1号柴油机
+  diesel2On: false,        // 2号柴油机
+  auxFeedOn: false,        // 辅助给水
+  steamValveOn: false,     // 主蒸汽阀
+  feedValveOn: false,      // 给水调节阀
+  condenserOn: false,      // 冷凝器
   turbine1On: false,       // 1号涡轮机
   turbine2On: false,       // 2号涡轮机
   gridConnected: false,    // 并网
   reactorRunning: false,   // 反应堆是否运行
-  startupPhase: 0,         // 开堆阶段 0=停堆 1=升温 2=升压 3=临界 4=功率运行
+  startupPhase: 0,         // 开堆阶段
   accidentType: null,      // 事故类型
+  // 新增参数
+  pressurizerLevel: 50,    // 稳压器水位 %
+  pressurizerPressure: 10, // 稳压器压力 MPa
+  neutronFlux: 0,          // 中子通量 %
+  containmentPressure: 0.1, // 安全壳压力 MPa
+  containmentTemp: 25,     // 安全壳温度 °C
+  spentFuelTemp: 30,       // 乏燃料池温度 °C
+  condenserVacuum: 0,      // 冷凝器真空 kPa
+  feedwaterFlow: 0,        // 给水流量 kg/s
+  steamFlow: 0,            // 主蒸汽流量 kg/s
   simulationInterval: null,
   canvas: null,
   ctx: null,
@@ -1017,11 +1230,105 @@ const Nuclear = {
   // 安全壳喷淋
   toggleSpray() {
     this.sprayOn = !this.sprayOn;
+    const btn = document.getElementById('sprayBtn');
+    if (btn) { btn.textContent = this.sprayOn ? '运行' : '关闭'; btn.style.background = this.sprayOn ? 'var(--green)' : 'var(--red)'; }
     this.addLog('安全', `安全壳喷淋系统${this.sprayOn ? '启动' : '停止'}`);
     if (this.sprayOn) {
       this.radiation *= 0.5;
-      this.pressure *= 0.8;
+      this.containmentPressure *= 0.8;
+      this.containmentTemp *= 0.9;
     }
+  },
+
+  // 硼浓度调节
+  adjustBoron(amount) {
+    this.boronConcentration = Math.max(0, Math.min(2500, this.boronConcentration + amount));
+    document.getElementById('boronValue').textContent = this.boronConcentration;
+    this.addLog('化学', `硼浓度调整为 ${this.boronConcentration} ppm`);
+  },
+
+  // 稳压器加热器
+  toggleHeater() {
+    this.heaterOn = !this.heaterOn;
+    const btn = document.getElementById('heaterBtn');
+    if (btn) { btn.textContent = this.heaterOn ? '运行' : '关闭'; btn.style.background = this.heaterOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('操作', `稳压器加热器${this.heaterOn ? '启动' : '停止'}`);
+  },
+
+  // 安全注射
+  toggleSafetyInjection() {
+    this.safetyInjectionOn = !this.safetyInjectionOn;
+    const btn = document.getElementById('safetyInjectionBtn');
+    if (btn) { btn.textContent = this.safetyInjectionOn ? '运行' : '关闭'; btn.style.background = this.safetyInjectionOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('安全', `安全注射系统${this.safetyInjectionOn ? '启动' : '停止'}`);
+    if (this.safetyInjectionOn) {
+      this.boronConcentration += 500;
+      document.getElementById('boronValue').textContent = this.boronConcentration;
+    }
+  },
+
+  // 余热排出
+  toggleDecayHeat() {
+    this.decayHeatOn = !this.decayHeatOn;
+    const btn = document.getElementById('decayHeatBtn');
+    if (btn) { btn.textContent = this.decayHeatOn ? '运行' : '关闭'; btn.style.background = this.decayHeatOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('安全', `余热排出系统${this.decayHeatOn ? '启动' : '停止'}`);
+  },
+
+  // 柴油发电机
+  toggleDiesel(num) {
+    if (num === 1) {
+      this.diesel1On = !this.diesel1On;
+      const btn = document.getElementById('diesel1Btn');
+      if (btn) { btn.textContent = this.diesel1On ? '运行' : '备用'; btn.style.background = this.diesel1On ? 'var(--green)' : 'var(--red)'; }
+      this.addLog('应急', `1号柴油发电机${this.diesel1On ? '启动' : '停止'}`);
+    } else {
+      this.diesel2On = !this.diesel2On;
+      const btn = document.getElementById('diesel2Btn');
+      if (btn) { btn.textContent = this.diesel2On ? '运行' : '备用'; btn.style.background = this.diesel2On ? 'var(--green)' : 'var(--red)'; }
+      this.addLog('应急', `2号柴油发电机${this.diesel2On ? '启动' : '停止'}`);
+    }
+  },
+
+  // 辅助给水
+  toggleAuxFeedwater() {
+    this.auxFeedOn = !this.auxFeedOn;
+    const btn = document.getElementById('auxFeedBtn');
+    if (btn) { btn.textContent = this.auxFeedOn ? '运行' : '关闭'; btn.style.background = this.auxFeedOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('应急', `辅助给水系统${this.auxFeedOn ? '启动' : '停止'}`);
+  },
+
+  // 主蒸汽阀
+  toggleSteamValve() {
+    this.steamValveOn = !this.steamValveOn;
+    const btn = document.getElementById('steamValveBtn');
+    if (btn) { btn.textContent = this.steamValveOn ? '开启' : '关闭'; btn.style.background = this.steamValveOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('操作', `主蒸汽阀门${this.steamValveOn ? '开启' : '关闭'}`);
+  },
+
+  // 给水调节阀
+  toggleFeedValve() {
+    this.feedValveOn = !this.feedValveOn;
+    const btn = document.getElementById('feedValveBtn');
+    if (btn) { btn.textContent = this.feedValveOn ? '开启' : '关闭'; btn.style.background = this.feedValveOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('操作', `给水调节阀${this.feedValveOn ? '开启' : '关闭'}`);
+  },
+
+  // 冷凝器
+  toggleCondenser() {
+    this.condenserOn = !this.condenserOn;
+    const btn = document.getElementById('condenserBtn');
+    if (btn) { btn.textContent = this.condenserOn ? '运行' : '关闭'; btn.style.background = this.condenserOn ? 'var(--green)' : 'var(--red)'; }
+    this.addLog('操作', `冷凝器${this.condenserOn ? '启动' : '停止'}`);
+  },
+
+  // 清除日志
+  clearLog() {
+    const log = document.getElementById('nuclearLog');
+    if (log) {
+      log.innerHTML = '[系统] 日志已清除<br>';
+    }
+    this.alarms = [];
   },
 
   // 报警系统
@@ -1067,12 +1374,12 @@ const Nuclear = {
     const rt = REACTOR_TYPES[this.reactorType];
     const maxPower = rt.power;
 
-    // 计算反应性（控制棒拔出越多，反应性越高；硼浓度越高，反应性越低）
+    // 计算反应性
     const rodEffect = (100 - this.rodPosition) / 100;
     const boronEffect = this.boronConcentration / 2000;
     this.reactivity = rodEffect * 1.5 - boronEffect - 0.3;
 
-    // RBMK 有正空泡系数，温度升高反应性上升（危险！）
+    // RBMK 正空泡系数
     if (this.reactorType === 'rbmk' && this.coreTemp > 300) {
       this.reactivity += (this.coreTemp - 300) * 0.001;
     }
@@ -1084,9 +1391,11 @@ const Nuclear = {
     } else {
       this.power += this.reactivity * 30;
     }
-    this.power = Math.max(0, Math.min(maxPower * 1.5, this.power)); // 超功率可达150%
+    this.power = Math.max(0, Math.min(maxPower * 1.5, this.power));
+    this.electricPower = this.power * 0.33 * (this.gridConnected ? 1 : 0) * (this.turbineRPM > 1000 ? 1 : 0);
+    this.neutronFlux = (this.power / maxPower) * 100;
 
-    // 堆芯温度变化
+    // 堆芯温度
     const targetTemp = rt.temp + (this.power / maxPower) * 200;
     this.coreTemp += (targetTemp - this.coreTemp) * 0.1;
 
@@ -1096,74 +1405,63 @@ const Nuclear = {
     if (this.backupPumpOn) coolingEffect += 30;
     if (this.emergencyCoolOn) coolingEffect += 80;
     if (this.sprayOn) coolingEffect += 20;
+    if (this.decayHeatOn) coolingEffect += 40;
+    if (this.safetyInjectionOn) coolingEffect += 60;
     this.coolantFlow = coolingEffect * 10;
     this.coreTemp -= coolingEffect * 0.05;
     this.coreTemp = Math.max(20, this.coreTemp);
 
-    // 压力变化
+    // 压力
     const targetPressure = rt.pressure + (this.coreTemp - rt.temp) * 0.05;
     this.pressure += (targetPressure - this.pressure) * 0.1;
     this.pressure = Math.max(0, this.pressure);
+    this.pressurizerPressure = this.pressure;
 
-    // 辐射水平
+    // 稳压器水位
+    const targetLevel = 50 + (this.pressure - rt.pressure) * 2;
+    this.pressurizerLevel += (targetLevel - this.pressurizerLevel) * 0.05;
+    this.pressurizerLevel = Math.max(0, Math.min(100, this.pressurizerLevel));
+    if (this.heaterOn) this.pressurizerPressure += 0.1;
+
+    // 辐射
     this.radiation = 0.1 + (this.power / maxPower) * 0.5;
     if (this.coreTemp > 1000) this.radiation += (this.coreTemp - 1000) * 0.1;
-    if (this.accidentType === 'fuel_melt') this.radiation += 100;
+    if (this.accidentType === 'fuel_melt' || this.accidentType === 'containment_failure') this.radiation += 100;
 
     // 蒸汽发生器
     this.steamGenTemp = Math.max(0, this.coreTemp - 150);
+    this.steamFlow = this.steamValveOn ? this.steamGenTemp * 0.5 : 0;
+    this.feedwaterFlow = (this.feedValveOn || this.auxFeedOn) ? this.steamFlow * 0.9 : 0;
 
     // 涡轮机
     const targetRPM = (this.turbine1On ? 1500 : 0) + (this.turbine2On ? 1500 : 0);
-    if (this.steamGenTemp > 100) {
+    if (this.steamGenTemp > 100 && this.steamValveOn) {
       this.turbineRPM += (targetRPM - this.turbineRPM) * 0.05;
     } else {
       this.turbineRPM *= 0.95;
     }
+    this.condenserVacuum = this.condenserOn ? 5 : 0;
 
     // 发电量
     if (this.gridConnected && this.turbineRPM > 1000) {
       this.output += this.turbineRPM * 0.0001 * (this.power / maxPower);
     }
 
-    // 事故处理
-    if (this.accidentType === 'steam_explosion') {
-      this.pressure += 2;
-      this.coreTemp += 20;
-      if (this.pressure > rt.pressure * 2) {
-        this.addLog('危险', '一回路超压！蒸汽爆炸！安全壳失效！');
-        this.radiation += 50;
-        this.accidentType = 'containment_failure';
-      }
-    }
-    if (this.accidentType === 'coolant_loss') {
-      this.coolantFlow *= 0.3;
-      this.pressure *= 0.95;
-      this.coreTemp += 15;
-      if (this.coreTemp > 1200) {
-        this.addLog('危险', '堆芯熔毁！燃料棒熔化！');
-        this.accidentType = 'fuel_melt';
-      }
-    }
-    if (this.accidentType === 'rod_ejection') {
-      this.rodPosition = Math.max(0, this.rodPosition - 30);
-      document.getElementById('rodControl').value = this.rodPosition;
-      this.reactivity += 0.5;
-      this.addLog('事故', '控制棒弹出！功率急剧上升！');
-      this.accidentType = null; // 一次性事件
-    }
-    if (this.accidentType === 'station_blackout') {
-      this.pumpOn = false;
-      this.backupPumpOn = false;
-      this.turbine1On = false;
-      this.turbine2On = false;
-      document.getElementById('pumpBtn').textContent = '关闭';
-      document.getElementById('pumpBtn').style.background = 'var(--red)';
-      this.addLog('事故', '全厂断电！冷却泵停运！堆芯升温中！');
-      this.coreTemp += 10;
+    // 安全壳
+    this.containmentTemp += (this.coreTemp * 0.01 - this.containmentTemp) * 0.02;
+    if (this.accidentType === 'containment_failure') {
+      this.containmentPressure = 0.1;
+    } else {
+      this.containmentPressure += (this.pressure * 0.01 - this.containmentPressure) * 0.01;
     }
 
-    // 超温报警
+    // 乏燃料池
+    this.spentFuelTemp += (this.power * 0.001 + 30 - this.spentFuelTemp) * 0.01;
+
+    // 事故处理
+    this.handleAccidents(rt);
+
+    // 状态判断
     if (this.coreTemp > rt.temp + 200 && this.coreTemp <= 1000) {
       this.updateStatus('warning', '温度偏高');
     } else if (this.coreTemp > 1000) {
@@ -1177,21 +1475,252 @@ const Nuclear = {
     }
 
     this.updateDisplay();
+    this.updateRooms();
     this.drawReactor();
+  },
+
+  // 事故处理
+  handleAccidents(rt) {
+    if (!this.accidentType) return;
+    
+    const accidents = {
+      steam_explosion: () => {
+        this.pressure += 2;
+        this.coreTemp += 20;
+        if (this.pressure > rt.pressure * 2) {
+          this.addLog('危险', '一回路超压！蒸汽爆炸！安全壳失效！');
+          this.radiation += 50;
+          this.containmentPressure = 0.5;
+          this.accidentType = 'containment_failure';
+        }
+      },
+      coolant_loss: () => {
+        this.coolantFlow *= 0.3;
+        this.pressure *= 0.95;
+        this.coreTemp += 15;
+        if (this.coreTemp > 1200) {
+          this.addLog('危险', '堆芯熔毁！燃料棒熔化！');
+          this.accidentType = 'fuel_melt';
+        }
+      },
+      rod_ejection: () => {
+        this.rodPosition = Math.max(0, this.rodPosition - 30);
+        document.getElementById('rodControl').value = this.rodPosition;
+        this.reactivity += 0.5;
+        this.addLog('事故', '控制棒弹出！功率急剧上升！');
+        this.accidentType = null;
+      },
+      station_blackout: () => {
+        this.pumpOn = false;
+        this.backupPumpOn = false;
+        this.turbine1On = false;
+        this.turbine2On = false;
+        this.gridConnected = false;
+        this.steamValveOn = false;
+        this.feedValveOn = false;
+        this.condenserOn = false;
+        this.updateButtonStates();
+        this.addLog('事故', '全厂断电！冷却泵停运！启动柴油发电机！');
+        this.coreTemp += 10;
+        if (!this.diesel1On && !this.diesel2On) {
+          this.addLog('警告', '应急电源未启动！堆芯升温加速！');
+        }
+      },
+      sgtr: () => {
+        this.steamGenTemp -= 10;
+        this.radiation += 0.5;
+        this.addLog('事故', '蒸汽发生器传热管破裂！放射性泄漏到二回路！');
+        this.accidentType = null;
+      },
+      safety_valve: () => {
+        this.pressure *= 0.9;
+        this.addLog('事故', '稳压器安全阀卡开！一回路卸压！');
+      },
+      pump_seizure: () => {
+        this.pumpOn = false;
+        document.getElementById('pumpBtn').textContent = '故障';
+        document.getElementById('pumpBtn').style.background = 'var(--yellow)';
+        this.coolantFlow *= 0.5;
+        this.addLog('事故', '主冷却泵卡转子！流量减半！');
+        this.accidentType = null;
+      },
+      feedwater_loss: () => {
+        this.feedValveOn = false;
+        this.feedwaterFlow = 0;
+        this.steamGenTemp += 20;
+        this.addLog('事故', '给水丧失！蒸汽发生器水位下降！');
+        if (!this.auxFeedOn) {
+          this.addLog('警告', '辅助给水未启动！');
+        }
+      },
+      steam_line_break: () => {
+        this.steamFlow = 0;
+        this.pressure -= 1;
+        this.turbineRPM *= 0.8;
+        this.addLog('事故', '主蒸汽管道破裂！蒸汽大量泄漏！');
+      },
+      primary_break: () => {
+        this.coolantFlow = 0;
+        this.pressure *= 0.5;
+        this.coreTemp += 30;
+        this.radiation += 10;
+        this.containmentPressure += 0.2;
+        this.addLog('严重', '一回路大破口！冷却剂喷放！安全注射！');
+        if (this.coreTemp > 1200) {
+          this.accidentType = 'fuel_melt';
+        }
+      },
+      spent_fuel_loss: () => {
+        this.spentFuelTemp += 5;
+        this.radiation += 1;
+        this.addLog('事故', '乏燃料池失去冷却！温度上升！');
+        if (this.spentFuelTemp > 100) {
+          this.addLog('危险', '乏燃料池沸腾！辐射泄漏！');
+        }
+      },
+      earthquake: () => {
+        this.addLog('灾难', '地震！所有设备受到冲击！');
+        if (Math.random() > 0.5) {
+          this.pumpOn = false;
+          this.turbine1On = false;
+          this.addLog('损坏', '地震导致设备损坏！');
+        }
+        this.accidentType = null;
+      },
+      tsunami: () => {
+        this.addLog('灾难', '海啸！厂区被淹！应急柴油发电机失效！');
+        this.diesel1On = false;
+        this.diesel2On = false;
+        this.pumpOn = false;
+        this.gridConnected = false;
+        this.updateButtonStates();
+        this.coreTemp += 20;
+        this.accidentType = 'station_blackout';
+      },
+      plane_crash: () => {
+        this.addLog('灾难', '飞机撞击安全壳！安全壳受损！');
+        this.containmentPressure += 0.3;
+        this.radiation += 5;
+        this.accidentType = 'containment_failure';
+      },
+      hydrogen_explosion: () => {
+        this.addLog('灾难', '氢气爆炸！安全壳顶部被炸飞！');
+        this.containmentPressure = 0.1;
+        this.radiation += 200;
+        this.accidentType = 'containment_failure';
+      },
+      fuel_melt: () => {
+        this.radiation += 50;
+        this.containmentTemp += 10;
+        this.addLog('严重', '堆芯熔毁中！熔融物向下沉降！');
+      },
+      containment_failure: () => {
+        this.radiation += 20;
+        this.addLog('严重', '安全壳失效！放射性物质向环境释放！');
+      }
+    };
+    
+    if (accidents[this.accidentType]) {
+      accidents[this.accidentType]();
+    }
+  },
+
+  // 更新所有按钮状态
+  updateButtonStates() {
+    const states = [
+      ['pumpBtn', this.pumpOn, '运行', '关闭'],
+      ['backupPumpBtn', this.backupPumpOn, '运行', '关闭'],
+      ['emergencyCoolBtn', this.emergencyCoolOn, '运行', '关闭'],
+      ['sprayBtn', this.sprayOn, '运行', '关闭'],
+      ['safetyInjectionBtn', this.safetyInjectionOn, '运行', '关闭'],
+      ['decayHeatBtn', this.decayHeatOn, '运行', '关闭'],
+      ['heaterBtn', this.heaterOn, '运行', '关闭'],
+      ['turbine1Btn', this.turbine1On, '运行', '关闭'],
+      ['turbine2Btn', this.turbine2On, '运行', '关闭'],
+      ['gridBtn', this.gridConnected, '并网', '断开'],
+      ['steamValveBtn', this.steamValveOn, '开启', '关闭'],
+      ['feedValveBtn', this.feedValveOn, '开启', '关闭'],
+      ['condenserBtn', this.condenserOn, '运行', '关闭'],
+      ['auxFeedBtn', this.auxFeedOn, '运行', '关闭'],
+    ];
+    states.forEach(([id, on, onText, offText]) => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.textContent = on ? onText : offText;
+        btn.style.background = on ? 'var(--green)' : 'var(--red)';
+      }
+    });
+    const d1 = document.getElementById('diesel1Btn');
+    if (d1) { d1.textContent = this.diesel1On ? '运行' : '备用'; d1.style.background = this.diesel1On ? 'var(--green)' : 'var(--red)'; }
+    const d2 = document.getElementById('diesel2Btn');
+    if (d2) { d2.textContent = this.diesel2On ? '运行' : '备用'; d2.style.background = this.diesel2On ? 'var(--green)' : 'var(--red)'; }
   },
 
   // 更新显示
   updateDisplay() {
-    document.getElementById('nucPower').textContent = Math.round(this.power);
-    document.getElementById('nucOutput').textContent = this.output.toFixed(1);
-    document.getElementById('coreTemp').textContent = Math.round(this.coreTemp);
-    document.getElementById('pressure').textContent = this.pressure.toFixed(1);
-    document.getElementById('coolantFlow').textContent = Math.round(this.coolantFlow);
-    document.getElementById('radiation').textContent = this.radiation.toFixed(2);
-    document.getElementById('steamGen').textContent = Math.round(this.steamGenTemp);
-    document.getElementById('turbineRPM').textContent = Math.round(this.turbineRPM);
-    document.getElementById('rodDepth').textContent = this.rodPosition;
-    document.getElementById('reactivity').textContent = this.reactivity.toFixed(2);
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('nucPower', Math.round(this.power));
+    set('nucOutput', this.output.toFixed(1));
+    set('coreTemp', Math.round(this.coreTemp));
+    set('pressure', this.pressure.toFixed(1));
+    set('coolantFlow', Math.round(this.coolantFlow));
+    set('radiation', this.radiation.toFixed(2));
+    set('steamGen', Math.round(this.steamGenTemp));
+    set('turbineRPM', Math.round(this.turbineRPM));
+    set('rodDepth', this.rodPosition + '%');
+    set('reactivity', this.reactivity.toFixed(2));
+    set('reactivityDisplay', this.reactivity.toFixed(2));
+    set('pressurizerLevel', Math.round(this.pressurizerLevel));
+    set('pressurizerPressure', this.pressurizerPressure.toFixed(1));
+    set('neutronFlux', this.neutronFlux.toFixed(1));
+    set('boronDisplay', this.boronConcentration);
+    set('boronValue', this.boronConcentration);
+    set('electricPower', this.electricPower.toFixed(0));
+    set('containmentPressure', this.containmentPressure.toFixed(2));
+    set('containmentTemp', Math.round(this.containmentTemp));
+    set('spentFuelTemp', Math.round(this.spentFuelTemp));
+    set('condenserVacuum', this.condenserVacuum.toFixed(1));
+    set('feedwaterFlow', this.feedwaterFlow.toFixed(1));
+    set('steamFlow', this.steamFlow.toFixed(1));
+  },
+
+  // 更新九宫格房间监控
+  updateRooms() {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    // 反应堆室
+    set('roomReactorTemp', Math.round(this.coreTemp) + '°C');
+    set('roomReactorRad', this.radiation.toFixed(1) + 'μSv');
+    set('roomReactorStatus', this.coreTemp > 1000 ? '危险' : this.power > 0 ? '运行' : '停堆');
+    // 涡轮机室
+    set('roomTurbineRPM', Math.round(this.turbineRPM) + 'RPM');
+    set('roomTurbineVib', this.turbineRPM > 2800 ? '振动大' : '正常');
+    set('roomTurbineStatus', this.turbine1On || this.turbine2On ? '运行' : '停运');
+    // 蒸汽发生器室
+    set('roomSteamTemp', Math.round(this.steamGenTemp) + '°C');
+    set('roomSteamLevel', Math.round(this.pressurizerLevel) + '%');
+    set('roomSteamStatus', this.steamGenTemp > 100 ? '运行' : '停运');
+    // 电气室
+    set('roomElecVoltage', this.gridConnected ? '220kV' : '0kV');
+    set('roomElecFreq', this.gridConnected ? '50Hz' : '0Hz');
+    set('roomElecStatus', this.gridConnected ? '并网' : (this.diesel1On || this.diesel2On ? '应急' : '断电'));
+    // 控制室
+    set('roomControlAlarms', this.alarms.length);
+    // 安全壳
+    set('roomContainPressure', this.containmentPressure.toFixed(2) + 'MPa');
+    set('roomContainTemp', Math.round(this.containmentTemp) + '°C');
+    set('roomContainStatus', this.accidentType === 'containment_failure' ? '失效' : '完整');
+    // 乏燃料池
+    set('roomSpentTemp', Math.round(this.spentFuelTemp) + '°C');
+    set('roomSpentLevel', this.spentFuelTemp > 80 ? '低' : '正常');
+    set('roomSpentStatus', this.spentFuelTemp > 100 ? '危险' : '正常');
+    // 冷却泵房
+    set('roomPumpMain', this.pumpOn ? '运行' : '停运');
+    set('roomPumpBackup', this.backupPumpOn ? '运行' : '停运');
+    set('roomPumpFlow', Math.round(this.coolantFlow) + 'm³/h');
+    // 柴油发电机
+    set('roomDiesel1', this.diesel1On ? '运行' : '备用');
+    set('roomDiesel2', this.diesel2On ? '运行' : '备用');
+    set('roomDieselStatus', this.diesel1On || this.diesel2On ? '供电' : '待机');
   },
 
   // 更新状态灯
@@ -1351,6 +1880,7 @@ const Nuclear = {
     this.rodPosition = 100;
     this.reactivity = 0;
     this.power = 0;
+    this.electricPower = 0;
     this.coreTemp = rt.temp;
     this.pressure = rt.pressure;
     this.coolantFlow = 0;
@@ -1363,22 +1893,36 @@ const Nuclear = {
     this.backupPumpOn = false;
     this.emergencyCoolOn = false;
     this.sprayOn = false;
+    this.safetyInjectionOn = false;
+    this.decayHeatOn = false;
+    this.heaterOn = false;
+    this.diesel1On = false;
+    this.diesel2On = false;
+    this.auxFeedOn = false;
+    this.steamValveOn = false;
+    this.feedValveOn = false;
+    this.condenserOn = false;
     this.turbine1On = false;
     this.turbine2On = false;
     this.gridConnected = false;
     this.reactorRunning = false;
     this.startupPhase = 0;
     this.accidentType = null;
+    this.pressurizerLevel = 50;
+    this.pressurizerPressure = rt.pressure;
+    this.neutronFlux = 0;
+    this.containmentPressure = 0.1;
+    this.containmentTemp = 25;
+    this.spentFuelTemp = 30;
+    this.condenserVacuum = 0;
+    this.feedwaterFlow = 0;
+    this.steamFlow = 0;
     this.alarms = [];
     document.getElementById('rodControl').value = 100;
-    ['pumpBtn', 'backupPumpBtn', 'emergencyCoolBtn', 'turbine1Btn', 'turbine2Btn'].forEach(id => {
-      const btn = document.getElementById(id);
-      if (btn) { btn.textContent = '关闭'; btn.style.background = 'var(--red)'; }
-    });
-    const gridBtn = document.getElementById('gridBtn');
-    if (gridBtn) { gridBtn.textContent = '断开'; gridBtn.style.background = 'var(--red)'; }
+    this.updateButtonStates();
     this.addLog('系统', `反应堆已重置为冷停堆状态 (${rt.name})`);
     this.updateDisplay();
+    this.updateRooms();
     this.drawReactor();
   },
 
