@@ -943,7 +943,44 @@ input:focus, textarea:focus { border-color: var(--purple); }
           </div>
         </div>
       </div>
-      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
+            <!-- 超级控制面板 -->
+      <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
+        <h3 style="margin-bottom:10px;font-size:14px;">⚙️ 超级控制（30项）</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(95px, 1fr));gap:5px;">
+          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpA')">🔵 主泵A</button>
+          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpB')">🔵 主泵B</button>
+          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpC')">🔵 主泵C</button>
+          <button class="btn btn-sm" style="background:#4a3a5a;" onclick="Nuclear.toggleSystem('chargingPump')">💧 上充泵</button>
+          <button class="btn btn-sm" style="background:#5a3a4a;" onclick="Nuclear.toggleSystem('letdownValve')">🔽 下泄阀</button>
+          <button class="btn btn-sm" style="background:#5a4a3a;" onclick="Nuclear.toggleSystem('volControlTank')">📦 容控箱</button>
+          <button class="btn btn-sm" style="background:#4a5a3a;" onclick="Nuclear.toggleSystem('boricAcidTank')">🧪 硼酸箱</button>
+          <button class="btn btn-sm" style="background:#3a5a4a;" onclick="Nuclear.toggleSystem('makeupWater')">🚰 补水箱</button>
+          <button class="btn btn-sm" style="background:#3a4a5a;" onclick="Nuclear.toggleSystem('condensatePump')">💧 凝结水泵</button>
+          <button class="btn btn-sm" style="background:#4a4a5a;" onclick="Nuclear.toggleSystem('condPolish')">🔬 精处理</button>
+          <button class="btn btn-sm" style="background:#5a5a3a;" onclick="Nuclear.toggleSystem('lowPressHeater')">🌡️ 低加</button>
+          <button class="btn btn-sm" style="background:#5a3a5a;" onclick="Nuclear.toggleSystem('highPressHeater')">🌡️ 高加</button>
+          <button class="btn btn-sm" style="background:#3a5a5a;" onclick="Nuclear.toggleSystem('deaerator')">💨 除氧器</button>
+          <button class="btn btn-sm" style="background:#5a4a4a;" onclick="Nuclear.toggleSystem('turbineFeedPump')">⚙️ 汽动给泵</button>
+          <button class="btn btn-sm" style="background:#4a5a4a;" onclick="Nuclear.toggleSystem('motorFeedPump')">⚡ 电动给泵</button>
+          <button class="btn btn-sm" style="background:#4a4a4a;" onclick="Nuclear.toggleSystem('circWaterPump')">🔄 循环水泵</button>
+          <button class="btn btn-sm" style="background:#5a5a5a;" onclick="Nuclear.toggleSystem('coolingTower')">🏗️ 冷却塔</button>
+          <button class="btn btn-sm" style="background:#3a3a4a;" onclick="Nuclear.toggleSystem('rotatingStrainer')">🔄 旋转滤网</button>
+          <button class="btn btn-sm" style="background:#4a3a3a;" onclick="Nuclear.toggleSystem('unitTrans')">⚡ 厂用变</button>
+          <button class="btn btn-sm" style="background:#3a4a3a;" onclick="Nuclear.toggleSystem('startupTrans')">⚡ 启动变</button>
+          <button class="btn btn-sm" style="background:#5a3a3a;" onclick="Nuclear.toggleSystem('backupTrans')">⚡ 备用变</button>
+          <button class="btn btn-sm" style="background:#3a5a3a;" onclick="Nuclear.toggleSystem('bus6kv')">🔌 6kV母线</button>
+          <button class="btn btn-sm" style="background:#4a4a3a;" onclick="Nuclear.toggleSystem('bus380v')">🔌 380V母线</button>
+          <button class="btn btn-sm" style="background:#5a4a5a;" onclick="Nuclear.toggleSystem('battery')">🔋 蓄电池</button>
+          <button class="btn btn-sm" style="background:#4a5a5a;" onclick="Nuclear.toggleSystem('inverter')">🔄 逆变器</button>
+          <button class="btn btn-sm" style="background:#5a5a4a;" onclick="Nuclear.toggleSystem('ups')">⚡ UPS</button>
+          <button class="btn btn-sm" style="background:#3a4a4a;" onclick="Nuclear.toggleSystem('ccwPumpA')">💧 设备冷泵A</button>
+          <button class="btn btn-sm" style="background:#4a3a4a;" onclick="Nuclear.toggleSystem('ccwPumpB')">💧 设备冷泵B</button>
+          <button class="btn btn-sm" style="background:#4a5a6a;" onclick="Nuclear.toggleSystem('siPumpA')">🚨 安注泵A</button>
+          <button class="btn btn-sm" style="background:#6a5a4a;" onclick="Nuclear.toggleSystem('siPumpB')">🚨 安注泵B</button>
+        </div>
+      </div>
+
+<div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
         <h3 style="margin-bottom:12px;font-size:16px;">🏭 各房间实时监控（20间）</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:10px;">
           <div style="background:var(--bg);padding:12px;border-radius:8px;border-left:3px solid var(--red);">
@@ -1414,7 +1451,11 @@ const REACTOR_TYPES = {
   fbr: { name: '快中子增殖堆 FBR', power: 2500, coolant: '液态钠', moderator: '无', pressure: 1, temp: 550, risk: '中', voidCoeff: '负' },
   htgr: { name: '高温气冷堆 HTGR', power: 600, coolant: '氦气', moderator: '石墨', pressure: 5, temp: 950, risk: '极低', voidCoeff: '负' },
   msr: { name: '熔盐堆 MSR', power: 1000, coolant: '熔盐', moderator: '石墨', pressure: 1, temp: 700, risk: '低', voidCoeff: '负' },
-  smr: { name: '小型模块化堆 SMR', power: 300, coolant: '轻水', moderator: '轻水', pressure: 15, temp: 310, risk: '极低', voidCoeff: '负' }
+  smr: { name: '小型模块化堆 SMR', power: 300, coolant: '轻水', moderator: '轻水', pressure: 15, temp: 310, risk: '极低', voidCoeff: '负' },
+  mhtgr: { name: '模块式高温气冷堆 MHTGR', power: 800, coolant: '氦气', moderator: '石墨', pressure: 6, temp: 850, risk: '极低', voidCoeff: '负' },
+  pwr_cn: { name: 'CNP1000 中国压水堆', power: 3000, coolant: '轻水', moderator: '轻水', pressure: 15.5, temp: 320, risk: '低', voidCoeff: '负' },
+  acp100: { name: 'ACP100 玲龙一号', power: 385, coolant: '轻水', moderator: '轻水', pressure: 15, temp: 310, risk: '极低', voidCoeff: '负' },
+  fast_neutron: { name: '钠冷快堆 CEFR', power: 650, coolant: '液态钠', moderator: '无', pressure: 0.1, temp: 530, risk: '中', voidCoeff: '负' }
 };
 
 const PLANTS = {
@@ -1428,7 +1469,12 @@ const PLANTS = {
   bruce: { name: '布鲁斯核电站', type: 'candu', location: '加拿大安大略', year: 1977, status: '运行中' },
   paluel: { name: '帕吕埃尔核电站', type: 'pwr', location: '法国诺曼底', year: 1985, status: '运行中' },
   kashiwazaki: { name: '柏崎刈羽核电站', type: 'bwr', location: '日本新潟', year: 1985, status: '停运中' },
-  generic: { name: '通用核电站', type: 'pwr', location: '未知', year: 2020, status: '运行中' }
+  generic: { name: '通用核电站', type: 'pwr', location: '未知', year: 2020, status: '运行中' },
+  tianwan: { name: '田湾核电站', type: 'vver', location: '中国江苏', year: 2007, status: '运行中' },
+  yangjiang: { name: '阳江核电站', type: 'pwr', location: '中国广东', year: 2014, status: '运行中' },
+  hongyanhe: { name: '红沿河核电站', type: 'pwr', location: '中国辽宁', year: 2013, status: '运行中' },
+  ningde: { name: '宁德核电站', type: 'pwr', location: '中国福建', year: 2013, status: '运行中' },
+  fangjiashan: { name: '方家山核电站', type: 'pwr', location: '中国浙江', year: 2014, status: '运行中' }
 };
 
 const Nuclear = {
@@ -1490,6 +1536,7 @@ const Nuclear = {
   ccwOn: false,            // 设备冷却水
   cvsOn: false,            // 化容系统
   rhROn: false,            // 余热排出
+  systems: {},             // 30个系统状态
 
   // 选择堆型
   selectReactorType(type) {
@@ -3386,11 +3433,31 @@ const Nuclear = {
   // 触发事故
   triggerAccident(type) {
     this.accidentType = type;
-    if (type === 'steam_explosion') {
-      this.addLog('事故', '蒸汽管道破裂！蒸汽爆炸模拟已启动');
-    } else if (type === 'coolant_loss') {
-      this.addLog('事故', '冷却剂流失事故已启动！');
-    }
+    const accidents = {
+      steam_explosion: '蒸汽管道破裂！蒸汽爆炸模拟已启动',
+      coolant_loss: '冷却剂流失事故（LOCA）已启动！',
+      station_blackout: '全厂断电事故（SBO）已启动！',
+      rod_ejection: '控制棒弹棒事故已启动！',
+      earthquake: '地震！反应堆遭受强烈震动！',
+      tsunami: '海啸！厂区被海水淹没！',
+      loss_of_feedwater: '给水丧失事故！蒸汽发生器水位下降！',
+      loss_of_offsite_power: '场外电源丧失！应急柴油发电机启动！',
+      steam_generator_tube_rupture: '蒸汽发生器传热管破裂！',
+      pressurizer_safety_valve_stuck: '稳压器安全阀卡开！超压排放！',
+      loss_of_flow: '流量丧失事故！主泵跳闸！',
+      boron_dilution: '硼稀释事故！反应性意外增加！',
+      fuel_handling_accident: '燃料操作事故！乏燃料池临界！',
+      spent_fuel_pool_loss: '乏燃料池丧失冷却！燃料裸露！',
+      containment_isolation_failure: '安全壳隔离失效！放射性释放！',
+      main_steam_line_break: '主蒸汽管道断裂！蒸汽大量泄漏！',
+      turbine_trip: '汽轮机跳闸！反应堆需要快速降功率！',
+      generator_trip: '发电机跳闸！电网解列！',
+      fire: '厂区火灾！消防系统启动！',
+      flood: '厂区洪水！重要厂用水系统受损！'
+    };
+    const msg = accidents[type] || `未知事故: ${type}`;
+    this.addLog('事故', msg);
+    this.alarms.push({time: new Date().toLocaleTimeString(), type: '事故', msg});
   },
 
   // 重置反应堆
@@ -3538,6 +3605,25 @@ const Nuclear = {
   toggleFireWater() {
     this.fireWaterOn = !this.fireWaterOn;
     this.addLog('操作', `消防水系统${this.fireWaterOn ? '启动' : '停止'}`);
+    this.updateDisplay();
+  },
+  toggleSystem(name) {
+    if (!this.systems[name]) this.systems[name] = false;
+    this.systems[name] = !this.systems[name];
+    const names = {
+      coolantPumpA: '主冷却剂泵A', coolantPumpB: '主冷却剂泵B', coolantPumpC: '主冷却剂泵C',
+      chargingPump: '上充泵', letdownValve: '下泄阀', volControlTank: '容积控制箱',
+      boricAcidTank: '硼酸箱', makeupWater: '补水箱', condensatePump: '凝结水泵',
+      condPolish: '凝结水精处理', lowPressHeater: '低压加热器', highPressHeater: '高压加热器',
+      deaerator: '除氧器', turbineFeedPump: '汽动给水泵', motorFeedPump: '电动给水泵',
+      circWaterPump: '循环水泵', coolingTower: '冷却塔', rotatingStrainer: '旋转滤网',
+      unitTrans: '厂用变压器', startupTrans: '启动变压器', backupTrans: '备用变压器',
+      bus6kv: '6kV母线', bus380v: '380V母线', battery: '直流蓄电池',
+      inverter: '逆变器', ups: '不停电电源', ccwPumpA: '设备冷却水泵A',
+      ccwPumpB: '设备冷却水泵B', siPumpA: '安全注入泵A', siPumpB: '安全注入泵B'
+    };
+    const cn = names[name] || name;
+    this.addLog('操作', `${cn}${this.systems[name] ? '启动' : '停止'}`);
     this.updateDisplay();
   },
 
