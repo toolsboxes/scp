@@ -95,6 +95,7 @@ body {
 .page { display: none; }
 .page.active { display: block; animation: fadeIn 0.3s; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes explosionFlash { 0% { opacity:0; transform:scale(0.5); } 20% { opacity:1; transform:scale(1.2); } 100% { opacity:0; transform:scale(2); } }
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -634,6 +635,30 @@ input:focus, textarea:focus { border-color: var(--purple); }
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- 3D立体反应堆可视化 -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
+        <h3 style="margin-bottom:12px;font-size:16px;">🏗️ 3D立体反应堆视图</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <!-- 3D立体图 -->
+          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">立体视图</div>
+            <canvas id="reactor3D" width="280" height="280"></canvas>
+          </div>
+          <!-- 剖面图 -->
+          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">纵向剖面图</div>
+            <canvas id="reactorSection" width="280" height="280"></canvas>
+          </div>
+          <!-- 俯视图 -->
+          <div style="background:#000;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">俯视图</div>
+            <canvas id="reactorTop" width="280" height="280"></canvas>
+          </div>
+        </div>
+        <!-- 爆炸特效层 -->
+        <div id="explosionOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle, rgba(255,100,0,0.8) 0%, rgba(255,0,0,0.6) 50%, transparent 70%);z-index:9999;pointer-events:none;"></div>
       </div>
 
       <!-- 九宫格房间监控 -->
@@ -1477,6 +1502,9 @@ const Nuclear = {
     this.updateDisplay();
     this.updateRooms();
     this.drawReactor();
+    this.draw3D();
+    this.drawSection();
+    this.drawTop();
   },
 
   // 事故处理
@@ -1489,6 +1517,7 @@ const Nuclear = {
         this.coreTemp += 20;
         if (this.pressure > rt.pressure * 2) {
           this.addLog('危险', '一回路超压！蒸汽爆炸！安全壳失效！');
+          this.triggerExplosion('steam');
           this.radiation += 50;
           this.containmentPressure = 0.5;
           this.accidentType = 'containment_failure';
@@ -1500,6 +1529,7 @@ const Nuclear = {
         this.coreTemp += 15;
         if (this.coreTemp > 1200) {
           this.addLog('危险', '堆芯熔毁！燃料棒熔化！');
+          this.triggerExplosion('meltdown');
           this.accidentType = 'fuel_melt';
         }
       },
@@ -1654,6 +1684,297 @@ const Nuclear = {
     if (d1) { d1.textContent = this.diesel1On ? '运行' : '备用'; d1.style.background = this.diesel1On ? 'var(--green)' : 'var(--red)'; }
     const d2 = document.getElementById('diesel2Btn');
     if (d2) { d2.textContent = this.diesel2On ? '运行' : '备用'; d2.style.background = this.diesel2On ? 'var(--green)' : 'var(--red)'; }
+  },
+
+  // 绘制3D立体反应堆
+  draw3D() {
+    const canvas = document.getElementById('reactor3D');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = 280, h = 280;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+
+    const cx = w/2, cy = h/2 + 20;
+    const powerRatio = Math.min(1, this.power / (REACTOR_TYPES[this.reactorType].power * 1.5));
+    const rodHeight = (100 - this.rodPosition) * 1.2; // 控制棒拔出高度
+
+    // 安全壳（立体圆柱）
+    ctx.fillStyle = '#334';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 60, 80, 25, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillRect(cx - 80, cy - 60, 160, 100);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 40, 80, 25, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // 安全壳高光
+    ctx.fillStyle = 'rgba(100,120,200,0.2)';
+    ctx.fillRect(cx - 70, cy - 55, 20, 90);
+
+    // 反应堆压力容器（内部）
+    const vesselTop = cy - 40;
+    const vesselBottom = cy + 30;
+    ctx.fillStyle = '#556';
+    ctx.fillRect(cx - 35, vesselTop, 70, vesselBottom - vesselTop);
+    ctx.beginPath();
+    ctx.ellipse(cx, vesselTop, 35, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx, vesselBottom, 35, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // 堆芯发光
+    const glowIntensity = powerRatio;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+    glow.addColorStop(0, `rgba(255, ${Math.round(150 + glowIntensity*100)}, 0, ${0.3 + glowIntensity*0.7})`);
+    glow.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - 40, cy - 40, 80, 80);
+
+    // 控制棒（从顶部插入，能看到上下移动）
+    const rodY = vesselTop - rodHeight;
+    ctx.fillStyle = '#888';
+    ctx.fillRect(cx - 8, rodY, 16, 60 + rodHeight);
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cx - 8, rodY, 16, 60 + rodHeight);
+    // 控制棒驱动机构
+    ctx.fillStyle = '#666';
+    ctx.fillRect(cx - 12, rodY - 15, 24, 15);
+
+    // 冷却剂管道
+    ctx.strokeStyle = this.coolantFlow > 0 ? '#4af' : '#444';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(cx - 35, cy - 10);
+    ctx.lineTo(cx - 70, cy - 10);
+    ctx.lineTo(cx - 70, cy + 20);
+    ctx.lineTo(cx - 35, cy + 20);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + 35, cy - 10);
+    ctx.lineTo(cx + 70, cy - 10);
+    ctx.lineTo(cx + 70, cy + 20);
+    ctx.lineTo(cx + 35, cy + 20);
+    ctx.stroke();
+
+    // 温度颜色叠加
+    if (this.coreTemp > 500) {
+      ctx.fillStyle = `rgba(255,0,0,${(this.coreTemp - 500)/3000})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // 标签
+    ctx.fillStyle = '#8f8';
+    ctx.font = '10px monospace';
+    ctx.fillText('控制棒位置: ' + this.rodPosition + '%', 10, 20);
+    ctx.fillText('功率: ' + Math.round(this.power) + 'MW', 10, 35);
+  },
+
+  // 绘制剖面图
+  drawSection() {
+    const canvas = document.getElementById('reactorSection');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = 280, h = 280;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+
+    const cx = w/2;
+    const powerRatio = Math.min(1, this.power / (REACTOR_TYPES[this.reactorType].power * 1.5));
+
+    // 安全壳轮廓
+    ctx.strokeStyle = '#556';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - 80, 250);
+    ctx.lineTo(cx - 80, 80);
+    ctx.quadraticCurveTo(cx - 80, 30, cx, 30);
+    ctx.quadraticCurveTo(cx + 80, 30, cx + 80, 80);
+    ctx.lineTo(cx + 80, 250);
+    ctx.stroke();
+
+    // 反应堆压力容器
+    ctx.fillStyle = '#445';
+    ctx.fillRect(cx - 30, 80, 60, 140);
+    ctx.strokeStyle = '#667';
+    ctx.strokeRect(cx - 30, 80, 60, 140);
+
+    // 堆芯
+    const coreGlow = ctx.createRadialGradient(cx, 160, 0, cx, 160, 35);
+    coreGlow.addColorStop(0, `rgba(255, ${Math.round(100 + powerRatio*155)}, 0, ${0.5 + powerRatio*0.5})`);
+    coreGlow.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = coreGlow;
+    ctx.fillRect(cx - 35, 125, 70, 70);
+
+    // 燃料棒
+    for (let i = 0; i < 8; i++) {
+      const fx = cx - 24 + i * 7;
+      ctx.fillStyle = powerRatio > 0.1 ? '#fa0' : '#666';
+      ctx.fillRect(fx, 130, 3, 60);
+    }
+
+    // 控制棒（能看到插入深度）
+    const rodDepth = this.rodPosition * 0.7;
+    ctx.fillStyle = '#999';
+    ctx.fillRect(cx - 5, 80, 10, 20 + rodDepth);
+    ctx.fillStyle = '#bbb';
+    ctx.fillRect(cx - 7, 75, 14, 8);
+
+    // 蒸汽发生器
+    ctx.fillStyle = '#556';
+    ctx.fillRect(cx - 70, 120, 25, 80);
+    ctx.fillRect(cx + 45, 120, 25, 80);
+
+    // 冷却剂流动指示
+    if (this.coolantFlow > 0) {
+      ctx.strokeStyle = '#4af';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(cx - 30, 140);
+      ctx.lineTo(cx - 45, 140);
+      ctx.lineTo(cx - 45, 180);
+      ctx.lineTo(cx - 30, 180);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx + 30, 140);
+      ctx.lineTo(cx + 45, 140);
+      ctx.lineTo(cx + 45, 180);
+      ctx.lineTo(cx + 30, 180);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // 涡轮机
+    ctx.fillStyle = this.turbineRPM > 0 ? '#f80' : '#555';
+    ctx.beginPath();
+    ctx.arc(cx - 55, 220, 15, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + 55, 220, 15, 0, Math.PI*2);
+    ctx.fill();
+
+    // 温度颜色
+    if (this.coreTemp > 500) {
+      ctx.fillStyle = `rgba(255,0,0,${(this.coreTemp - 500)/3000})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.fillStyle = '#8f8';
+    ctx.font = '10px monospace';
+    ctx.fillText('堆芯温度: ' + Math.round(this.coreTemp) + '°C', 10, 20);
+    ctx.fillText('控制棒插入: ' + this.rodPosition + '%', 10, 35);
+  },
+
+  // 绘制俯视图
+  drawTop() {
+    const canvas = document.getElementById('reactorTop');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = 280, h = 280;
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+
+    const cx = w/2, cy = h/2;
+    const powerRatio = Math.min(1, this.power / (REACTOR_TYPES[this.reactorType].power * 1.5));
+
+    // 安全壳（俯视圆）
+    ctx.beginPath();
+    ctx.arc(cx, cy, 120, 0, Math.PI*2);
+    ctx.strokeStyle = '#556';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 反应堆堆芯区
+    ctx.beginPath();
+    ctx.arc(cx, cy, 60, 0, Math.PI*2);
+    ctx.fillStyle = '#223';
+    ctx.fill();
+    ctx.strokeStyle = '#445';
+    ctx.stroke();
+
+    // 堆芯发光
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    glow.addColorStop(0, `rgba(255, ${Math.round(100 + powerRatio*155)}, 0, ${powerRatio * 0.8})`);
+    glow.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - 60, cy - 60, 120, 120);
+
+    // 燃料组件（16个）
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 35;
+      const fx = cx + Math.cos(angle) * r;
+      const fy = cy + Math.sin(angle) * r;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 6, 0, Math.PI*2);
+      ctx.fillStyle = powerRatio > 0.1 ? `rgb(255, ${Math.round(150 + powerRatio*100)}, 50)` : '#555';
+      ctx.fill();
+    }
+
+    // 控制棒位置（中心，根据插入深度变化大小）
+    const rodSize = 15 - (this.rodPosition / 100) * 10;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(5, rodSize), 0, Math.PI*2);
+    ctx.fillStyle = '#aaa';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 冷却剂管道（4个环路）
+    ctx.strokeStyle = this.coolantFlow > 0 ? '#4af' : '#444';
+    ctx.lineWidth = 4;
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2 + Math.PI/4;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * 60, cy + Math.sin(angle) * 60);
+      ctx.lineTo(cx + Math.cos(angle) * 100, cy + Math.sin(angle) * 100);
+      ctx.stroke();
+      // 蒸汽发生器
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(angle) * 110, cy + Math.sin(angle) * 110, 12, 0, Math.PI*2);
+      ctx.fillStyle = '#556';
+      ctx.fill();
+    }
+
+    // 温度颜色
+    if (this.coreTemp > 500) {
+      ctx.fillStyle = `rgba(255,0,0,${(this.coreTemp - 500)/3000})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.fillStyle = '#8f8';
+    ctx.font = '10px monospace';
+    ctx.fillText('中子通量: ' + this.neutronFlux.toFixed(1) + '%', 10, 20);
+    ctx.fillText('辐射: ' + this.radiation.toFixed(2) + 'μSv', 10, 35);
+  },
+
+  // 触发爆炸效果
+  triggerExplosion(type) {
+    const overlay = document.getElementById('explosionOverlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    overlay.style.animation = 'none';
+    setTimeout(() => {
+      overlay.style.animation = 'explosionFlash 1s ease-out';
+    }, 10);
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 1000);
+
+    if (type === 'hydrogen') {
+      this.addLog('💥 爆炸', '氢气爆炸！安全壳顶部被炸毁！');
+    } else if (type === 'steam') {
+      this.addLog('💥 爆炸', '蒸汽爆炸！一回路超压破裂！');
+    } else if (type === 'meltdown') {
+      this.addLog('💥 爆炸', '堆芯熔毁！熔融物击穿压力容器！');
+    }
+    this.radiation += 200;
+    this.containmentPressure = 0.1;
   },
 
   // 更新显示
