@@ -840,6 +840,45 @@ input:focus, textarea:focus { border-color: var(--purple); }
         </div>
       </div>
 
+      <!-- 三回路 + 安全系统 -->
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <!-- 三回路冷却系统 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🌊 三回路冷却系统</h3>
+          <canvas id="tertiaryLoop" width="320" height="200" style="background:#000;border-radius:6px;max-width:100%;height:auto;"></canvas>
+        </div>
+        <!-- 安全系统状态 -->
+        <div style="background:var(--bg2);border-radius:10px;padding:12px;">
+          <h3 style="margin-bottom:10px;font-size:14px;">🛡️ 专设安全设施</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>安全注入</span><span id="safiStatus" style="color:var(--red);">待命</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>辅助给水</span><span id="auxFeedStatus" style="color:var(--red);">停运</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>应急柴油</span><span id="dieselStatus" style="color:var(--green);">备用</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>喷淋系统</span><span id="sprayStatus" style="color:var(--red);">关闭</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>氢复合器</span><span id="parStatus" style="color:var(--green);">运行</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>过滤排气</span><span id="filterStatus" style="color:var(--green);">运行</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>堆芯测温</span><span id="coreTempStatus" style="color:var(--green);">正常</span>
+            </div>
+            <div style="background:var(--bg);padding:6px;border-radius:4px;display:flex;justify-content:space-between;">
+              <span>压力容器</span><span id="rpvStatus" style="color:var(--green);">完整</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 快速操作面板 -->
       <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:14px;">⚡ 快速操作</h3>
@@ -1773,6 +1812,8 @@ const Nuclear = {
     this.drawPerfChart();
     this.drawSecondaryLoop();
     this.drawRadiationMap();
+    this.drawTertiaryLoop();
+    this.updateSafetySystems();
   },
 
   // 事故处理
@@ -2827,58 +2868,71 @@ const Nuclear = {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = 320, h = 200;
-    ctx.fillStyle = '#050508';
+    canvas.width = w; canvas.height = h;
+    ctx.fillStyle = '#0a0a15';
     ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = 'rgba(0,150,255,0.08)';
+    // 网格
+    ctx.strokeStyle = 'rgba(0,150,255,0.1)';
     ctx.lineWidth = 1;
     for (let i = 0; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
     for (let i = 0; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
     const steamOn = this.steamFlow > 0;
+    // 蒸汽发生器
     ctx.fillStyle = '#4a5a6a'; ctx.fillRect(20, 50, 40, 80);
-    ctx.strokeStyle = '#6a7a8a'; ctx.lineWidth = 2; ctx.strokeRect(20, 50, 40, 80);
-    ctx.fillStyle = '#0af'; ctx.font = '9px monospace'; ctx.fillText('SG', 32, 95);
+    ctx.strokeStyle = '#7a9aba'; ctx.lineWidth = 2; ctx.strokeRect(20, 50, 40, 80);
+    ctx.fillStyle = '#0af'; ctx.font = 'bold 10px monospace'; ctx.fillText('SG', 32, 95);
     if (this.steamGenTemp > 0) { ctx.fillStyle = 'rgba(100,200,255,0.4)'; ctx.fillRect(22, 90, 36, 38); }
+    // 主蒸汽管
     ctx.strokeStyle = steamOn ? '#ff4400' : '#444'; ctx.lineWidth = 6;
-    ctx.shadowColor = steamOn ? 'rgba(255,68,0,0.5)' : 'transparent'; ctx.shadowBlur = steamOn ? 6 : 0;
+    ctx.shadowColor = steamOn ? 'rgba(255,68,0,0.6)' : 'transparent'; ctx.shadowBlur = steamOn ? 8 : 0;
     ctx.beginPath(); ctx.moveTo(60, 60); ctx.lineTo(120, 60); ctx.lineTo(120, 80); ctx.stroke();
     ctx.shadowBlur = 0;
+    // 涡轮机
     ctx.fillStyle = this.turbineRPM > 0 ? '#ff8800' : '#445';
     ctx.beginPath(); ctx.arc(140, 90, 25, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#667'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = '#ffa500'; ctx.lineWidth = 2; ctx.stroke();
     if (this.turbineRPM > 0) {
       ctx.save(); ctx.translate(140, 90); ctx.rotate(Date.now() / 80);
-      ctx.strokeStyle = '#ffa500'; ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffcc00'; ctx.lineWidth = 2;
       for (let i = 0; i < 8; i++) { ctx.rotate(Math.PI/4); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(20, 0); ctx.stroke(); }
       ctx.restore();
     }
-    ctx.fillStyle = '#fff'; ctx.font = '9px monospace'; ctx.fillText('TURB', 128, 93);
-    ctx.fillStyle = this.gridConnected ? '#00aa00' : '#445'; ctx.fillRect(175, 75, 35, 30);
-    ctx.strokeStyle = '#667'; ctx.strokeRect(175, 75, 35, 30);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 9px monospace'; ctx.fillText('TURB', 126, 93);
+    // 发电机
+    ctx.fillStyle = this.gridConnected ? '#00cc00' : '#445'; ctx.fillRect(175, 75, 35, 30);
+    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.strokeRect(175, 75, 35, 30);
     ctx.fillStyle = '#fff'; ctx.fillText('GEN', 183, 93);
+    // 冷凝器
     ctx.fillStyle = '#3a4a5a'; ctx.fillRect(120, 130, 50, 40);
-    ctx.strokeStyle = '#5a6a7a'; ctx.strokeRect(120, 130, 50, 40);
+    ctx.strokeStyle = '#5a7a9a'; ctx.strokeRect(120, 130, 50, 40);
     ctx.fillStyle = '#0af'; ctx.fillText('COND', 130, 155);
-    if (this.condenserOn) { ctx.fillStyle = 'rgba(0,100,200,0.3)'; ctx.fillRect(122, 145, 46, 23); }
+    if (this.condenserOn) { ctx.fillStyle = 'rgba(0,100,200,0.4)'; ctx.fillRect(122, 145, 46, 23); }
+    // 抽汽管
     ctx.strokeStyle = steamOn ? '#ff6644' : '#444'; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(140, 115); ctx.lineTo(140, 130); ctx.stroke();
+    // 给水泵
     ctx.beginPath(); ctx.arc(80, 150, 12, 0, Math.PI*2);
-    ctx.fillStyle = this.feedValveOn ? '#00aa00' : '#444'; ctx.fill();
-    ctx.strokeStyle = '#667'; ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.font = '8px monospace'; ctx.fillText('P', 77, 153);
+    ctx.fillStyle = this.feedValveOn ? '#00cc00' : '#444'; ctx.fill();
+    ctx.strokeStyle = '#0f0'; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.fillText('P', 77, 153);
+    // 给水管
     ctx.strokeStyle = this.feedwaterFlow > 0 ? '#0088ff' : '#444'; ctx.lineWidth = 5;
-    ctx.shadowColor = this.feedwaterFlow > 0 ? 'rgba(0,136,255,0.5)' : 'transparent'; ctx.shadowBlur = this.feedwaterFlow > 0 ? 6 : 0;
+    ctx.shadowColor = this.feedwaterFlow > 0 ? 'rgba(0,136,255,0.6)' : 'transparent'; ctx.shadowBlur = this.feedwaterFlow > 0 ? 8 : 0;
     ctx.beginPath(); ctx.moveTo(120, 150); ctx.lineTo(92, 150); ctx.lineTo(80, 150); ctx.lineTo(40, 150); ctx.lineTo(40, 130); ctx.stroke();
     ctx.shadowBlur = 0;
+    // 冷却塔
     ctx.fillStyle = '#4a5a6a';
     ctx.beginPath(); ctx.moveTo(250, 170); ctx.lineTo(240, 100); ctx.lineTo(280, 100); ctx.lineTo(270, 170); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#6a7a8a'; ctx.stroke();
-    ctx.fillStyle = '#0af'; ctx.font = '9px monospace'; ctx.fillText('COOL', 248, 140);
+    ctx.strokeStyle = '#7a9aba'; ctx.stroke();
+    ctx.fillStyle = '#0af'; ctx.font = 'bold 9px monospace'; ctx.fillText('COOL', 248, 140);
     if (this.condenserOn) {
-      ctx.fillStyle = 'rgba(200,200,255,0.3)';
+      ctx.fillStyle = 'rgba(200,220,255,0.4)';
       for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(260 + (Date.now()/100 + i*20) % 30 - 15, 90 - i*10, 8 + i*3, 0, Math.PI*2); ctx.fill(); }
     }
+    // 循环水管
     ctx.strokeStyle = this.condenserOn ? '#00aaff' : '#444'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(170, 150); ctx.lineTo(230, 150); ctx.lineTo(230, 130); ctx.lineTo(255, 130); ctx.stroke();
+    // 流动粒子
     if (steamOn) {
       const t = Date.now() / 150;
       for (let i = 0; i < 4; i++) { const pos = ((t + i * 0.25) % 1); ctx.fillStyle = '#ff6600'; ctx.beginPath(); ctx.arc(60 + pos * 60, 60, 3, 0, Math.PI*2); ctx.fill(); }
@@ -2887,8 +2941,10 @@ const Nuclear = {
       const t = Date.now() / 200;
       for (let i = 0; i < 4; i++) { const pos = ((t + i * 0.25) % 1); ctx.fillStyle = '#0088ff'; ctx.beginPath(); ctx.arc(120 - pos * 80, 150, 3, 0, Math.PI*2); ctx.fill(); }
     }
-    ctx.fillStyle = '#0f0'; ctx.font = '9px monospace';
-    ctx.fillText('二回路汽水系统', 10, 15);
+    // 标题
+    ctx.fillStyle = '#0f0'; ctx.font = 'bold 10px monospace';
+    ctx.fillText('⚡ 二回路汽水系统', 10, 15);
+    ctx.fillStyle = '#ff0';
     ctx.fillText('出力: ' + Math.round(this.electricPower) + 'MWe', 220, 15);
   },
 
@@ -2898,50 +2954,131 @@ const Nuclear = {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = 320, h = 200;
-    ctx.fillStyle = '#050508'; ctx.fillRect(0, 0, w, h);
+    canvas.width = w; canvas.height = h;
+    ctx.fillStyle = '#050510';
+    ctx.fillRect(0, 0, w, h);
     const cx = w/2, cy = h/2;
-    const baseRad = this.radiation;
+    const baseRad = Math.max(0.01, this.radiation);
+    // 用渐变圆绘制热力图（更可靠）
     const sources = [
-      { x: cx, y: cy, intensity: baseRad * 2, color: [255, 0, 0] },
-      { x: cx - 60, y: cy - 30, intensity: baseRad * 0.5, color: [255, 100, 0] },
-      { x: cx + 60, y: cy - 30, intensity: baseRad * 0.5, color: [255, 100, 0] },
-      { x: cx, y: cy + 50, intensity: baseRad * 0.3, color: [255, 200, 0] },
-      { x: cx - 80, y: cy + 40, intensity: baseRad * 0.2, color: [100, 255, 0] },
-      { x: cx + 80, y: cy + 40, intensity: baseRad * 0.2, color: [100, 255, 0] },
+      { x: cx, y: cy, r: 80, color: '255,0,0' },
+      { x: cx - 60, y: cy - 30, r: 50, color: '255,100,0' },
+      { x: cx + 60, y: cy - 30, r: 50, color: '255,100,0' },
+      { x: cx, y: cy + 50, r: 40, color: '255,200,0' },
+      { x: cx - 80, y: cy + 40, r: 35, color: '100,255,0' },
+      { x: cx + 80, y: cy + 40, r: 35, color: '100,255,0' },
     ];
-    const imageData = ctx.createImageData(w, h);
-    const data = imageData.data;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let r = 5, g = 5, b = 10;
-        for (const src of sources) {
-          const dist = Math.sqrt((x - src.x) ** 2 + (y - src.y) ** 2);
-          const falloff = Math.max(0, 1 - dist / 100);
-          const intensity = src.intensity * falloff * falloff;
-          r += src.color[0] * intensity * 0.3;
-          g += src.color[1] * intensity * 0.3;
-          b += src.color[2] * intensity * 0.3;
-        }
-        const idx = (y * w + x) * 4;
-        data[idx] = Math.min(255, r); data[idx + 1] = Math.min(255, g); data[idx + 2] = Math.min(255, b); data[idx + 3] = 255;
-      }
+    for (const src of sources) {
+      const intensity = Math.min(1, baseRad * 0.5);
+      const grad = ctx.createRadialGradient(src.x, src.y, 0, src.x, src.y, src.r);
+      grad.addColorStop(0, `rgba(${src.color}, ${intensity * 0.8})`);
+      grad.addColorStop(0.5, `rgba(${src.color}, ${intensity * 0.3})`);
+      grad.addColorStop(1, `rgba(${src.color}, 0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(src.x - src.r, src.y - src.r, src.r * 2, src.r * 2);
     }
-    ctx.putImageData(imageData, 0, 0);
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1;
+    // 建筑轮廓
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
     ctx.strokeRect(cx - 25, cy - 25, 50, 50);
     ctx.strokeRect(cx - 75, cy - 40, 25, 30);
     ctx.strokeRect(cx + 50, cy - 40, 25, 30);
     ctx.strokeRect(cx - 40, cy + 35, 80, 25);
-    ctx.fillStyle = '#fff'; ctx.font = '9px monospace';
+    // 建筑标注
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 9px monospace';
     ctx.fillText('RPV', cx - 8, cy + 3);
     ctx.fillText('SG', cx - 68, cy - 22);
     ctx.fillText('SG', cx + 57, cy - 22);
-    ctx.fillText('TURB', cx - 12, cy + 52);
-    ctx.fillStyle = '#0f0'; ctx.font = '10px monospace';
-    ctx.fillText('辐射分布热力图', 10, 15);
+    ctx.fillText('TURB', cx - 14, cy + 52);
+    // 辐射点标记
+    ctx.fillStyle = '#ff0';
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#ff0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, 8 + Math.sin(Date.now()/200) * 3, 0, Math.PI*2); ctx.stroke();
+    // 标题和数值
+    ctx.fillStyle = '#0f0'; ctx.font = 'bold 10px monospace';
+    ctx.fillText('☢️ 辐射分布热力图', 10, 15);
+    ctx.fillStyle = '#ff0';
     ctx.fillText('峰值: ' + baseRad.toFixed(2) + ' μSv/h', 10, 30);
-    for (let i = 0; i < 10; i++) { ctx.fillStyle = `hsl(${120 - i * 12}, 100%, 50%)`; ctx.fillRect(w - 110 + i * 10, 10, 10, 10); }
-    ctx.fillStyle = '#888'; ctx.fillText('低', w - 110, 32); ctx.fillText('高', w - 20, 32);
+    // 色阶
+    for (let i = 0; i < 10; i++) {
+      ctx.fillStyle = `hsl(${120 - i * 12}, 100%, 50%)`;
+      ctx.fillRect(w - 110 + i * 10, 10, 10, 10);
+    }
+    ctx.fillStyle = '#888'; ctx.font = '9px monospace';
+    ctx.fillText('低', w - 110, 32); ctx.fillText('高', w - 20, 32);
+  },
+
+  // 绘制三回路冷却系统
+  drawTertiaryLoop() {
+    const canvas = document.getElementById('tertiaryLoop');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = 320, h = 200;
+    canvas.width = w; canvas.height = h;
+    ctx.fillStyle = '#0a0a15'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(0,200,255,0.1)'; ctx.lineWidth = 1;
+    for (let i = 0; i < w; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
+    for (let i = 0; i < h; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke(); }
+    const coolOn = this.condenserOn;
+    ctx.fillStyle = '#3a4a5a'; ctx.fillRect(20, 60, 50, 80);
+    ctx.strokeStyle = '#5a7a9a'; ctx.lineWidth = 2; ctx.strokeRect(20, 60, 50, 80);
+    ctx.fillStyle = '#0af'; ctx.font = 'bold 10px monospace'; ctx.fillText('COND', 30, 105);
+    if (coolOn) { ctx.fillStyle = 'rgba(0,150,255,0.3)'; ctx.fillRect(22, 90, 46, 48); }
+    ctx.beginPath(); ctx.arc(100, 100, 15, 0, Math.PI*2);
+    ctx.fillStyle = coolOn ? '#00cc00' : '#444'; ctx.fill();
+    ctx.strokeStyle = '#0f0'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 9px monospace'; ctx.fillText('P', 96, 103);
+    ctx.strokeStyle = coolOn ? '#00aaff' : '#444'; ctx.lineWidth = 6;
+    ctx.shadowColor = coolOn ? 'rgba(0,170,255,0.6)' : 'transparent'; ctx.shadowBlur = coolOn ? 8 : 0;
+    ctx.beginPath(); ctx.moveTo(70, 100); ctx.lineTo(85, 100); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(115, 100); ctx.lineTo(180, 100); ctx.lineTo(180, 80); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#4a5a6a';
+    ctx.beginPath(); ctx.moveTo(160, 170); ctx.lineTo(145, 70); ctx.lineTo(215, 70); ctx.lineTo(200, 170); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#7a9aba'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#0af'; ctx.font = 'bold 10px monospace'; ctx.fillText('冷却塔', 168, 125);
+    ctx.strokeStyle = 'rgba(100,150,200,0.5)'; ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(150 + i*3, 80 + i*15); ctx.lineTo(210 - i*3, 80 + i*15); ctx.stroke(); }
+    if (coolOn) {
+      ctx.fillStyle = 'rgba(200,230,255,0.5)';
+      for (let i = 0; i < 5; i++) { const t = (Date.now()/150 + i*15) % 60; ctx.beginPath(); ctx.arc(180 + Math.sin(t/10)*10, 65 - t, 6 + i*2, 0, Math.PI*2); ctx.fill(); }
+    }
+    ctx.strokeStyle = coolOn ? '#0066cc' : '#444'; ctx.lineWidth = 6;
+    ctx.shadowColor = coolOn ? 'rgba(0,100,200,0.6)' : 'transparent'; ctx.shadowBlur = coolOn ? 8 : 0;
+    ctx.beginPath(); ctx.moveTo(180, 130); ctx.lineTo(180, 150); ctx.lineTo(45, 150); ctx.lineTo(45, 140); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#1a3a5a'; ctx.fillRect(240, 100, 60, 60);
+    ctx.strokeStyle = '#3a7aba'; ctx.lineWidth = 2; ctx.strokeRect(240, 100, 60, 60);
+    ctx.fillStyle = 'rgba(0,150,255,0.4)'; ctx.fillRect(242, 120, 56, 38);
+    ctx.fillStyle = '#0af'; ctx.font = 'bold 9px monospace'; ctx.fillText('蓄水池', 252, 135);
+    ctx.strokeStyle = coolOn ? '#0088ff' : '#444'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(200, 150); ctx.lineTo(240, 150); ctx.stroke();
+    if (coolOn) {
+      const t = Date.now() / 150;
+      for (let i = 0; i < 5; i++) { const pos = ((t + i * 0.2) % 1); ctx.fillStyle = '#00ccff'; ctx.beginPath(); ctx.arc(115 + pos * 65, 100, 3, 0, Math.PI*2); ctx.fill(); }
+      for (let i = 0; i < 5; i++) { const pos = ((t + i * 0.2 + 0.5) % 1); ctx.fillStyle = '#0066cc'; ctx.beginPath(); ctx.arc(180 - pos * 135, 150, 3, 0, Math.PI*2); ctx.fill(); }
+    }
+    ctx.fillStyle = '#0f0'; ctx.font = 'bold 10px monospace';
+    ctx.fillText('🌊 三回路循环水系统', 10, 15);
+    ctx.fillStyle = '#ff0';
+    ctx.fillText('流量: ' + (coolOn ? Math.round(this.coolantFlow * 0.8) : 0) + ' t/h', 200, 15);
+    ctx.fillStyle = '#0af';
+    ctx.fillText('入口: ' + (coolOn ? Math.round(25 + this.steamGenTemp * 0.05) : 25) + '°C', 10, 190);
+    ctx.fillText('出口: ' + (coolOn ? Math.round(35 + this.steamGenTemp * 0.08) : 25) + '°C', 120, 190);
+  },
+
+  // 更新安全设施状态
+  updateSafetySystems() {
+    const set = (id, text, color) => { const el = document.getElementById(id); if (el) { el.textContent = text; el.style.color = color; } };
+    set('safiStatus', this.safetyInjectionOn ? '注入中' : '待命', this.safetyInjectionOn ? 'var(--orange)' : 'var(--red)');
+    set('auxFeedStatus', this.auxFeedOn ? '运行' : '停运', this.auxFeedOn ? 'var(--green)' : 'var(--red)');
+    set('dieselStatus', (this.diesel1On || this.diesel2On) ? '运行' : '备用', (this.diesel1On || this.diesel2On) ? 'var(--orange)' : 'var(--green)');
+    set('sprayStatus', this.sprayOn ? '喷淋中' : '关闭', this.sprayOn ? 'var(--cyan)' : 'var(--red)');
+    set('parStatus', '运行', 'var(--green)');
+    set('filterStatus', '运行', 'var(--green)');
+    set('coreTempStatus', this.coreTemp > 1200 ? '超温!' : this.coreTemp > 800 ? '偏高' : '正常', this.coreTemp > 1200 ? 'var(--red)' : this.coreTemp > 800 ? 'var(--orange)' : 'var(--green)');
+    set('rpvStatus', this.meltdown ? '熔穿!' : this.coreTemp > 2000 ? '危险' : '完整', this.meltdown ? 'var(--red)' : this.coreTemp > 2000 ? 'var(--orange)' : 'var(--green)');
   },
 
   triggerExplosion(type) {
