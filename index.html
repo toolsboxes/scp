@@ -1309,7 +1309,10 @@ input:focus, textarea:focus { border-color: var(--purple); }
         </div>
       </div>
       <div class="card">
-        <h2>🖥️ 服务器监控 <span style="font-size:12px;color:var(--muted);">（每秒自动刷新）</span></h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <h2 style="margin:0;">🖥️ 服务器监控 <span style="font-size:12px;color:var(--muted);">（每秒自动刷新）</span></h2>
+          <button class="btn btn-primary btn-sm" onclick="loadAdminStats()">🔄 手动刷新</button>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;">
           <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
             <div style="font-size:22px;font-weight:700;color:var(--green);" id="statDb">●</div>
@@ -4969,16 +4972,17 @@ async function loadAdminStats() {
   try {
     const t0 = performance.now();
     adminSet('statDb', '●');
-    const [usersR, echoesR, filesR, gamesR, friendsR, messagesR] = await Promise.all([
-      sb.from('users').select('*'),
-      sb.from('echoes').select('*'),
-      sb.from('files').select('*'),
-      sb.from('games').select('*'),
-      sb.from('friends').select('*'),
-      sb.from('messages').select('*')
+    // 每张表单独容错：任何一张失败都不影响其他统计刷新
+    const safe = (p) => p.then(r => r.data || []).catch(() => []);
+    const [users, echoes, files, games, friends, messages] = await Promise.all([
+      safe(sb.from('users').select('*')),
+      safe(sb.from('echoes').select('*')),
+      safe(sb.from('files').select('*')),
+      safe(sb.from('games').select('*')),
+      safe(sb.from('friends').select('*')),
+      safe(sb.from('messages').select('*'))
     ]);
-    const users = usersR.data || [], echoes = echoesR.data || [], files = filesR.data || [];
-    const games = gamesR.data || [], friends = friendsR.data || [], messages = messagesR.data || [];
+    
 
     const now0 = new Date();
     const dayPrefix = (now0.getMonth()+1) + '/' + now0.getDate() + '/';
