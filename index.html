@@ -5314,13 +5314,27 @@ function sbTimeout(promise, ms = 10000) {
   ]);
 }
 
+// 带重试的请求：移动网络偶发 Failed to fetch，自动重试2次
+async function sbRetry(fn, tries = 3) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await sbTimeout(fn(), 10000);
+    } catch (e) {
+      lastErr = e;
+      await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
 // 创建房间
 async function createOnlineRoom() {
   const username = getLoginUsername();
   if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
     const roomCode = genRoomCode();
-    const { data, error } = await sbTimeout(sb.from('games').insert({
+    const { data, error } = await sbRetry(() => sb.from('games').insert({
       game_type: onlineGameType,
       player1: username,
       status: 'waiting',
@@ -7126,7 +7140,12 @@ function applyForcedLandscape() {
   var isMobile = function () {
     var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     var shortSide = Math.min(screen.width, screen.height);
-    return touch && shortSide <= 900;
+    if (touch && shortSide <= 900) return true;
+    // 兜底：UA 含移动端关键字也算手机（防华为浏览器桌面模式导致误判）
+    try {
+      var ua = navigator.userAgent.toLowerCase();
+      return /android|iphone|ipad|mobile|huawei|harmonyos/.test(ua);
+    } catch (e) { return false; }
   };
   // 物理屏幕是否竖屏（screen 物理像素不受桌面模式/视口影响）
   function physicalPortrait() {
