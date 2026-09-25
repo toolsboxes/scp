@@ -401,6 +401,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
   <div class="tab" onclick="switchTab('cloud', event)">☁️ 我的云盘</div>
   <div class="tab" onclick="openChatFromNav()">💬 好友聊天</div>
   <div class="tab" onclick="switchTab('nuclear', event)">☢️ 核电站</div>
+  <div class="tab" onclick="switchTab('tools', event)">🧰 实用工具</div>
   <div class="tab" onclick="switchTab('admin', event)">⚙️ 管理</div>
 </div>
 
@@ -1319,7 +1320,65 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
     </div>
   </div>
 
-  <div class="page" id="page-admin">
+  <!-- 实用工具 -->
+  <div class="page" id="page-tools">
+    <div class="card">
+      <h2>🍅 番茄钟（写作业神器）</h2>
+      <div id="pomodoroTime" style="font-size:56px;font-weight:700;text-align:center;color:var(--red);margin:12px 0;font-family:monospace;">25:00</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="pomodoroStart()">开始</button>
+        <button class="btn btn-warning" onclick="pomodoroPause()">暂停</button>
+        <button class="btn btn-secondary" onclick="pomodoroReset(25)">25分钟</button>
+        <button class="btn btn-secondary" onclick="pomodoroReset(5)">休息5分钟</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔳 二维码生成器</h2>
+      <input type="text" id="qrInput" placeholder="输入文字或网址..." style="width:100%;margin-bottom:10px;">
+      <button class="btn btn-primary" onclick="qrGenerate()">生成二维码</button>
+      <div id="qrResult" style="text-align:center;margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>🎲 随机数 / 骰子</h2>
+      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <input type="number" id="randMin" value="1" style="width:90px;" placeholder="最小">
+        <input type="number" id="randMax" value="100" style="width:90px;" placeholder="最大">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="randNumber()">生成随机数</button>
+        <button class="btn btn-primary" onclick="rollDice()">🎲 掷骰子</button>
+      </div>
+      <div id="randResult" style="font-size:32px;font-weight:700;text-align:center;margin-top:12px;color:var(--cyan);">-</div>
+    </div>
+
+    <div class="card">
+      <h2>🧮 计算器</h2>
+      <input type="text" id="calcDisplay" readonly style="width:100%;font-size:28px;text-align:right;padding:12px;margin-bottom:10px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <button class="btn btn-secondary" onclick="calcPress('7')">7</button>
+        <button class="btn btn-secondary" onclick="calcPress('8')">8</button>
+        <button class="btn btn-secondary" onclick="calcPress('9')">9</button>
+        <button class="btn btn-danger" onclick="calcPress('/')">÷</button>
+        <button class="btn btn-secondary" onclick="calcPress('4')">4</button>
+        <button class="btn btn-secondary" onclick="calcPress('5')">5</button>
+        <button class="btn btn-secondary" onclick="calcPress('6')">6</button>
+        <button class="btn btn-danger" onclick="calcPress('*')">×</button>
+        <button class="btn btn-secondary" onclick="calcPress('1')">1</button>
+        <button class="btn btn-secondary" onclick="calcPress('2')">2</button>
+        <button class="btn btn-secondary" onclick="calcPress('3')">3</button>
+        <button class="btn btn-danger" onclick="calcPress('-')">−</button>
+        <button class="btn btn-secondary" onclick="calcPress('0')">0</button>
+        <button class="btn btn-secondary" onclick="calcPress('.')">.</button>
+        <button class="btn btn-success" onclick="calcEquals()">=</button>
+        <button class="btn btn-danger" onclick="calcClear()">C</button>
+        <button class="btn btn-warning" style="grid-column:1/-1;" onclick="calcPress('+')">+</button>
+      </div>
+    </div>
+  </div>
+
+<div class="page" id="page-admin">
     <div class="card" id="adminLogin">
       <h2>⚙️ 管理员登录</h2>
       <input type="password" id="adminPass" placeholder="输入管理员密码">
@@ -1449,6 +1508,78 @@ const STORAGE_LIMIT = 50 * 1024 * 1024;
 let currentUser = null;
 let currentAlgo = 'md5';
 let gameInterval = null;
+
+// ==================== 实用工具 ====================
+// 番茄钟
+let pomoSeconds = 25 * 60;
+let pomoTimer = null;
+function pomodoroRender() {
+  const m = Math.floor(pomoSeconds / 60);
+  const s = pomoSeconds % 60;
+  document.getElementById('pomodoroTime').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+function pomodoroStart() {
+  if (pomoTimer) return;
+  pomoTimer = setInterval(function(){
+    pomoSeconds--;
+    pomodoroRender();
+    if (pomoSeconds <= 0) {
+      clearInterval(pomoTimer); pomoTimer = null;
+      toast('时间到！休息一下吧');
+      try { if (navigator.vibrate) navigator.vibrate([500,200,500]); } catch(e){}
+    }
+  }, 1000);
+}
+function pomodoroPause() {
+  if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+}
+function pomodoroReset(mins) {
+  pomodoroPause();
+  pomoSeconds = mins * 60;
+  pomodoroRender();
+}
+
+// 二维码（用免费在线API生成图片，无需密钥）
+function qrGenerate() {
+  const text = document.getElementById('qrInput').value.trim();
+  if (!text) { toast('请输入内容', 'error'); return; }
+  const size = 300;
+  const url = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(text);
+  document.getElementById('qrResult').innerHTML =
+    '<img src="' + url + '" width="' + size + '" height="' + size + '" alt="二维码" style="border-radius:10px;background:#fff;padding:8px;">';
+}
+
+// 随机数 / 骰子
+function randNumber() {
+  const min = parseInt(document.getElementById('randMin').value, 10);
+  const max = parseInt(document.getElementById('randMax').value, 10);
+  if (isNaN(min) || isNaN(max) || min > max) { toast('范围不对', 'error'); return; }
+  const n = Math.floor(Math.random() * (max - min + 1)) + min;
+  document.getElementById('randResult').textContent = n;
+}
+function rollDice() {
+  document.getElementById('randResult').textContent = '🎲 ' + (Math.floor(Math.random()*6)+1);
+}
+
+// 计算器
+function calcPress(v) {
+  const d = document.getElementById('calcDisplay');
+  d.value += v;
+}
+function calcClear() {
+  document.getElementById('calcDisplay').value = '';
+}
+function calcEquals() {
+  const d = document.getElementById('calcDisplay');
+  try {
+    // 只允许数字和运算符，防止注入
+    if (!/^[0-9+\-*/.() ]+$/.test(d.value)) throw new Error('非法输入');
+    d.value = String(Function('"use strict";return (' + d.value + ')')());
+  } catch(e) {
+    d.value = '错误';
+  }
+}
 
 // ==================== 安全防护 ====================
 const Security = {
