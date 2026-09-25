@@ -5301,13 +5301,19 @@ function getLoginUsername() {
   }
 }
 
-// 生成6位纯数字房间号（存于 board 字段 {"room":"xxxxxx"}，避免与现有冲突，最多重试10次）
+// 生成6位纯数字房间号：查所有等待中的房间号，避免重复（最多重试10次）
 async function genRoomCode() {
   for (let i = 0; i < 10; i++) {
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const { data, error } = await sb.from('games').select('id').eq('board->>room', code);
+    const { data, error } = await sb.from('games').select('board').eq('status', 'waiting');
     if (error) throw error;
-    if (!data || !data.length) return code;
+    let taken = false;
+    if (data) {
+      for (const row of data) {
+        if (row.board && row.board.room && String(row.board.room) === code) { taken = true; break; }
+      }
+    }
+    if (!taken) return code;
   }
   throw new Error('房间号生成失败，请重试');
 }
@@ -5351,25 +5357,33 @@ async function joinOnlineRoom() {
   const username = getLoginUsername();
   if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
-    // 按纯数字房间号查找（board 是 jsonb，按 room 字段过滤）
-    const { data, error } = await sb.from('games').select('*').eq('board->>room', roomId).single();
-    if (error) { toast('房间不存在', 'error'); return; }
-    if (data.status !== 'waiting') {
+    // 按纯数字房间号查找：查所有等待中的房间，客户端匹配
+    const { data, error } = await sb.from('games').select('*').eq('status', 'waiting');
+    if (error) throw error;
+    let room = null;
+    if (data) {
+      for (const row of data) {
+        if (row.board && row.board.room && String(row.board.room) === roomId) { room = row; break; }
+      }
+    }
+    if (!room) { toast('房间不存在', 'error'); return; }
+    const data2 = room;
+    if (data2.status !== 'waiting') {
       toast('房间已满或已开始');
       return;
     }
-    if (data.player1 === username) {
+    if (data2.player1 === username) {
       currentPlayerRole = 'player1';
     } else {
       // 加入房间
       const { error: updateError } = await sb.from('games').update({
         player2: username,
         status: 'playing'
-      }).eq('id', data.id);
+      }).eq('id', data2.id);
       if (updateError) throw updateError;
       currentPlayerRole = 'player2';
     }
-    currentGameId = data.id;
+    currentGameId = data2.id;
     currentRoomCode = roomId;
     toast('加入房间成功！');
     startOnlineGame();
