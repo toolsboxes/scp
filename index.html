@@ -321,26 +321,34 @@ input:focus, textarea:focus { border-color: var(--purple); }
   .cell2048 { width: 55px; height: 55px; font-size: 18px; margin: 3px; }
   #game2048 { width: 260px; }
 }
-/* 手机强制横屏：竖屏时整页旋转 90°，内容按电脑 16:9 比例，左右黑边，内部可滚动 */
-/* 注意：不包在 @media 里，避免部分手机浏览器视口方向判断错误导致不旋转；JS 加类即生效 */
+/* 手机强制横屏：旋转外层容器（华为等浏览器对旋转 body 支持差，改为旋转 appRoot，内部浮层跟随） */
 body.forced-landscape {
-  box-sizing: border-box !important;
   position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+body.forced-landscape #appRoot {
+  box-sizing: border-box !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
   width: 100vh !important;
   height: 100vw !important;
   transform: rotate(90deg) translateY(-100%) !important;
   transform-origin: top left !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  background: #000 !important;
-  left: 0 !important;
-  top: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
+  background: var(--bg) !important;
 }
 </style>
 </head>
 <body>
+<div id='appRoot'>
 
 <!-- 新消息通知条（微信风格） -->
 <div id="messageNotification" style="display:none;position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,var(--green),var(--cyan));color:#fff;padding:12px 20px;z-index:9999;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:slideDown 0.3s ease;" onclick="jumpToChatFromNotification()">
@@ -3719,7 +3727,7 @@ function toast(msg, type = 'success') {
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   t.textContent = msg;
-  document.body.appendChild(t);
+  (document.getElementById('appRoot')||document.body).appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
 
@@ -3989,7 +3997,7 @@ function showProfile() {
     '<button class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="deleteAccount()">⚠️ 注销账号</button>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
 }
 
 function copyUID() {
@@ -4063,7 +4071,7 @@ function showFriendSearch() {
     '<div id="searchResult"></div>' +
     '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(\'friendSearchModal\')">关闭</button>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
 }
 
 async function searchUserByUID() {
@@ -4158,7 +4166,7 @@ function showFriendList() {
     '<div id="friendListContent"><p style="text-align:center;color:var(--muted);">加载中...</p></div>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
   loadFriendList();
 }
 
@@ -4465,7 +4473,7 @@ function openAIChat() {
     '<button class="btn btn-primary" onclick="sendAIMessage()">发送</button>' +
     '</div>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
 }
 
 async function sendAIMessage() {
@@ -4540,7 +4548,7 @@ function openChat(friendId, friendName) {
     '<button class="btn btn-primary" onclick="sendMessage()">发送</button>' +
     '</div>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
   loadMessages();
   if (chatRefreshInterval) clearInterval(chatRefreshInterval);
   chatRefreshInterval = setInterval(loadMessages, 1000);
@@ -4601,7 +4609,7 @@ async function showCloudFilePicker() {
       fileList +
       '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'cloudPickerModal\')">取消</button>' +
       '</div>';
-    document.body.appendChild(modal);
+    (document.getElementById('appRoot')||document.body).appendChild(modal);
   } catch (e) {
     toast('加载失败：' + e.message, 'error');
   }
@@ -5136,7 +5144,7 @@ function showAnnouncementModal(text) {
     '<div style="background:var(--bg2);border-radius:8px;padding:16px;margin:12px 0;line-height:1.6;white-space:pre-wrap;">' + escapeHtml(text) + '</div>' +
     '<button class="btn btn-primary" style="width:100%;" onclick="closeAnnouncementModal()">我知道了</button>' +
     '</div>';
-  document.body.appendChild(modal);
+  (document.getElementById('appRoot')||document.body).appendChild(modal);
 }
 
 function closeAnnouncementModal() {
@@ -6596,7 +6604,7 @@ function initChess(area) {
       '</div>' +
       '<button class="btn btn-secondary" style="width:100%;" onclick="window._chessPromotePick && window._chessPromotePick(\'Q\')">默认选择后 ♕</button>' +
       '</div>';
-    document.body.appendChild(modal);
+    (document.getElementById('appRoot')||document.body).appendChild(modal);
   }
 
   function aiMove() {
@@ -7056,43 +7064,73 @@ async function init() {
 
 init();
 
-// 手机强制横屏：竖屏自动旋转成横屏，内容按电脑 16:9 比例（JS 动态算黑边）
+// 手机强制横屏：优先让系统把视口真正旋转成横屏（视觉宽度变宽=跟电脑一样），横屏后按 16:9 加左右黑边
 function applyForcedLandscape() {
-  // 移动端检测：触屏 + 移动 UA
   var isMobile = function () {
     return /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent) &&
            ('ontouchstart' in window || navigator.maxTouchPoints > 0);
   };
-  // 物理屏幕是否竖屏（不管浏览器视口怎么报）
-  function physicalPortrait() {
-    var sw = screen.width, sh = screen.height;
-    if (screen.orientation && screen.orientation.angle % 180 === 90) { sw = screen.height; sh = screen.width; }
-    return sh > sw;
+  // 视口是否已横屏（系统旋转成功或用户横持手机）
+  function viewportLandscape() { return window.innerWidth >= window.innerHeight; }
+
+  function root() { return document.getElementById('appRoot') || document.body; }
+  // 横屏视口：按 16:9 居中内容，左右黑边（跟电脑一样的比例）
+  function apply169() {
+    var w = window.innerWidth, h = window.innerHeight;
+    var contentW = h * 16 / 9;
+    var pad = Math.max(0, (w - contentW) / 2);
+    var r = root();
+    r.style.paddingLeft = pad + 'px';
+    r.style.paddingRight = pad + 'px';
+    r.style.boxSizing = 'border-box';
+    r.style.overflowX = 'hidden';
+  }
+  function clearAll() {
+    document.body.classList.remove('forced-landscape');
+    var r = root();
+    r.style.paddingLeft = '';
+    r.style.paddingRight = '';
+    r.style.boxSizing = '';
+    r.style.overflowX = '';
   }
   function upd() {
-    if (isMobile() && physicalPortrait()) {
-      document.body.classList.add('forced-landscape');
-      // 竖屏物理尺寸：短边 innerWidth = 旋转后画面高度，长边 innerHeight = 旋转后画面宽度
-      var shortE = Math.min(window.innerWidth, window.innerHeight);
-      var longE = Math.max(window.innerWidth, window.innerHeight);
-      var contentW = shortE * 16 / 9;          // 16:9 画面应有的宽度
-      var pad = Math.max(0, (longE - contentW) / 2);
-      document.body.style.paddingLeft = pad + 'px';
-      document.body.style.paddingRight = pad + 'px';
-    } else {
+    if (!isMobile()) { clearAll(); return; }
+    if (viewportLandscape()) {
+      // 真横屏（系统已旋转/用户横持）：清旋转降级，按 16:9 加黑边
       document.body.classList.remove('forced-landscape');
-      document.body.style.paddingLeft = '';
-      document.body.style.paddingRight = '';
+      apply169();
+    } else {
+      // 竖屏：系统还没转过来，先上 CSS 旋转降级（内容横排），再尝试系统锁横屏
+      document.body.classList.add('forced-landscape');
+      var r = root();
+      r.style.paddingLeft = '';
+      r.style.paddingRight = '';
     }
   }
   upd();
   window.addEventListener('resize', upd);
-  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); } catch (e) {}
+
+  // 尝试让系统真正锁横屏（成功后视口变宽，页面像电脑一样）
+  try {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function () {
+        // Chrome 系要求全屏后才允许锁方向：先请求全屏再锁
+        try {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().then(function () {
+              screen.orientation.lock('landscape').catch(function () {});
+            }).catch(function () {});
+          }
+        } catch (e2) {}
+      });
+    }
+  } catch (e) {}
 }
 applyForcedLandscape();
 
 
 
 </script>
+</div>
 </body>
 </html>
