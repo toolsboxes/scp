@@ -387,6 +387,13 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
   <div class="user-info" id="userInfo"></div>
 </div>
 
+<!-- 全局公告横幅：发布后每个用户都能看到，只能点"确定"关闭 -->
+<div id="announcement" style="display:none;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(239,68,68,0.25));border-bottom:1px solid var(--yellow);padding:10px 16px;font-size:14px;position:relative;">
+  <strong style="color:var(--yellow);">📢 公告：</strong>
+  <span id="announcementText" style="color:var(--text);vertical-align:middle;"></span>
+  <button onclick="closeAnnouncementBanner()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--yellow);color:#111;border:none;border-radius:8px;padding:6px 18px;font-size:13px;font-weight:700;cursor:pointer;">确定</button>
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="switchTab('crypto', event)">🔐 加密工具</div>
   <div class="tab" onclick="switchTab('games', event)">🎮 小游戏</div>
@@ -449,9 +456,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
   <div class="page" id="page-echo">
     <div class="card">
       <h2>📢 回声洞</h2>
-      <div id="announcement" style="display:none;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2));border:1px solid var(--yellow);border-radius:10px;padding:12px;margin-bottom:16px;">
-        <strong style="color:var(--yellow);">📢 公告：</strong><span id="announcementText"></span>
-      </div>
+      
       <textarea id="echoText" placeholder="说点什么..." rows="2"></textarea>
       <div style="display:flex;gap:12px;margin-bottom:12px;">
         <div onclick="document.getElementById('echoImage').click()" style="flex:1;aspect-ratio:1;background:var(--bg2);border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -5088,18 +5093,20 @@ function stopAdminAutoRefresh() {
   }
 }
 
-// 公告功能
+// 公告功能：发布后以横幅形式常驻标题下方，每个用户都能看到，只能点"确定"关闭
 function publishAnnouncement() {
   const text = document.getElementById('announcementInput').value.trim();
   if (!text) { toast('公告内容不能为空', 'error'); return; }
   localStorage.setItem('toolbox_announcement', text);
-  sessionStorage.removeItem('announcement_shown');
+  // 新公告发布后清掉用户本地"已关闭"记录，让所有人重新看到
+  localStorage.removeItem('announcement_dismissed');
   loadAnnouncement();
   toast('公告发布成功');
 }
 
 function clearAnnouncement() {
   localStorage.removeItem('toolbox_announcement');
+  localStorage.removeItem('announcement_dismissed');
   document.getElementById('announcementInput').value = '';
   loadAnnouncement();
   toast('公告已清除');
@@ -5107,35 +5114,26 @@ function clearAnnouncement() {
 
 function loadAnnouncement() {
   const text = localStorage.getItem('toolbox_announcement');
-  // 顶部横幅不显示了，只用弹窗
+  const el = document.getElementById('announcement');
+  const txt = document.getElementById('announcementText');
+  if (!el || !txt) return;
+  if (!text) {
+    el.style.display = 'none';
+    return;
+  }
+  // 用户之前点过"确定"关闭过这条公告，就不重复打扰（新公告发布会重置）
+  if (localStorage.getItem('announcement_dismissed') === '1') {
+    el.style.display = 'none';
+    return;
+  }
+  txt.textContent = text;
+  el.style.display = 'block';
+}
+
+function closeAnnouncementBanner() {
   const el = document.getElementById('announcement');
   if (el) el.style.display = 'none';
-  // 如果有公告，弹出弹窗
-  if (text) {
-    showAnnouncementModal(text);
-  }
-}
-
-function showAnnouncementModal(text) {
-  // 检查是否已经弹过了（本次会话）
-  if (sessionStorage.getItem('announcement_shown')) return;
-  sessionStorage.setItem('announcement_shown', '1');
-  
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.id = 'announcementModal';
-  modal.style.display = 'flex';
-  modal.innerHTML = '<div class="modal-content" style="max-width:450px;">' +
-    '<h3 style="color:var(--yellow);">📢 公告</h3>' +
-    '<div style="background:var(--bg2);border-radius:8px;padding:16px;margin:12px 0;line-height:1.6;white-space:pre-wrap;">' + escapeHtml(text) + '</div>' +
-    '<button class="btn btn-primary" style="width:100%;" onclick="closeAnnouncementModal()">我知道了</button>' +
-    '</div>';
-  document.body.appendChild(modal);
-}
-
-function closeAnnouncementModal() {
-  const modal = document.getElementById('announcementModal');
-  if (modal) modal.remove();
+  localStorage.setItem('announcement_dismissed', '1');
 }
 
 async function loadPending() {
