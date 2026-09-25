@@ -5265,6 +5265,7 @@ function showGameMenu(area, game, name) {
 let onlineGameType = '';
 let onlineGameName = '';
 let currentGameId = null;
+let currentRoomCode = null;
 let currentPlayerRole = null; // 'player1' or 'player2'
 let onlineChannel = null;
 
@@ -5272,7 +5273,7 @@ function showOnlineMenu(game, name) {
   onlineGameType = game;
   onlineGameName = name;
   const area = document.getElementById('gameArea');
-  const username = localStorage.getItem('toolbox_user');
+  const username = getLoginUsername();
   if (!username) {
     area.innerHTML = '<h3 style="margin-bottom:16px;">人人对战需要先登录</h3>' +
       '<p>请先在右上角登录或注册账号</p>';
@@ -5288,21 +5289,47 @@ function showOnlineMenu(game, name) {
     '</div>';
 }
 
+// 取当前登录用户名（兼容 JSON 对象和纯字符串两种存储格式）
+function getLoginUsername() {
+  try {
+    const raw = localStorage.getItem('toolbox_user');
+    if (!raw) return '';
+    const parsed = JSON.parse(raw);
+    return (parsed && parsed.username) ? String(parsed.username) : String(raw);
+  } catch (e) {
+    return String(localStorage.getItem('toolbox_user') || '');
+  }
+}
+
+// 生成6位纯数字房间号（存于 board 字段 ROOM:xxxxxx，避免与现有冲突，最多重试10次）
+async function genRoomCode() {
+  for (let i = 0; i < 10; i++) {
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const { data, error } = await sb.from('games').select('id').eq('board', 'ROOM:' + code);
+    if (error) throw error;
+    if (!data || !data.length) return code;
+  }
+  throw new Error('房间号生成失败，请重试');
+}
+
 // 创建房间
 async function createOnlineRoom() {
-  const username = localStorage.getItem('toolbox_user');
+  const username = getLoginUsername();
+  if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
+    const roomCode = await genRoomCode();
     const { data, error } = await sb.from('games').insert({
       game_type: onlineGameType,
       player1: username,
       status: 'waiting',
-      board: null,
+      board: 'ROOM:' + roomCode,
       current_player: 'player1'
     }).select();
     if (error) throw error;
     currentGameId = data[0].id;
+    currentRoomCode = roomCode;
     currentPlayerRole = 'player1';
-    toast('房间创建成功！房间号：' + currentGameId.substring(0, 8));
+    toast('房间创建成功！房间号：' + roomCode);
     showWaitingRoom();
     subscribeToGame();
   } catch (e) {
@@ -5310,18 +5337,23 @@ async function createOnlineRoom() {
   }
 }
 
-// 加入房间
+// 加入房间（纯数字房间号，按 room_code 查找）
 async function joinOnlineRoom() {
   const roomId = document.getElementById('roomIdInput').value.trim();
   if (!roomId) {
     toast('请输入房间号');
     return;
   }
-  const username = localStorage.getItem('toolbox_user');
+  if (!/^\d{6}$/.test(roomId)) {
+    toast('房间号是6位数字', 'error');
+    return;
+  }
+  const username = getLoginUsername();
+  if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
-    // 查找房间
-    const { data, error } = await sb.from('games').select('*').eq('id', roomId).single();
-    if (error) throw error;
+    // 按纯数字房间号查找
+    const { data, error } = await sb.from('games').select('*').eq('board', 'ROOM:' + roomId).single();
+    if (error) { toast('房间不存在', 'error'); return; }
     if (data.status !== 'waiting') {
       toast('房间已满或已开始');
       return;
@@ -5333,11 +5365,12 @@ async function joinOnlineRoom() {
       const { error: updateError } = await sb.from('games').update({
         player2: username,
         status: 'playing'
-      }).eq('id', roomId);
+      }).eq('id', data.id);
       if (updateError) throw updateError;
       currentPlayerRole = 'player2';
     }
-    currentGameId = roomId;
+    currentGameId = data.id;
+    currentRoomCode = roomId;
     toast('加入房间成功！');
     startOnlineGame();
     subscribeToGame();
@@ -5350,9 +5383,8 @@ async function joinOnlineRoom() {
 function showWaitingRoom() {
   const area = document.getElementById('gameArea');
   area.innerHTML = '<h3 style="margin-bottom:16px;">等待玩家加入...</h3>' +
-    '<p>房间号：<strong>' + currentGameId.substring(0, 8) + '</strong></p>' +
+    '<p>房间号：<strong>' + currentRoomCode + '</strong></p>' +
     '<p>把房间号分享给朋友，让他加入房间</p>' +
-    '<p style="color:#888;">完整房间号：' + currentGameId + '</p>' +
     '<button class="btn btn-danger" onclick="leaveOnlineGame()">离开房间</button>';
 }
 
