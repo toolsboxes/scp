@@ -3739,7 +3739,7 @@ function toast(msg, type = 'success') {
   const t = document.createElement('div');
   t.className = 'toast ' + type;
   t.textContent = msg;
-  (document.getElementById('appRoot')||document.body).appendChild(t);
+  document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
 
@@ -4009,7 +4009,7 @@ function showProfile() {
     '<button class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="deleteAccount()">⚠️ 注销账号</button>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
 }
 
 function copyUID() {
@@ -4083,7 +4083,7 @@ function showFriendSearch() {
     '<div id="searchResult"></div>' +
     '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(\'friendSearchModal\')">关闭</button>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
 }
 
 async function searchUserByUID() {
@@ -4178,7 +4178,7 @@ function showFriendList() {
     '<div id="friendListContent"><p style="text-align:center;color:var(--muted);">加载中...</p></div>' +
     '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
   loadFriendList();
 }
 
@@ -4485,7 +4485,7 @@ function openAIChat() {
     '<button class="btn btn-primary" onclick="sendAIMessage()">发送</button>' +
     '</div>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
 }
 
 async function sendAIMessage() {
@@ -4560,7 +4560,7 @@ function openChat(friendId, friendName) {
     '<button class="btn btn-primary" onclick="sendMessage()">发送</button>' +
     '</div>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
   loadMessages();
   if (chatRefreshInterval) clearInterval(chatRefreshInterval);
   chatRefreshInterval = setInterval(loadMessages, 1000);
@@ -4621,7 +4621,7 @@ async function showCloudFilePicker() {
       fileList +
       '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'cloudPickerModal\')">取消</button>' +
       '</div>';
-    (document.getElementById('appRoot')||document.body).appendChild(modal);
+    document.body.appendChild(modal);
   } catch (e) {
     toast('加载失败：' + e.message, 'error');
   }
@@ -5156,7 +5156,7 @@ function showAnnouncementModal(text) {
     '<div style="background:var(--bg2);border-radius:8px;padding:16px;margin:12px 0;line-height:1.6;white-space:pre-wrap;">' + escapeHtml(text) + '</div>' +
     '<button class="btn btn-primary" style="width:100%;" onclick="closeAnnouncementModal()">我知道了</button>' +
     '</div>';
-  (document.getElementById('appRoot')||document.body).appendChild(modal);
+  document.body.appendChild(modal);
 }
 
 function closeAnnouncementModal() {
@@ -5301,21 +5301,17 @@ function getLoginUsername() {
   }
 }
 
-// 生成6位纯数字房间号：查所有等待中的房间号，避免重复（最多重试10次）
-async function genRoomCode() {
-  for (let i = 0; i < 10; i++) {
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const { data, error } = await sb.from('games').select('board').eq('status', 'waiting');
-    if (error) throw error;
-    let taken = false;
-    if (data) {
-      for (const row of data) {
-        if (row.board && row.board.room && String(row.board.room) === code) { taken = true; break; }
-      }
-    }
-    if (!taken) return code;
-  }
-  throw new Error('房间号生成失败，请重试');
+// 生成6位纯数字房间号（不查库，直接随机；6位数字共90万组合，冲突概率极低）
+function genRoomCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+// 带超时的请求封装：避免网络慢时按钮"没反应"
+function sbTimeout(promise, ms = 10000) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('网络超时，请重试')), ms))
+  ]);
 }
 
 // 创建房间
@@ -5323,14 +5319,14 @@ async function createOnlineRoom() {
   const username = getLoginUsername();
   if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
-    const roomCode = await genRoomCode();
-    const { data, error } = await sb.from('games').insert({
+    const roomCode = genRoomCode();
+    const { data, error } = await sbTimeout(sb.from('games').insert({
       game_type: onlineGameType,
       player1: username,
       status: 'waiting',
       board: { room: roomCode },
       current_player: 'player1'
-    }).select();
+    }).select());
     if (error) throw error;
     currentGameId = data[0].id;
     currentRoomCode = roomCode;
@@ -5339,7 +5335,7 @@ async function createOnlineRoom() {
     showWaitingRoom();
     subscribeToGame();
   } catch (e) {
-    toast('创建房间失败：' + e.message);
+    toast('创建房间失败：' + e.message, 'error');
   }
 }
 
@@ -6662,7 +6658,7 @@ function initChess(area) {
       '</div>' +
       '<button class="btn btn-secondary" style="width:100%;" onclick="window._chessPromotePick && window._chessPromotePick(\'Q\')">默认选择后 ♕</button>' +
       '</div>';
-    (document.getElementById('appRoot')||document.body).appendChild(modal);
+    document.body.appendChild(modal);
   }
 
   function aiMove() {
@@ -6985,7 +6981,9 @@ function initGo(area) {
         }
         board = boardCopy;
       }
-      document.getElementById('goStatus').textContent = 'AI 无棋可下，轮到你了';
+      // AI 无棋可下：自动停一手（pass），把回合还给玩家
+      currentPlayer = HUMAN;
+      document.getElementById('goStatus').textContent = 'AI 无棋可下，自动停一手，轮到你了（黑棋）';
     }, 300);
   }
 
