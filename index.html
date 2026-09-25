@@ -5301,11 +5301,11 @@ function getLoginUsername() {
   }
 }
 
-// 生成6位纯数字房间号（存于 board 字段 ROOM:xxxxxx，避免与现有冲突，最多重试10次）
+// 生成6位纯数字房间号（存于 board 字段 {"room":"xxxxxx"}，避免与现有冲突，最多重试10次）
 async function genRoomCode() {
   for (let i = 0; i < 10; i++) {
     const code = String(Math.floor(100000 + Math.random() * 900000));
-    const { data, error } = await sb.from('games').select('id').eq('board', 'ROOM:' + code);
+    const { data, error } = await sb.from('games').select('id').eq('board->>room', code);
     if (error) throw error;
     if (!data || !data.length) return code;
   }
@@ -5322,7 +5322,7 @@ async function createOnlineRoom() {
       game_type: onlineGameType,
       player1: username,
       status: 'waiting',
-      board: 'ROOM:' + roomCode,
+      board: { room: roomCode },
       current_player: 'player1'
     }).select();
     if (error) throw error;
@@ -5351,8 +5351,8 @@ async function joinOnlineRoom() {
   const username = getLoginUsername();
   if (!username) { toast('请先登录', 'error'); showAuth('login'); return; }
   try {
-    // 按纯数字房间号查找
-    const { data, error } = await sb.from('games').select('*').eq('board', 'ROOM:' + roomId).single();
+    // 按纯数字房间号查找（board 是 jsonb，按 room 字段过滤）
+    const { data, error } = await sb.from('games').select('*').eq('board->>room', roomId).single();
     if (error) { toast('房间不存在', 'error'); return; }
     if (data.status !== 'waiting') {
       toast('房间已满或已开始');
