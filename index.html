@@ -322,6 +322,7 @@ input:focus, textarea:focus { border-color: var(--purple); }
   #game2048 { width: 260px; }
 }
 /* 手机强制横屏：竖屏时整页旋转 90°，内容按电脑 16:9 比例，左右黑边，内部可滚动 */
+/* 黑边宽度由 JS 动态计算（兼容不支持 calc 乘除法的手机浏览器） */
 @media (orientation: portrait) {
   body.forced-landscape {
     box-sizing: border-box;
@@ -333,8 +334,6 @@ input:focus, textarea:focus { border-color: var(--purple); }
     overflow-y: auto;
     overflow-x: hidden;
     background: #000;
-    padding-left: calc((100vh - 100vw * 16 / 9) / 2);
-    padding-right: calc((100vh - 100vw * 16 / 9) / 2);
   }
 }
 </style>
@@ -4968,11 +4967,32 @@ let adminAutoRefresh = null;
 
 function adminSet(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
 
+let adminStatsBusy = false;
+
+// 本地系统指标：纯浏览器侧、无网络，每次立即更新（不卡顿）
+function updateAdminLocalStats() {
+  adminSet('statClock', new Date().toLocaleTimeString('zh-CN'));
+  adminSet('statMemory', performance.memory ? (performance.memory.usedJSHeapSize/1048576).toFixed(1) + ' MB' : '-');
+  adminSet('statScreen', screen.width + '×' + screen.height);
+  adminSet('statViewport', window.innerWidth + '×' + window.innerHeight);
+  adminSet('statOnline', navigator.onLine ? '在线' : '离线');
+  adminSet('statVisible', document.visibilityState === 'visible' ? '可见' : '后台');
+  adminSet('statPlatform', (navigator.platform || '-').slice(0,14));
+  adminSet('statLang', navigator.language);
+  const up = Math.floor((Date.now() - adminStartTime)/1000);
+  const uh = Math.floor(up/3600), um = Math.floor((up%3600)/60), us = up%60;
+  adminSet('statUptime', (uh>0?uh+'h':'') + (um>0?um+'m':'') + us + 's');
+}
+
 async function loadAdminStats() {
+  // 本地指标立即刷新（不等网络）
+  updateAdminLocalStats();
+  // 防重入：上一轮网络查询没完成就跳过本轮，避免请求堆积卡住页面
+  if (adminStatsBusy) return;
+  adminStatsBusy = true;
   try {
     const t0 = performance.now();
     adminSet('statDb', '●');
-    // 每张表单独容错：任何一张失败都不影响其他统计刷新
     const safe = (p) => p.then(r => r.data || []).catch(() => []);
     const [users, echoes, files, games, friends, messages] = await Promise.all([
       safe(sb.from('users').select('*')),
@@ -4982,7 +5002,6 @@ async function loadAdminStats() {
       safe(sb.from('friends').select('*')),
       safe(sb.from('messages').select('*'))
     ]);
-    
 
     const now0 = new Date();
     const dayPrefix = (now0.getMonth()+1) + '/' + now0.getDate() + '/';
@@ -5045,26 +5064,17 @@ async function loadAdminStats() {
     adminSet('statFileMessages', messages.filter(m => m.is_file).length);
     adminSet('statTodayMsgs', messages.filter(isTodayRow).length);
 
-    // 系统（浏览器侧）
+    // 网络延迟 / 刷新计数 / 最后刷新
     adminSet('statPing', Math.round(performance.now() - t0) + ' ms');
-    adminSet('statClock', new Date().toLocaleTimeString('zh-CN'));
-    adminSet('statMemory', performance.memory ? (performance.memory.usedJSHeapSize/1048576).toFixed(1) + ' MB' : '-');
-    adminSet('statScreen', screen.width + '×' + screen.height);
-    adminSet('statViewport', window.innerWidth + '×' + window.innerHeight);
-    adminSet('statOnline', navigator.onLine ? '在线' : '离线');
-    adminSet('statVisible', document.visibilityState === 'visible' ? '可见' : '后台');
-    adminSet('statPlatform', (navigator.platform || '-').slice(0,14));
-    adminSet('statLang', navigator.language);
-
-    // 运行时间 / 刷新计数
-    const up = Math.floor((Date.now() - adminStartTime)/1000);
-    const uh = Math.floor(up/3600), um = Math.floor((up%3600)/60), us = up%60;
-    adminSet('statUptime', (uh>0?uh+'h':'') + (um>0?um+'m':'') + us + 's');
     adminRefreshCount++;
     adminSet('statRefresh', adminRefreshCount);
     adminSet('statLastRefresh', new Date().toLocaleTimeString('zh-CN'));
+    updateAdminLocalStats();
   } catch (e) {
     console.warn('loadAdminStats error:', e);
+    adminSet('statDb', '✗');
+  } finally {
+    adminStatsBusy = false;
   }
 }
 function startAdminAutoRefresh() {
@@ -7044,12 +7054,23 @@ async function init() {
 
 init();
 
-// 手机强制横屏：竖屏自动旋转成横屏
+// 手机强制横屏：竖屏自动旋转成横屏，内容按电脑 16:9 比例（JS 动态算黑边）
 function applyForcedLandscape() {
   var isLandscape = function () { return window.innerWidth >= window.innerHeight; };
   function upd() {
-    if (isLandscape()) document.body.classList.remove('forced-landscape');
-    else document.body.classList.add('forced-landscape');
+    if (isLandscape()) {
+      document.body.classList.remove('forced-landscape');
+      document.body.style.paddingLeft = '';
+      document.body.style.paddingRight = '';
+    } else {
+      document.body.classList.add('forced-landscape');
+      // 竖屏物理尺寸：短边 innerWidth = 旋转后画面高度，长边 innerHeight = 旋转后画面宽度
+      var shortE = window.innerWidth, longE = window.innerHeight;
+      var contentW = shortE * 16 / 9;          // 16:9 画面应有的宽度
+      var pad = Math.max(0, (longE - contentW) / 2);
+      document.body.style.paddingLeft = pad + 'px';
+      document.body.style.paddingRight = pad + 'px';
+    }
   }
   upd();
   window.addEventListener('resize', upd);
