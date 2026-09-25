@@ -345,6 +345,18 @@ body.forced-landscape #appRoot {
   overflow-x: hidden !important;
   background: var(--bg) !important;
 }
+/* 旋转后按电脑版（横屏）布局渲染，覆盖手机小布局 */
+body.forced-landscape #appRoot .tool-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important; }
+body.forced-landscape #appRoot .game-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; }
+body.forced-landscape #appRoot .header { flex-wrap: nowrap !important; }
+body.forced-landscape #appRoot .container { padding: 16px !important; max-width: none !important; }
+body.forced-landscape #appRoot textarea,
+body.forced-landscape #appRoot input[type="text"],
+body.forced-landscape #appRoot input[type="password"] { font-size: 15px !important; }
+body.forced-landscape #appRoot .btn { padding: 10px 18px !important; font-size: 14px !important; }
+body.forced-landscape #appRoot .modal-content { width: 70% !important; max-width: 560px !important; }
+body.forced-landscape #appRoot .result-box { font-size: 14px !important; }
+body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 14px !important; }
 </style>
 </head>
 <body>
@@ -7066,45 +7078,28 @@ init();
 
 // 手机强制横屏：优先让系统把视口真正旋转成横屏（视觉宽度变宽=跟电脑一样），横屏后按 16:9 加左右黑边
 function applyForcedLandscape() {
+  // 移动端检测：不依赖 UA（华为等浏览器可能报桌面 UA），用触屏 + 物理屏幕短边判断
   var isMobile = function () {
-    return /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent) &&
-           ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    var shortSide = Math.min(screen.width, screen.height);
+    return touch && shortSide <= 900;
   };
-  // 视口是否已横屏（系统旋转成功或用户横持手机）
-  function viewportLandscape() { return window.innerWidth >= window.innerHeight; }
-
-  function root() { return document.getElementById('appRoot') || document.body; }
-  // 横屏视口：按 16:9 居中内容，左右黑边（跟电脑一样的比例）
-  function apply169() {
-    var w = window.innerWidth, h = window.innerHeight;
-    var contentW = h * 16 / 9;
-    var pad = Math.max(0, (w - contentW) / 2);
-    var r = root();
-    r.style.paddingLeft = pad + 'px';
-    r.style.paddingRight = pad + 'px';
-    r.style.boxSizing = 'border-box';
-    r.style.overflowX = 'hidden';
-  }
-  function clearAll() {
-    document.body.classList.remove('forced-landscape');
-    var r = root();
-    r.style.paddingLeft = '';
-    r.style.paddingRight = '';
-    r.style.boxSizing = '';
-    r.style.overflowX = '';
+  // 物理屏幕是否竖屏（screen 物理像素不受桌面模式/视口影响）
+  function physicalPortrait() {
+    var sw = screen.width, sh = screen.height;
+    if (screen.orientation && screen.orientation.angle % 180 === 90) { sw = screen.height; sh = screen.width; }
+    return sh > sw;
   }
   function upd() {
-    if (!isMobile()) { clearAll(); return; }
-    if (viewportLandscape()) {
-      // 真横屏（系统已旋转/用户横持）：清旋转降级，按 16:9 加黑边
+    if (!isMobile()) {
       document.body.classList.remove('forced-landscape');
-      apply169();
-    } else {
-      // 竖屏：系统还没转过来，先上 CSS 旋转降级（内容横排），再尝试系统锁横屏
+      return;
+    }
+    if (physicalPortrait()) {
+      // 物理竖屏 + 手机：旋转 appRoot，内容全宽铺满（跟电脑一样宽），不加水黑边
       document.body.classList.add('forced-landscape');
-      var r = root();
-      r.style.paddingLeft = '';
-      r.style.paddingRight = '';
+    } else {
+      document.body.classList.remove('forced-landscape');
     }
   }
   upd();
@@ -7114,7 +7109,6 @@ function applyForcedLandscape() {
   try {
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(function () {
-        // Chrome 系要求全屏后才允许锁方向：先请求全屏再锁
         try {
           if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().then(function () {
@@ -7125,8 +7119,7 @@ function applyForcedLandscape() {
       });
     }
   } catch (e) {}
-}
-applyForcedLandscape();
+}applyForcedLandscape();
 
 
 
