@@ -60,6 +60,10 @@ body {
   font-weight: 600;
   transition: all 0.2s;
   color: #fff;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 .btn-primary { background: linear-gradient(135deg, var(--purple), var(--pink)); }
@@ -2729,8 +2733,10 @@ const Nuclear = {
         this.intRenderer = new THREE.WebGLRenderer({ canvas: intCanvas, antialias: false });
         this.intRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
         this.intCam = new THREE.PerspectiveCamera(60, 480 / 300, 0.1, 50);
-        this.intCam.position.set(0, 3.2, 0);
-        this.intCam.lookAt(0, -1, 0);
+        this.intCam.position.set(0, 4, 0);
+        // up 指向 z 轴，避免相机朝下看时与默认 up 平行导致画面翻转/黑屏
+        this.intCam.up.set(0, 0, 1);
+        this.intCam.lookAt(0, -0.5, 0);
       }
       this.threeInited = true;
       this.animateThreeJS();
@@ -4369,6 +4375,53 @@ const Nuclear = {
     };
     const cn = names[name] || name;
     this.addLog('操作', `${cn}${this.systems[name] ? '启动' : '停止'}`);
+    this.applySystemEffect(name, this.systems[name], names);
+    this.updateDisplay();
+  },
+
+  // 超级控制联动：让启停真实影响反应堆运行参数
+  applySystemEffect(name, on, names) {
+    const s = this.systems;
+    // 1) 冷却剂泵 / 设备冷泵 / 旋转滤网：决定冷却剂流量
+    const coolantPumps = ['coolantPumpA', 'coolantPumpB', 'coolantPumpC'].filter(k => s[k]).length;
+    const ccw = (s.ccwPumpA ? 1 : 0) + (s.ccwPumpB ? 1 : 0);
+    if (name.indexOf('coolantPump') === 0 || name.indexOf('ccwPump') === 0 || name === 'rotatingStrainer') {
+      this.coolantFlow = coolantPumps * 650 + ccw * 250;
+    }
+    // 2) 给水 / 凝结水 / 加热器：影响给水流量（决定产汽）
+    if (['turbineFeedPump', 'motorFeedPump', 'makeupWater', 'condensatePump', 'condPolish', 'lowPressHeater', 'highPressHeater', 'deaerator'].indexOf(name) !== -1) {
+      this.feedwaterFlow = (s.turbineFeedPump ? 550 : 0) + (s.motorFeedPump ? 450 : 0) + (s.makeupWater ? 300 : 0);
+    }
+    // 3) 循环水泵 / 冷却塔：影响冷凝器真空
+    if (name === 'circWaterPump' || name === 'coolingTower') {
+      this.condenserVacuum = (s.circWaterPump && s.coolingTower) ? -85 : (s.circWaterPump ? -70 : -50);
+    }
+    // 4) 上充 / 下泄 / 硼酸：影响稳压器水位与硼浓度
+    if (name === 'chargingPump' || name === 'letdownValve') {
+      this.pressurizerLevel = (s.chargingPump && !s.letdownValve)
+        ? Math.min(100, this.pressurizerLevel + 3) : Math.max(20, this.pressurizerLevel - 2);
+    }
+    if (name === 'boricAcidTank') {
+      this.boronConcentration = Math.max(0, Math.min(2500, s.boricAcidTank ? 1800 : 800));
+    }
+    if (name === 'volControlTank') {
+      this.boronConcentration = s.volControlTank ? Math.max(0, this.boronConcentration - 100) : this.boronConcentration;
+    }
+    // 5) 电力系统：关键母线/变/UPS 失电会连锁停泵
+    if (['unitTrans', 'startupTrans', 'backupTrans', 'bus6kv', 'bus380v', 'ups', 'inverter', 'battery'].indexOf(name) !== -1) {
+      const powerOk = s.unitTrans && s.bus6kv && s.bus380v && s.ups;
+      if (!powerOk) {
+        ['coolantPumpA', 'coolantPumpB', 'coolantPumpC', 'motorFeedPump', 'ccwPumpA', 'ccwPumpB', 'circWaterPump'].forEach(k => {
+          if (s[k]) { s[k] = false; this.addLog('警告', (names[k] || k) + ' 因失电停机'); }
+        });
+        this.addLog('警告', '厂用电中断，多台泵已停');
+        this.coolantFlow = 0;
+      }
+    }
+    // 6) 安注泵：事故时投运，提示应急冷却（并抑制堆芯温升）
+    if (name === 'siPumpA' || name === 'siPumpB') {
+      if (s[name]) this.addLog('系统', '安全注入已投运，堆芯应急冷却中');
+    }
     this.updateDisplay();
   },
 
