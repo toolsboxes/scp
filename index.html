@@ -6691,7 +6691,12 @@ function fpsStart(mode) {
         ctx.fillStyle=pct>0.5?'#3f3':pct>0.25?'#ff0':'#f00'; ctx.fillRect(1,1,98*pct,8);
         en.userData.hpTex.needsUpdate=true;
         if(en.userData.hp<=0){
-          score+=100;kills++;scene.remove(en);enemies.splice(enemies.indexOf(en),1);spawnEnemy();
+          score+=100;kills++;
+          // 爆炸特效
+          const boom=new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), new THREE.MeshBasicMaterial({color:0xff6600,transparent:true,opacity:0.8}));
+          boom.position.copy(en.position); scene.add(boom);
+          setTimeout(()=>{scene.remove(boom);},300);
+          scene.remove(en);enemies.splice(enemies.indexOf(en),1);spawnEnemy();
           if(mode==='arena'){ window._fpsGun=(window._fpsGun+1)%FPS_GUNS.length; ammo=FPS_GUNS[window._fpsGun].mag; rebuildGun(); hud(); }
         }
       }
