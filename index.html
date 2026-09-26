@@ -2798,8 +2798,8 @@ const Nuclear = {
         this.intRenderer.domElement.style.borderRadius = '4px';
         intContainer.appendChild(this.intRenderer.domElement);
         this.intCam = new THREE.PerspectiveCamera(60, iw / ih, 0.1, 50);
-        // 相机在壳内斜上方俯视堆芯：正对红色顶盖+燃料棒阵列
-        this.intCam.position.set(0, 2.6, 0.9);
+        // 相机在压力容器内上部俯视堆芯（vessel y范围 -3~2）
+        this.intCam.position.set(0, 1.3, 0.5);
         this.intCam.lookAt(0, -1, 0);
       }
       this.threeInited = true;
