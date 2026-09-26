@@ -2457,6 +2457,14 @@ const Nuclear = {
         this.reactivity += 0.5;
         this.addLog('事故', '控制棒弹出！功率急剧上升！');
         this.accidentType = null;
+        // 3D 弹棒特效：控制棒高速飞向堆顶并带偏移
+        if (this.threeRods && this.threeRods.length) {
+          this.threeRods.forEach((rod) => {
+            rod.userData.ejectVy = 0.5 + Math.random() * 0.6;
+            rod.userData.ejectVx = (Math.random() - 0.5) * 0.1;
+            rod.userData.ejectVz = (Math.random() - 0.5) * 0.1;
+          });
+        }
       },
       station_blackout: () => {
         this.pumpOn = false;
@@ -2821,8 +2829,14 @@ const Nuclear = {
     this.threeRods.forEach((rod, i) => {
       if (rod.userData.ejectVy) {
         rod.position.y += rod.userData.ejectVy;
+        rod.position.x += (rod.userData.ejectVx || 0);
+        rod.position.z += (rod.userData.ejectVz || 0);
         rod.userData.ejectVy *= 1.02;
-        if (rod.position.y > 20) { rod.userData.ejectVy = 0; rod.position.y = 1 - rodHeight; }
+        if (rod.position.y > 20) {
+          rod.userData.ejectVy = 0; rod.userData.ejectVx = 0; rod.userData.ejectVz = 0;
+          const angle = (i / this.threeRods.length) * Math.PI * 2;
+          rod.position.set(Math.cos(angle) * 1.2, 1 - rodHeight, Math.sin(angle) * 1.2);
+        }
       } else {
         rod.position.y = 1 - rodHeight + (i % 3) * 0.1;
       }
