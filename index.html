@@ -6486,13 +6486,23 @@ function fpsStart(mode) {
     return g;
   }
   if(window.GLTFLoader){
-    new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb', gltf=>{
-      console.log('Soldier model loaded!');
-      soldierModel=gltf;
-      // 重新生成敌人
-      enemies.forEach(e=>scene.remove(e)); enemies.length=0;
-      for(let i=0;i<6;i++) spawnEnemy();
-    }, xhr=>console.log('模型加载中:',(xhr.loaded/1000).toFixed(0)+'KB'), err=>console.warn('模型加载失败,用几何体回退:',err));
+    const MODEL_URLS = [
+      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
+      'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb',
+      'https://threejs.org/examples/models/gltf/Soldier.glb'
+    ];
+    let mi=0;
+    function tryLoadModel(){
+      if(mi>=MODEL_URLS.length){ console.warn('所有模型CDN都失败,用几何体'); return; }
+      console.log('尝试加载模型:',MODEL_URLS[mi]);
+      new GLTFLoader().load(MODEL_URLS[mi], gltf=>{
+        console.log('✅ Soldier模型加载成功! 来源:',MODEL_URLS[mi]);
+        soldierModel=gltf;
+        enemies.forEach(e=>scene.remove(e)); enemies.length=0;
+        for(let i=0;i<6;i++) spawnEnemy();
+      }, undefined, err=>{ mi++; tryLoadModel(); });
+    }
+    tryLoadModel();
   }
   function spawnEnemy(){
     const g=makeSoldier(0xcc3333);
@@ -6521,7 +6531,7 @@ function fpsStart(mode) {
   });
   document.addEventListener('keydown',e=>{
     keys[e.key.toLowerCase()]=true;
-    if(e.key===' '){ e.preventDefault(); if(onGround) vy=window['_ch_高跳']?0.45:0.22; }
+    if(e.key===' '){ e.preventDefault(); if(onGround){ vy=window['_ch_高跳']?0.45:0.22; onGround=false; } }
     if(e.key>='1'&&e.key<='9'){const i=+e.key-1;if(FPS_GUNS[i]){window._fpsGun=i;ammo=FPS_GUNS[i].mag;}}
     if(e.key.toLowerCase()==='r'){reloading=true;setTimeout(()=>{ammo=FPS_GUNS[window._fpsGun].mag;reloading=false;},FPS_GUNS[window._fpsGun].reload);}
   });
