@@ -6282,7 +6282,9 @@ function closeGame() {
   if (document.pointerLockElement) document.exitPointerLock();
   document.getElementById('gameList').style.display = 'grid';
   document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'inline-block';
   document.getElementById('gameArea').innerHTML = '';
+  const cp=document.getElementById('fpsCheatPanel'); if(cp) cp.remove();
 }
 
 // ============ FPS 射击游戏 ============
@@ -6301,8 +6303,9 @@ const FPS_OPTICS = ['红点镜','全息镜','2倍镜','4倍镜','8倍镜'];
 const FPS_OTHER_ATT = ['消音器','垂直握把','扩容弹夹','激光瞄准','枪托'];
 
 function initFPS(area) {
+  document.getElementById('gameArea').style.display='block';
   area.innerHTML = `
-    <div style="max-width:960px;margin:0 auto;">
+    <div style="max-width:1100px;margin:0 auto;">
       <h3 style="margin-bottom:12px;">🎯 FPS 射击训练场</h3>
       <div id="fpsModeMenu" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">
         <button class="btn btn-success" onclick="fpsStart('practice')">🏋️ 练习房</button>
