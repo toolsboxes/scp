@@ -6662,6 +6662,8 @@ function fpsStart(mode) {
     lastFire=now;
     if(!window['_ch_无限子弹']) ammo--;
     shot++;
+    // 后坐力
+    if(!window['_ch_无后坐力']){ gunGroup.position.y=-0.25; gunGroup.position.z=-0.4; setTimeout(()=>{gunGroup.position.y=-0.22;gunGroup.position.z=-0.45;},80); }
     ray.setFromCamera(new THREE.Vector2(0,0),cam); ray.far=120;
     const hits=ray.intersectObjects(enemies,true);
     // 曳光弹特效
