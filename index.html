@@ -4844,10 +4844,9 @@ async function checkSession() {
   try {
     const localToken = localStorage.getItem('toolbox_session_token');
     if (!localToken) return;
-    const { data, error } = await sb.from('users').select('session_token').eq('id', currentUser.id).single();
-    if (error) return;
-    if (data && data.session_token && data.session_token !== localToken) {
-      // 别的设备登录了
+    const { data, error } = await sb.from('users').select('*').eq('id', currentUser.id).single();
+    if (error || !data) return;
+    if (data.session_token && data.session_token !== localToken) {
       toast('你的账号在别的设备登录了，已自动退出', 'error');
       logout();
     }
@@ -6290,14 +6289,21 @@ function closeGame() {
 // ============ FPS 射击游戏 ============
 const FPS_GUNS = [
   { name:'P92 手枪', dmg:25, rof:280, mag:12, auto:false, spread:0.015, reload:900 },
+  { name:'Glock 18', dmg:20, rof:60, mag:18, auto:true, spread:0.02, reload:1000 },
+  { name:'沙漠之鹰', dmg:55, rof:400, mag:7, auto:false, spread:0.03, reload:1400 },
+  { name:'MP5 冲锋枪', dmg:22, rof:70, mag:30, auto:true, spread:0.018, reload:1500 },
+  { name:'UZI 冲锋枪', dmg:18, rof:50, mag:32, auto:true, spread:0.022, reload:1400 },
+  { name:'Vector 冲锋枪', dmg:20, rof:55, mag:33, auto:true, spread:0.014, reload:1700 },
   { name:'M4A1 突击步枪', dmg:30, rof:90, mag:30, auto:true, spread:0.012, reload:1600 },
   { name:'AK-47 突击步枪', dmg:38, rof:120, mag:30, auto:true, spread:0.02, reload:1800 },
-  { name:'MP5 冲锋枪', dmg:22, rof:70, mag:30, auto:true, spread:0.018, reload:1500 },
-  { name:'Vector 冲锋枪', dmg:20, rof:55, mag:33, auto:true, spread:0.014, reload:1700 },
+  { name:'SCAR-H 突击步枪', dmg:35, rof:100, mag:20, auto:true, spread:0.015, reload:1700 },
+  { name:'G36C 突击步枪', dmg:28, rof:85, mag:30, auto:true, spread:0.013, reload:1500 },
+  { name:'SPAS-12 霰弹枪', dmg:15, rof:800, mag:8, auto:false, spread:0.08, reload:2200 },
   { name:'DP-28 轻机枪', dmg:32, rof:100, mag:47, auto:true, spread:0.025, reload:2600 },
+  { name:'M249 机枪', dmg:28, rof:75, mag:100, auto:true, spread:0.03, reload:3500 },
   { name:'AWM 狙击枪', dmg:120, rof:1200, mag:5, auto:false, spread:0.001, reload:2800 },
   { name:'M24 狙击枪', dmg:80, rof:1000, mag:5, auto:false, spread:0.002, reload:2400 },
-  { name:'沙漠之鹰', dmg:55, rof:400, mag:7, auto:false, spread:0.03, reload:1400 },
+  { name:'巴雷特 M82', dmg:200, rof:1500, mag:5, auto:false, spread:0.003, reload:3200 },
 ];
 const FPS_OPTICS = ['红点镜','全息镜','2倍镜','4倍镜','8倍镜'];
 const FPS_OTHER_ATT = ['消音器','垂直握把','扩容弹夹','激光瞄准','枪托'];
@@ -6474,29 +6480,43 @@ function fpsStart(mode) {
     let body,barrelLen=0.3,bodyLen=0.4,bodyW=0.06,bodyH=0.08,color=dark;
     if(gi===0){ // P92 手枪
       bodyLen=0.18;bodyW=0.05;bodyH=0.12;barrelLen=0.1;
-    } else if(gi===1){ // M4A1
-      bodyLen=0.5;bodyW=0.05;bodyH=0.07;barrelLen=0.35;
-    } else if(gi===2){ // AK47
-      bodyLen=0.48;bodyW=0.055;bodyH=0.075;barrelLen=0.3;color=tan;
+    } else if(gi===1){ // Glock18
+      bodyLen=0.2;bodyW=0.05;bodyH=0.1;barrelLen=0.12;
+    } else if(gi===2){ // 沙漠之鹰
+      bodyLen=0.22;bodyW=0.055;bodyH=0.14;barrelLen=0.15;color=tan;
     } else if(gi===3){ // MP5
       bodyLen=0.32;bodyW=0.05;bodyH=0.08;barrelLen=0.15;
-    } else if(gi===4){ // Vector
+    } else if(gi===4){ // UZI
+      bodyLen=0.25;bodyW=0.045;bodyH=0.1;barrelLen=0.1;
+    } else if(gi===5){ // Vector
       bodyLen=0.28;bodyW=0.045;bodyH=0.09;barrelLen=0.12;
-    } else if(gi===5){ // DP28 机枪
+    } else if(gi===6){ // M4A1
+      bodyLen=0.5;bodyW=0.05;bodyH=0.07;barrelLen=0.35;
+    } else if(gi===7){ // AK47
+      bodyLen=0.48;bodyW=0.055;bodyH=0.075;barrelLen=0.3;color=tan;
+    } else if(gi===8){ // SCAR-H
+      bodyLen=0.48;bodyW=0.05;bodyH=0.07;barrelLen=0.32;
+    } else if(gi===9){ // G36C
+      bodyLen=0.45;bodyW=0.045;bodyH=0.07;barrelLen=0.25;
+    } else if(gi===10){ // SPAS-12 霰弹
+      bodyLen=0.4;bodyW=0.06;bodyH=0.09;barrelLen=0.25;color=tan;
+    } else if(gi===11){ // DP28
       bodyLen=0.45;bodyW=0.06;bodyH=0.1;barrelLen=0.4;
-    } else if(gi===6){ // AWM 狙击
+    } else if(gi===12){ // M249
+      bodyLen=0.5;bodyW=0.07;bodyH=0.1;barrelLen=0.45;
+    } else if(gi===13){ // AWM
       bodyLen=0.55;bodyW=0.045;bodyH=0.06;barrelLen=0.6;
-    } else if(gi===7){ // M24 狙击
+    } else if(gi===14){ // M24
       bodyLen=0.5;bodyW=0.045;bodyH=0.06;barrelLen=0.5;
-    } else { // 沙漠之鹰
-      bodyLen=0.22;bodyW=0.055;bodyH=0.14;barrelLen=0.15;color=tan;
+    } else { // 巴雷特
+      bodyLen=0.6;bodyW=0.05;bodyH=0.07;barrelLen=0.7;color=tan;
     }
     body=new THREE.Mesh(new THREE.BoxGeometry(bodyW,bodyH,bodyLen),color);
     gunGroup.add(body);
     const barrel=new THREE.Mesh(new THREE.CylinderGeometry(0.014,0.014,barrelLen,8),black);
     barrel.rotation.x=Math.PI/2; barrel.position.set(0,0.01,-bodyLen/2-barrelLen/2+0.05); gunGroup.add(barrel);
     // 弹匣
-    const mag=new THREE.Mesh(new THREE.BoxGeometry(0.03,gi===5?0.12:0.08,0.05),black);
+    const mag=new THREE.Mesh(new THREE.BoxGeometry(0.03,(gi===11||gi===12)?0.14:0.08,0.05),black);
     mag.position.set(0,-bodyH/2-0.04,0); gunGroup.add(mag);
     // 握把
     const grip=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.1,0.06),black);
@@ -6515,6 +6535,18 @@ function fpsStart(mode) {
   [[0,0,-45,90,3,0],[0,0,45,90,3,0],[-45,0,0,3,3,90],[45,0,0,3,3,90]].forEach(w=>{
     const wall=new THREE.Mesh(new THREE.BoxGeometry(w[3],3,w[5]||1), new THREE.MeshStandardMaterial({color:0x2a3a4a}));
     wall.position.set(w[0],1.5,w[2]); scene.add(wall);
+  });
+  // 掩体和箱子
+  const coverMat=new THREE.MeshStandardMaterial({color:0x3a5a7a});
+  const crateMat=new THREE.MeshStandardMaterial({color:0x5a4a2a});
+  [[-15,0,-10,3,1.5,2],[10,0,-20,4,2,1.5],[20,0,5,2,2,2],[-25,0,15,3,1,3],[0,0,15,2.5,1.8,2],[-10,0,25,3,2,2],[15,0,30,4,2.5,1.5]].forEach(c=>{
+    const box=new THREE.Mesh(new THREE.BoxGeometry(c[3],c[4],c[5]), coverMat);
+    box.position.set(c[0],c[4]/2,c[2]); scene.add(box);
+  });
+  // 塔楼
+  [[-30,0,-30],[30,0,-30],[-30,0,30],[30,0,30]].forEach(t=>{
+    const tower=new THREE.Mesh(new THREE.BoxGeometry(3,8,3), new THREE.MeshStandardMaterial({color:0x2a4a6a}));
+    tower.position.set(t[0],4,t[2]); scene.add(tower);
   });
   // 人形敌人（尝试加载官方 Soldier 模型，失败则用简单几何体）
   const enemies=[];
@@ -6581,7 +6613,7 @@ function fpsStart(mode) {
     tryLoadModel();
   }
   function spawnEnemy(){
-    const g=makeSoldier(0xcc3333);
+    const g=makeSoldier(0x1a2a5e);
     g.position.set((Math.random()-0.5)*55, 0, (Math.random()-0.5)*55);
     g.userData.hp=100;
     scene.add(g); enemies.push(g);
@@ -6589,7 +6621,7 @@ function fpsStart(mode) {
   for(let i=0;i<6;i++) spawnEnemy();
   // 队友（绿色战服，站在玩家附近）
   for(let i=0;i<3;i++){
-    const mate=makeSoldier(0x33cc55);
+    const mate=makeSoldier(0x66aaff);
     mate.position.set((Math.random()-0.5)*5,0,5+Math.random()*5);
     scene.add(mate);
   }
