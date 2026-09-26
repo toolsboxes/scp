@@ -6357,6 +6357,7 @@ function initFPS(area) {
       <div id="fpsWrap" style="position:relative;display:none;border-radius:10px;overflow:hidden;background:#000;width:100%;height:520px;">
         <div id="fpsHud" style="position:absolute;top:8px;left:10px;color:#7fff9a;font-family:monospace;z-index:5;text-shadow:0 0 4px #000;">
           分数:<span id="fpsScore">0</span> &nbsp; 命中:<span id="fpsHit">0</span>/<span id="fpsShot">0</span>  &nbsp; 击杀:<span id="fpsKills">0</span><br>
+          ❤️ 血量:<div style="display:inline-block;width:100px;height:10px;background:#333;border-radius:5px;vertical-align:middle;"><div id="fpsHpBar" style="width:100%;height:100%;background:linear-gradient(90deg,#3f3,#ff0);border-radius:5px;transition:width .2s;"></div></div> <span id="fpsHp">100</span><br>
           <span id="fpsTimer"></span>
         </div>
         <div id="fpsGunInfo" style="position:absolute;top:8px;right:10px;color:#ffd166;font-family:monospace;z-index:5;text-align:right;">
@@ -6689,6 +6690,7 @@ function fpsStart(mode) {
     }
     hud();
   }
+  let playerHp=100;
   function hud(){
     document.getElementById('fpsScore').textContent=score;
     document.getElementById('fpsHit').textContent=hit;
@@ -6696,6 +6698,9 @@ function fpsStart(mode) {
     document.getElementById('fpsKills').textContent=kills;
     document.getElementById('fpsGunName').textContent=FPS_GUNS[window._fpsGun].name;
     document.getElementById('fpsCurAmmo').textContent=reloading?'换弹中...':((window['_ch_无限子弹']?'∞':ammo)+'/'+FPS_GUNS[window._fpsGun].mag);
+    const hpEl=document.getElementById('fpsHpBar');
+    if(hpEl){ hpEl.style.width=Math.max(0,playerHp)+'%'; hpEl.style.background=playerHp>50?'#3f3':playerHp>25?'#ff0':'#f00'; }
+    document.getElementById('fpsHp').textContent=Math.max(0,Math.round(playerHp));
   }
   function loop(){
     window._fpsRaf=requestAnimationFrame(loop);
@@ -6717,6 +6722,7 @@ function fpsStart(mode) {
       const dx=cam.position.x-e.position.x, dz=cam.position.z-e.position.z;
       const dist=Math.sqrt(dx*dx+dz*dz);
       if(dist>3){ e.position.x+=dx/dist*0.03; e.position.z+=dz/dist*0.03; }
+      else if(!window['_ch_无敌'] && dist<3 && !e.userData.dead){ playerHp-=0.15; if(playerHp<=0){ playerHp=100; cam.position.set(0,1.7,0); } }
       e.position.y = Math.abs(Math.sin(Date.now()*0.003+e.position.x))*0.05; // 走路起伏
     });
     ren.render(scene,cam);
