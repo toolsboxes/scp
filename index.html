@@ -49,6 +49,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.tool-ico{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;font-size:20px;margin:-3px 10px 0 0;box-shadow:0 3px 8px rgba(0,0,0,.35);-webkit-text-fill-color:initial;}
 .user-info { display: flex; gap: 8px; align-items: center; }
 .btn {
   padding: 8px 16px;
@@ -111,6 +112,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.tool-ico{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;font-size:20px;margin:-3px 10px 0 0;box-shadow:0 3px 8px rgba(0,0,0,.35);-webkit-text-fill-color:initial;}
 input, textarea, select {
   width: 100%;
   padding: 10px 14px;
@@ -388,10 +390,17 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
 </div>
 
 <!-- 全局公告横幅：发布后每个用户都能看到，只能点"确定"关闭 -->
-<div id="announcement" style="display:none;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(239,68,68,0.25));border-bottom:1px solid var(--yellow);padding:10px 16px;font-size:14px;position:relative;">
-  <strong style="color:var(--yellow);">📢 公告：</strong>
-  <span id="announcementText" style="color:var(--text);vertical-align:middle;"></span>
-  <button onclick="closeAnnouncementBanner()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--yellow);color:#111;border:none;border-radius:8px;padding:6px 18px;font-size:13px;font-weight:700;cursor:pointer;">确定</button>
+<div id="announcement" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg2);border:1px solid var(--yellow);border-radius:14px;max-width:520px;width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(239,68,68,0.3));border-bottom:1px solid var(--yellow);">
+      <strong style="color:var(--yellow);font-size:16px;">📢 系统公告</strong>
+      <button type="button" onclick="closeAnnouncementBanner()" style="background:var(--red);color:#fff;border:none;border-radius:8px;width:32px;height:32px;font-size:18px;font-weight:700;cursor:pointer;line-height:1;flex:0 0 auto;">×</button>
+    </div>
+    <div id="announcementText" style="padding:16px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7;overflow-y:auto;font-size:14px;flex:1 1 auto;min-height:0;"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);text-align:right;flex:0 0 auto;">
+      <button type="button" onclick="closeAnnouncementBanner()" style="background:var(--yellow);color:#111;border:none;border-radius:8px;padding:8px 26px;font-weight:700;cursor:pointer;">我知道了</button>
+    </div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -427,9 +436,9 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         <input type="text" id="cryptoKey" placeholder="输入密钥（AES需要）">
       </div>
       <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <button class="btn btn-primary" onclick="doCrypto('encode')">🔒 加密/编码</button>
-        <button class="btn btn-secondary" id="decodeBtn" onclick="doCrypto('decode')">🔓 解密/解码</button>
-        <button class="btn btn-info" onclick="copyOutput()">复制结果</button>
+        <button type="button" class="btn btn-primary" onclick="doCrypto('encode')">🔒 加密/编码</button>
+        <button type="button" class="btn btn-secondary" id="decodeBtn" onclick="doCrypto('decode')">🔓 解密/解码</button>
+        <button type="button" class="btn btn-info" onclick="copyOutput()">复制结果</button>
       </div>
       <div class="output-box" id="cryptoOutput">结果将显示在这里...</div>
     </div>
@@ -448,7 +457,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div class="game-card" onclick="openGame('go')"><div class="icon">⬛</div><div class="name">围棋</div></div>
     </div>
     <div id="gameContainer">
-      <button class="btn btn-secondary btn-sm" onclick="closeGame()" style="margin-bottom:12px;">← 返回游戏列表</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeGame()" style="margin-bottom:12px;">← 返回游戏列表</button>
       <div id="gameArea"></div>
     </div>
   </div>
@@ -477,7 +486,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <input type="file" id="echoVideo" accept="video/*" style="display:none">
       <input type="file" id="echoFile" style="display:none">
       <div id="echoFilePreview" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
-      <button class="btn btn-primary" onclick="postEcho()">发布（AI自动审核）</button>
+      <button type="button" class="btn btn-primary" onclick="postEcho()">发布（AI自动审核）</button>
     </div>
     <div id="echoList"></div>
   </div>
@@ -489,7 +498,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div class="storage-bar"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
       <div id="storageText" style="font-size:12px;color:var(--muted);margin-bottom:12px;">0 MB / 50 MB</div>
       <input type="file" id="fileInput">
-      <button class="btn btn-primary" onclick="uploadFile()">上传文件</button>
+      <button type="button" class="btn btn-primary" onclick="uploadFile()">上传文件</button>
     </div>
     <div id="fileList"></div>
   </div>
@@ -551,8 +560,8 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
             </select>
           </div>
           <div style="flex:1;"></div>
-          <button class="btn btn-primary btn-sm" onclick="Nuclear.startupReactor()">🚀 开堆</button>
-          <button class="btn btn-secondary btn-sm" onclick="Nuclear.normalShutdown()">⏻ 正常停堆</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="Nuclear.startupReactor()">🚀 开堆</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="Nuclear.normalShutdown()">⏻ 正常停堆</button>
         </div>
         <div id="reactorInfo" style="margin-top:12px;font-size:12px;color:var(--muted);padding:8px;background:var(--bg);border-radius:6px;">
           RBMK-1000 石墨慢化轻水冷却反应堆 | 额定功率: 3200 MWth | 切尔诺贝利核电站4号机组
@@ -856,6 +865,20 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         <div id="explosionOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle, rgba(255,100,0,0.8) 0%, rgba(255,0,0,0.6) 50%, transparent 70%);z-index:9999;pointer-events:none;"></div>
       </div>
 
+      <!-- 四方向3D安全监控（固定机位，可见弹棒飞出） -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:12px;">
+        <h3 style="margin-bottom:10px;font-size:15px;">📹 四方向安全监控（前/后/左/右固定机位）</h3>
+        <div style="background:#000;border-radius:8px;padding:6px;position:relative;">
+          <canvas id="monitor3D" width="640" height="320" style="width:100%;height:auto;border-radius:4px;display:block;"></canvas>
+          <div style="position:absolute;inset:6px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;pointer-events:none;">
+            <div style="padding:4px;font-size:11px;color:#3f3;text-shadow:0 0 3px #000;">● CAM-1 前视</div>
+            <div style="padding:4px;font-size:11px;color:#3f3;text-align:right;text-shadow:0 0 3px #000;">● CAM-2 右视</div>
+            <div style="padding:4px;font-size:11px;color:#3f3;align-self:end;text-shadow:0 0 3px #000;">● CAM-3 左视</div>
+            <div style="padding:4px;font-size:11px;color:#3f3;align-self:end;text-align:right;text-shadow:0 0 3px #000;">● CAM-4 后视</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 系统流程图 + 性能曲线 -->
       <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <!-- 一回路系统流程图 -->
@@ -927,18 +950,18 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:14px;">⚡ 快速操作</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));gap:8px;">
-          <button class="btn btn-primary btn-sm" onclick="Nuclear.startupReactor()">🚀 一键开堆</button>
-          <button class="btn btn-danger btn-sm" onclick="Nuclear.AZ5shutdown()">🛑 AZ5紧急停堆</button>
-          <button class="btn btn-secondary btn-sm" onclick="Nuclear.normalShutdown()">⏹️ 正常停堆</button>
-          <button class="btn btn-sm" style="background:var(--orange);" onclick="Nuclear.resetReactor()">🔄 重置</button>
-          <button class="btn btn-sm" style="background:var(--purple2);" onclick="Nuclear.triggerAccident('steam_explosion')">💥 蒸汽爆炸</button>
-          <button class="btn btn-sm" style="background:var(--red);" onclick="Nuclear.triggerAccident('coolant_loss')">⚠️ 失冷事故</button>
-          <button class="btn btn-sm" style="background:var(--yellow);" onclick="Nuclear.triggerAccident('station_blackout')">⚡ 全厂断电</button>
-          <button class="btn btn-sm" style="background:var(--cyan);" onclick="Nuclear.triggerAccident('rod_ejection')">🚀 弹棒事故</button>
-          <button class="btn btn-sm" style="background:var(--pink);" onclick="Nuclear.triggerAccident('earthquake')">🌍 地震</button>
-          <button class="btn btn-sm" style="background:var(--blue);" onclick="Nuclear.triggerAccident('tsunami')">🌊 海啸</button>
-          <button class="btn btn-sm" style="background:var(--green);" onclick="Nuclear.clearLog()">🗑️ 清除日志</button>
-          <button class="btn btn-sm" style="background:var(--muted);" onclick="Nuclear.addLog('测试','手动测试事件')">📝 测试事件</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="Nuclear.startupReactor()">🚀 一键开堆</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="Nuclear.AZ5shutdown()">🛑 AZ5紧急停堆</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="Nuclear.normalShutdown()">⏹️ 正常停堆</button>
+          <button type="button" class="btn btn-sm" style="background:var(--orange);" onclick="Nuclear.resetReactor()">🔄 重置</button>
+          <button type="button" class="btn btn-sm" style="background:var(--purple2);" onclick="Nuclear.triggerAccident('steam_explosion')">💥 蒸汽爆炸</button>
+          <button type="button" class="btn btn-sm" style="background:var(--red);" onclick="Nuclear.triggerAccident('coolant_loss')">⚠️ 失冷事故</button>
+          <button type="button" class="btn btn-sm" style="background:var(--yellow);" onclick="Nuclear.triggerAccident('station_blackout')">⚡ 全厂断电</button>
+          <button type="button" class="btn btn-sm" style="background:var(--cyan);" onclick="Nuclear.triggerAccident('rod_ejection')">🚀 弹棒事故</button>
+          <button type="button" class="btn btn-sm" style="background:var(--pink);" onclick="Nuclear.triggerAccident('earthquake')">🌍 地震</button>
+          <button type="button" class="btn btn-sm" style="background:var(--blue);" onclick="Nuclear.triggerAccident('tsunami')">🌊 海啸</button>
+          <button type="button" class="btn btn-sm" style="background:var(--green);" onclick="Nuclear.clearLog()">🗑️ 清除日志</button>
+          <button type="button" class="btn btn-sm" style="background:var(--muted);" onclick="Nuclear.addLog('测试','手动测试事件')">📝 测试事件</button>
         </div>
       </div>
 
@@ -946,26 +969,26 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:14px;">🎛️ 高级控制（20项）</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:6px;">
-          <button class="btn btn-sm" style="background:#2a4a6a;" onclick="Nuclear.adjustBoron(100)">🧪 硼化+100ppm</button>
-          <button class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.adjustBoron(-100)">💧 稀释-100ppm</button>
-          <button class="btn btn-sm" style="background:#4a2a6a;" onclick="Nuclear.togglePressurizer()">⚡ 稳压器加热器</button>
-          <button class="btn btn-sm" style="background:#6a4a2a;" onclick="Nuclear.toggleSpray()">💦 稳压器喷淋</button>
-          <button class="btn btn-sm" style="background:#2a6a6a;" onclick="Nuclear.toggleSafetyInjection()">🚨 安全注入</button>
-          <button class="btn btn-sm" style="background:#6a2a4a;" onclick="Nuclear.toggleContainmentSpray()">🌧️ 安全壳喷淋</button>
-          <button class="btn btn-sm" style="background:#4a6a2a;" onclick="Nuclear.toggleDiesel()">🔋 应急柴油机</button>
-          <button class="btn btn-sm" style="background:#6a6a2a;" onclick="Nuclear.toggleRHR()">❄️ 余热排出</button>
-          <button class="btn btn-sm" style="background:#2a2a6a;" onclick="Nuclear.toggleCCW()">🔄 设备冷却水</button>
-          <button class="btn btn-sm" style="background:#6a2a2a;" onclick="Nuclear.toggleCVS()">⚗️ 化容系统</button>
-          <button class="btn btn-sm" style="background:#2a6a2a;" onclick="Nuclear.toggleGroupRod('A')">📊 A组控制棒</button>
-          <button class="btn btn-sm" style="background:#4a2a4a;" onclick="Nuclear.toggleGroupRod('B')">📊 B组控制棒</button>
-          <button class="btn btn-sm" style="background:#2a4a4a;" onclick="Nuclear.toggleGroupRod('C')">📊 C组控制棒</button>
-          <button class="btn btn-sm" style="background:#4a4a2a;" onclick="Nuclear.toggleGroupRod('D')">📊 D组控制棒</button>
-          <button class="btn btn-sm" style="background:#6a4a4a;" onclick="Nuclear.toggleNeutronSource()">☢️ 中子源</button>
-          <button class="btn btn-sm" style="background:#4a6a6a;" onclick="Nuclear.toggleSteamDrain()">💨 蒸汽排放</button>
-          <button class="btn btn-sm" style="background:#6a2a6a;" onclick="Nuclear.toggleFeedwater()">🚰 给水调节</button>
-          <button class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.toggleHydrogenRecombiner()">🔥 氢复合器</button>
-          <button class="btn btn-sm" style="background:#4a4a6a;" onclick="Nuclear.toggleFilteredVent()">🌬️ 过滤排气</button>
-          <button class="btn btn-sm" style="background:#6a6a4a;" onclick="Nuclear.toggleFireWater()">🧯 消防水</button>
+          <button type="button" class="btn btn-sm" style="background:#2a4a6a;" onclick="Nuclear.adjustBoron(100)">🧪 硼化+100ppm</button>
+          <button type="button" class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.adjustBoron(-100)">💧 稀释-100ppm</button>
+          <button type="button" class="btn btn-sm" style="background:#4a2a6a;" onclick="Nuclear.togglePressurizer()">⚡ 稳压器加热器</button>
+          <button type="button" class="btn btn-sm" style="background:#6a4a2a;" onclick="Nuclear.toggleSpray()">💦 稳压器喷淋</button>
+          <button type="button" class="btn btn-sm" style="background:#2a6a6a;" onclick="Nuclear.toggleSafetyInjection()">🚨 安全注入</button>
+          <button type="button" class="btn btn-sm" style="background:#6a2a4a;" onclick="Nuclear.toggleContainmentSpray()">🌧️ 安全壳喷淋</button>
+          <button type="button" class="btn btn-sm" style="background:#4a6a2a;" onclick="Nuclear.toggleDiesel()">🔋 应急柴油机</button>
+          <button type="button" class="btn btn-sm" style="background:#6a6a2a;" onclick="Nuclear.toggleRHR()">❄️ 余热排出</button>
+          <button type="button" class="btn btn-sm" style="background:#2a2a6a;" onclick="Nuclear.toggleCCW()">🔄 设备冷却水</button>
+          <button type="button" class="btn btn-sm" style="background:#6a2a2a;" onclick="Nuclear.toggleCVS()">⚗️ 化容系统</button>
+          <button type="button" class="btn btn-sm" style="background:#2a6a2a;" onclick="Nuclear.toggleGroupRod('A')">📊 A组控制棒</button>
+          <button type="button" class="btn btn-sm" style="background:#4a2a4a;" onclick="Nuclear.toggleGroupRod('B')">📊 B组控制棒</button>
+          <button type="button" class="btn btn-sm" style="background:#2a4a4a;" onclick="Nuclear.toggleGroupRod('C')">📊 C组控制棒</button>
+          <button type="button" class="btn btn-sm" style="background:#4a4a2a;" onclick="Nuclear.toggleGroupRod('D')">📊 D组控制棒</button>
+          <button type="button" class="btn btn-sm" style="background:#6a4a4a;" onclick="Nuclear.toggleNeutronSource()">☢️ 中子源</button>
+          <button type="button" class="btn btn-sm" style="background:#4a6a6a;" onclick="Nuclear.toggleSteamDrain()">💨 蒸汽排放</button>
+          <button type="button" class="btn btn-sm" style="background:#6a2a6a;" onclick="Nuclear.toggleFeedwater()">🚰 给水调节</button>
+          <button type="button" class="btn btn-sm" style="background:#2a6a4a;" onclick="Nuclear.toggleHydrogenRecombiner()">🔥 氢复合器</button>
+          <button type="button" class="btn btn-sm" style="background:#4a4a6a;" onclick="Nuclear.toggleFilteredVent()">🌬️ 过滤排气</button>
+          <button type="button" class="btn btn-sm" style="background:#6a6a4a;" onclick="Nuclear.toggleFireWater()">🧯 消防水</button>
         </div>
         <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:8px;">
           <div style="background:var(--bg);padding:8px;border-radius:6px;">
@@ -990,36 +1013,36 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:14px;">⚙️ 超级控制（30项）</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(95px, 1fr));gap:5px;">
-          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpA')">🔵 主泵A</button>
-          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpB')">🔵 主泵B</button>
-          <button class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpC')">🔵 主泵C</button>
-          <button class="btn btn-sm" style="background:#4a3a5a;" onclick="Nuclear.toggleSystem('chargingPump')">💧 上充泵</button>
-          <button class="btn btn-sm" style="background:#5a3a4a;" onclick="Nuclear.toggleSystem('letdownValve')">🔽 下泄阀</button>
-          <button class="btn btn-sm" style="background:#5a4a3a;" onclick="Nuclear.toggleSystem('volControlTank')">📦 容控箱</button>
-          <button class="btn btn-sm" style="background:#4a5a3a;" onclick="Nuclear.toggleSystem('boricAcidTank')">🧪 硼酸箱</button>
-          <button class="btn btn-sm" style="background:#3a5a4a;" onclick="Nuclear.toggleSystem('makeupWater')">🚰 补水箱</button>
-          <button class="btn btn-sm" style="background:#3a4a5a;" onclick="Nuclear.toggleSystem('condensatePump')">💧 凝结水泵</button>
-          <button class="btn btn-sm" style="background:#4a4a5a;" onclick="Nuclear.toggleSystem('condPolish')">🔬 精处理</button>
-          <button class="btn btn-sm" style="background:#5a5a3a;" onclick="Nuclear.toggleSystem('lowPressHeater')">🌡️ 低加</button>
-          <button class="btn btn-sm" style="background:#5a3a5a;" onclick="Nuclear.toggleSystem('highPressHeater')">🌡️ 高加</button>
-          <button class="btn btn-sm" style="background:#3a5a5a;" onclick="Nuclear.toggleSystem('deaerator')">💨 除氧器</button>
-          <button class="btn btn-sm" style="background:#5a4a4a;" onclick="Nuclear.toggleSystem('turbineFeedPump')">⚙️ 汽动给泵</button>
-          <button class="btn btn-sm" style="background:#4a5a4a;" onclick="Nuclear.toggleSystem('motorFeedPump')">⚡ 电动给泵</button>
-          <button class="btn btn-sm" style="background:#4a4a4a;" onclick="Nuclear.toggleSystem('circWaterPump')">🔄 循环水泵</button>
-          <button class="btn btn-sm" style="background:#5a5a5a;" onclick="Nuclear.toggleSystem('coolingTower')">🏗️ 冷却塔</button>
-          <button class="btn btn-sm" style="background:#3a3a4a;" onclick="Nuclear.toggleSystem('rotatingStrainer')">🔄 旋转滤网</button>
-          <button class="btn btn-sm" style="background:#4a3a3a;" onclick="Nuclear.toggleSystem('unitTrans')">⚡ 厂用变</button>
-          <button class="btn btn-sm" style="background:#3a4a3a;" onclick="Nuclear.toggleSystem('startupTrans')">⚡ 启动变</button>
-          <button class="btn btn-sm" style="background:#5a3a3a;" onclick="Nuclear.toggleSystem('backupTrans')">⚡ 备用变</button>
-          <button class="btn btn-sm" style="background:#3a5a3a;" onclick="Nuclear.toggleSystem('bus6kv')">🔌 6kV母线</button>
-          <button class="btn btn-sm" style="background:#4a4a3a;" onclick="Nuclear.toggleSystem('bus380v')">🔌 380V母线</button>
-          <button class="btn btn-sm" style="background:#5a4a5a;" onclick="Nuclear.toggleSystem('battery')">🔋 蓄电池</button>
-          <button class="btn btn-sm" style="background:#4a5a5a;" onclick="Nuclear.toggleSystem('inverter')">🔄 逆变器</button>
-          <button class="btn btn-sm" style="background:#5a5a4a;" onclick="Nuclear.toggleSystem('ups')">⚡ UPS</button>
-          <button class="btn btn-sm" style="background:#3a4a4a;" onclick="Nuclear.toggleSystem('ccwPumpA')">💧 设备冷泵A</button>
-          <button class="btn btn-sm" style="background:#4a3a4a;" onclick="Nuclear.toggleSystem('ccwPumpB')">💧 设备冷泵B</button>
-          <button class="btn btn-sm" style="background:#4a5a6a;" onclick="Nuclear.toggleSystem('siPumpA')">🚨 安注泵A</button>
-          <button class="btn btn-sm" style="background:#6a5a4a;" onclick="Nuclear.toggleSystem('siPumpB')">🚨 安注泵B</button>
+          <button type="button" class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpA')">🔵 主泵A</button>
+          <button type="button" class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpB')">🔵 主泵B</button>
+          <button type="button" class="btn btn-sm" style="background:#3a3a5a;" onclick="Nuclear.toggleSystem('coolantPumpC')">🔵 主泵C</button>
+          <button type="button" class="btn btn-sm" style="background:#4a3a5a;" onclick="Nuclear.toggleSystem('chargingPump')">💧 上充泵</button>
+          <button type="button" class="btn btn-sm" style="background:#5a3a4a;" onclick="Nuclear.toggleSystem('letdownValve')">🔽 下泄阀</button>
+          <button type="button" class="btn btn-sm" style="background:#5a4a3a;" onclick="Nuclear.toggleSystem('volControlTank')">📦 容控箱</button>
+          <button type="button" class="btn btn-sm" style="background:#4a5a3a;" onclick="Nuclear.toggleSystem('boricAcidTank')">🧪 硼酸箱</button>
+          <button type="button" class="btn btn-sm" style="background:#3a5a4a;" onclick="Nuclear.toggleSystem('makeupWater')">🚰 补水箱</button>
+          <button type="button" class="btn btn-sm" style="background:#3a4a5a;" onclick="Nuclear.toggleSystem('condensatePump')">💧 凝结水泵</button>
+          <button type="button" class="btn btn-sm" style="background:#4a4a5a;" onclick="Nuclear.toggleSystem('condPolish')">🔬 精处理</button>
+          <button type="button" class="btn btn-sm" style="background:#5a5a3a;" onclick="Nuclear.toggleSystem('lowPressHeater')">🌡️ 低加</button>
+          <button type="button" class="btn btn-sm" style="background:#5a3a5a;" onclick="Nuclear.toggleSystem('highPressHeater')">🌡️ 高加</button>
+          <button type="button" class="btn btn-sm" style="background:#3a5a5a;" onclick="Nuclear.toggleSystem('deaerator')">💨 除氧器</button>
+          <button type="button" class="btn btn-sm" style="background:#5a4a4a;" onclick="Nuclear.toggleSystem('turbineFeedPump')">⚙️ 汽动给泵</button>
+          <button type="button" class="btn btn-sm" style="background:#4a5a4a;" onclick="Nuclear.toggleSystem('motorFeedPump')">⚡ 电动给泵</button>
+          <button type="button" class="btn btn-sm" style="background:#4a4a4a;" onclick="Nuclear.toggleSystem('circWaterPump')">🔄 循环水泵</button>
+          <button type="button" class="btn btn-sm" style="background:#5a5a5a;" onclick="Nuclear.toggleSystem('coolingTower')">🏗️ 冷却塔</button>
+          <button type="button" class="btn btn-sm" style="background:#3a3a4a;" onclick="Nuclear.toggleSystem('rotatingStrainer')">🔄 旋转滤网</button>
+          <button type="button" class="btn btn-sm" style="background:#4a3a3a;" onclick="Nuclear.toggleSystem('unitTrans')">⚡ 厂用变</button>
+          <button type="button" class="btn btn-sm" style="background:#3a4a3a;" onclick="Nuclear.toggleSystem('startupTrans')">⚡ 启动变</button>
+          <button type="button" class="btn btn-sm" style="background:#5a3a3a;" onclick="Nuclear.toggleSystem('backupTrans')">⚡ 备用变</button>
+          <button type="button" class="btn btn-sm" style="background:#3a5a3a;" onclick="Nuclear.toggleSystem('bus6kv')">🔌 6kV母线</button>
+          <button type="button" class="btn btn-sm" style="background:#4a4a3a;" onclick="Nuclear.toggleSystem('bus380v')">🔌 380V母线</button>
+          <button type="button" class="btn btn-sm" style="background:#5a4a5a;" onclick="Nuclear.toggleSystem('battery')">🔋 蓄电池</button>
+          <button type="button" class="btn btn-sm" style="background:#4a5a5a;" onclick="Nuclear.toggleSystem('inverter')">🔄 逆变器</button>
+          <button type="button" class="btn btn-sm" style="background:#5a5a4a;" onclick="Nuclear.toggleSystem('ups')">⚡ UPS</button>
+          <button type="button" class="btn btn-sm" style="background:#3a4a4a;" onclick="Nuclear.toggleSystem('ccwPumpA')">💧 设备冷泵A</button>
+          <button type="button" class="btn btn-sm" style="background:#4a3a4a;" onclick="Nuclear.toggleSystem('ccwPumpB')">💧 设备冷泵B</button>
+          <button type="button" class="btn btn-sm" style="background:#4a5a6a;" onclick="Nuclear.toggleSystem('siPumpA')">🚨 安注泵A</button>
+          <button type="button" class="btn btn-sm" style="background:#6a5a4a;" onclick="Nuclear.toggleSystem('siPumpB')">🚨 安注泵B</button>
         </div>
       </div>
 
@@ -1161,9 +1184,9 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
             </div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(0)">全拔</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(50)">半插</button>
-            <button class="btn btn-danger btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(100)">全插</button>
+            <button type="button" class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(0)">全拔</button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(50)">半插</button>
+            <button type="button" class="btn btn-danger btn-sm" style="flex:1;font-size:11px;" onclick="setRodPosition(100)">全插</button>
           </div>
         </div>
 
@@ -1172,15 +1195,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <h3 style="margin-bottom:10px;font-size:14px;">💧 冷却系统</h3>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">主冷却泵</span>
-            <button class="btn btn-sm" id="pumpBtn" onclick="togglePump()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="pumpBtn" onclick="togglePump()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">备用冷却泵</span>
-            <button class="btn btn-sm" id="backupPumpBtn" onclick="toggleBackupPump()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="backupPumpBtn" onclick="toggleBackupPump()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">应急冷却</span>
-            <button class="btn btn-sm" id="emergencyCoolBtn" onclick="toggleEmergencyCool()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="emergencyCoolBtn" onclick="toggleEmergencyCool()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
@@ -1189,15 +1212,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <h3 style="margin-bottom:10px;font-size:14px;">⚡ 涡轮发电</h3>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">1号涡轮机</span>
-            <button class="btn btn-sm" id="turbine1Btn" onclick="toggleTurbine(1)" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="turbine1Btn" onclick="toggleTurbine(1)" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">2号涡轮机</span>
-            <button class="btn btn-sm" id="turbine2Btn" onclick="toggleTurbine(2)" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="turbine2Btn" onclick="toggleTurbine(2)" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">并网开关</span>
-            <button class="btn btn-sm" id="gridBtn" onclick="toggleGrid()" style="background:var(--red);font-size:11px;">断开</button>
+            <button type="button" class="btn btn-sm" id="gridBtn" onclick="toggleGrid()" style="background:var(--red);font-size:11px;">断开</button>
           </div>
         </div>
 
@@ -1208,12 +1231,12 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
             <span style="font-size:12px;">硼浓度: <span id="boronValue">1000</span>ppm</span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(-100)">减硼</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(100)">加硼</button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(-100)">减硼</button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.adjustBoron(100)">加硼</button>
           </div>
           <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">稳压器加热器</span>
-            <button class="btn btn-sm" id="heaterBtn" onclick="Nuclear.toggleHeater()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="heaterBtn" onclick="Nuclear.toggleHeater()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
@@ -1222,15 +1245,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <h3 style="margin-bottom:10px;font-size:14px;">🛡️ 安全系统</h3>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">安全壳喷淋</span>
-            <button class="btn btn-sm" id="sprayBtn" onclick="Nuclear.toggleSpray()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="sprayBtn" onclick="Nuclear.toggleSpray()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">安全注射</span>
-            <button class="btn btn-sm" id="safetyInjectionBtn" onclick="Nuclear.toggleSafetyInjection()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="safetyInjectionBtn" onclick="Nuclear.toggleSafetyInjection()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">余热排出</span>
-            <button class="btn btn-sm" id="decayHeatBtn" onclick="Nuclear.toggleDecayHeat()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="decayHeatBtn" onclick="Nuclear.toggleDecayHeat()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
@@ -1239,15 +1262,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <h3 style="margin-bottom:10px;font-size:14px;">🚨 应急电源</h3>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">1号柴油机</span>
-            <button class="btn btn-sm" id="diesel1Btn" onclick="Nuclear.toggleDiesel(1)" style="background:var(--red);font-size:11px;">备用</button>
+            <button type="button" class="btn btn-sm" id="diesel1Btn" onclick="Nuclear.toggleDiesel(1)" style="background:var(--red);font-size:11px;">备用</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">2号柴油机</span>
-            <button class="btn btn-sm" id="diesel2Btn" onclick="Nuclear.toggleDiesel(2)" style="background:var(--red);font-size:11px;">备用</button>
+            <button type="button" class="btn btn-sm" id="diesel2Btn" onclick="Nuclear.toggleDiesel(2)" style="background:var(--red);font-size:11px;">备用</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">辅助给水</span>
-            <button class="btn btn-sm" id="auxFeedBtn" onclick="Nuclear.toggleAuxFeedwater()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="auxFeedBtn" onclick="Nuclear.toggleAuxFeedwater()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
@@ -1256,15 +1279,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <h3 style="margin-bottom:10px;font-size:14px;">💨 蒸汽系统</h3>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">主蒸汽阀</span>
-            <button class="btn btn-sm" id="steamValveBtn" onclick="Nuclear.toggleSteamValve()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="steamValveBtn" onclick="Nuclear.toggleSteamValve()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
             <span style="font-size:12px;">给水调节阀</span>
-            <button class="btn btn-sm" id="feedValveBtn" onclick="Nuclear.toggleFeedValve()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="feedValveBtn" onclick="Nuclear.toggleFeedValve()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;">冷凝器</span>
-            <button class="btn btn-sm" id="condenserBtn" onclick="Nuclear.toggleCondenser()" style="background:var(--red);font-size:11px;">关闭</button>
+            <button type="button" class="btn btn-sm" id="condenserBtn" onclick="Nuclear.toggleCondenser()" style="background:var(--red);font-size:11px;">关闭</button>
           </div>
         </div>
 
@@ -1272,14 +1295,14 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         <div style="background:var(--bg2);border-radius:10px;padding:14px;">
           <h3 style="margin-bottom:10px;font-size:14px;">🎮 快捷操作</h3>
           <div style="display:flex;gap:6px;margin-bottom:6px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.startupReactor()">🚀 开堆</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.normalShutdown()">⏻ 停堆</button>
+            <button type="button" class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.startupReactor()">🚀 开堆</button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.normalShutdown()">⏻ 停堆</button>
           </div>
           <div style="display:flex;gap:6px;margin-bottom:6px;">
-            <button class="btn btn-sm" style="flex:1;font-size:11px;background:var(--yellow);color:#000;" onclick="Nuclear.AZ3powerDown()">AZ3降功率</button>
-            <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.resetReactor()">🔄 重置</button>
+            <button type="button" class="btn btn-sm" style="flex:1;font-size:11px;background:var(--yellow);color:#000;" onclick="Nuclear.AZ3powerDown()">AZ3降功率</button>
+            <button type="button" class="btn btn-primary btn-sm" style="flex:1;font-size:11px;" onclick="Nuclear.resetReactor()">🔄 重置</button>
           </div>
-          <button class="btn btn-danger btn-sm" style="width:100%;font-size:11px;" onclick="Nuclear.AZ5shutdown()">☢️ AZ5紧急停堆</button>
+          <button type="button" class="btn btn-danger btn-sm" style="width:100%;font-size:11px;" onclick="Nuclear.AZ5shutdown()">☢️ AZ5紧急停堆</button>
         </div>
       </div>
 
@@ -1287,21 +1310,21 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
         <h3 style="margin-bottom:12px;font-size:16px;">💥 事故模拟（15种）</h3>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_explosion')">💥 蒸汽爆炸</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('coolant_loss')">🌡️ 失冷事故</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('rod_ejection')">⬆️ 弹棒事故</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('station_blackout')">⚡ 全厂断电</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('sgtr')">🔧 蒸汽发生器管破</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('safety_valve')">🔓 安全阀卡开</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('pump_seizure')">🔧 主泵卡转子</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('feedwater_loss')">💧 给水丧失</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_line_break')">💨 蒸汽管道破</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('primary_break')">🔴 一回路破口</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('spent_fuel_loss')">☢️ 乏燃料失冷</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('earthquake')">🌍 地震</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('tsunami')">🌊 海啸</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('plane_crash')">✈️ 飞机撞击</button>
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('hydrogen_explosion')">💨 氢气爆炸</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_explosion')">💥 蒸汽爆炸</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('coolant_loss')">🌡️ 失冷事故</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('rod_ejection')">⬆️ 弹棒事故</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('station_blackout')">⚡ 全厂断电</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('sgtr')">🔧 蒸汽发生器管破</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('safety_valve')">🔓 安全阀卡开</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('pump_seizure')">🔧 主泵卡转子</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('feedwater_loss')">💧 给水丧失</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('steam_line_break')">💨 蒸汽管道破</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('primary_break')">🔴 一回路破口</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('spent_fuel_loss')">☢️ 乏燃料失冷</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('earthquake')">🌍 地震</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('tsunami')">🌊 海啸</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('plane_crash')">✈️ 飞机撞击</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="Nuclear.triggerAccident('hydrogen_explosion')">💨 氢气爆炸</button>
         </div>
       </div>
 
@@ -1309,7 +1332,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <h3 style="font-size:16px;margin:0;">📋 事件日志</h3>
-          <button class="btn btn-secondary btn-sm" onclick="Nuclear.clearLog()">🗑️ 清除日志</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="Nuclear.clearLog()">🗑️ 清除日志</button>
         </div>
         <div id="nuclearLog" style="background:#000;color:var(--green);font-family:monospace;font-size:12px;padding:12px;border-radius:6px;height:150px;overflow-y:auto;">
           [系统] RBMK 反应堆模拟器已启动<br>
@@ -1323,58 +1346,140 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
   <!-- 实用工具 -->
   <div class="page" id="page-tools">
     <div class="card">
-      <h2>🍅 番茄钟（写作业神器）</h2>
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#ff6b6b,#ff9f43)">🍅</span>番茄钟（写作业神器）</h2>
       <div id="pomodoroTime" style="font-size:56px;font-weight:700;text-align:center;color:var(--red);margin:12px 0;font-family:monospace;">25:00</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-success" onclick="pomodoroStart()">开始</button>
-        <button class="btn btn-warning" onclick="pomodoroPause()">暂停</button>
-        <button class="btn btn-secondary" onclick="pomodoroReset(25)">25分钟</button>
-        <button class="btn btn-secondary" onclick="pomodoroReset(5)">休息5分钟</button>
+        <button type="button" class="btn btn-success" onclick="pomodoroStart()">开始</button>
+        <button type="button" class="btn btn-warning" onclick="pomodoroPause()">暂停</button>
+        <button type="button" class="btn btn-secondary" onclick="pomodoroReset(25)">25分钟</button>
+        <button type="button" class="btn btn-secondary" onclick="pomodoroReset(5)">休息5分钟</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>🔳 二维码生成器</h2>
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">📱</span>二维码生成器</h2>
       <input type="text" id="qrInput" placeholder="输入文字或网址..." style="width:100%;margin-bottom:10px;">
-      <button class="btn btn-primary" onclick="qrGenerate()">生成二维码</button>
+      <button type="button" class="btn btn-primary" onclick="qrGenerate()">生成二维码</button>
       <div id="qrResult" style="text-align:center;margin-top:12px;"></div>
     </div>
 
     <div class="card">
-      <h2>🎲 随机数 / 骰子</h2>
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">🎲</span>随机数 / 骰子</h2>
       <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
         <input type="number" id="randMin" value="1" style="width:90px;" placeholder="最小">
         <input type="number" id="randMax" value="100" style="width:90px;" placeholder="最大">
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn btn-success" onclick="randNumber()">生成随机数</button>
-        <button class="btn btn-primary" onclick="rollDice()">🎲 掷骰子</button>
+        <button type="button" class="btn btn-success" onclick="randNumber()">生成随机数</button>
+        <button type="button" class="btn btn-primary" onclick="rollDice()">🎲 掷骰子</button>
       </div>
       <div id="randResult" style="font-size:32px;font-weight:700;text-align:center;margin-top:12px;color:var(--cyan);">-</div>
     </div>
 
     <div class="card">
-      <h2>🧮 计算器</h2>
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#5b86e5,#36d1dc)">🧮</span>计算器</h2>
       <input type="text" id="calcDisplay" readonly style="width:100%;font-size:28px;text-align:right;padding:12px;margin-bottom:10px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-        <button class="btn btn-secondary" onclick="calcPress('7')">7</button>
-        <button class="btn btn-secondary" onclick="calcPress('8')">8</button>
-        <button class="btn btn-secondary" onclick="calcPress('9')">9</button>
-        <button class="btn btn-danger" onclick="calcPress('/')">÷</button>
-        <button class="btn btn-secondary" onclick="calcPress('4')">4</button>
-        <button class="btn btn-secondary" onclick="calcPress('5')">5</button>
-        <button class="btn btn-secondary" onclick="calcPress('6')">6</button>
-        <button class="btn btn-danger" onclick="calcPress('*')">×</button>
-        <button class="btn btn-secondary" onclick="calcPress('1')">1</button>
-        <button class="btn btn-secondary" onclick="calcPress('2')">2</button>
-        <button class="btn btn-secondary" onclick="calcPress('3')">3</button>
-        <button class="btn btn-danger" onclick="calcPress('-')">−</button>
-        <button class="btn btn-secondary" onclick="calcPress('0')">0</button>
-        <button class="btn btn-secondary" onclick="calcPress('.')">.</button>
-        <button class="btn btn-success" onclick="calcEquals()">=</button>
-        <button class="btn btn-danger" onclick="calcClear()">C</button>
-        <button class="btn btn-warning" style="grid-column:1/-1;" onclick="calcPress('+')">+</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('7')">7</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('8')">8</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('9')">9</button>
+        <button type="button" class="btn btn-danger" onclick="calcPress('/')">÷</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('4')">4</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('5')">5</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('6')">6</button>
+        <button type="button" class="btn btn-danger" onclick="calcPress('*')">×</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('1')">1</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('2')">2</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('3')">3</button>
+        <button type="button" class="btn btn-danger" onclick="calcPress('-')">−</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('0')">0</button>
+        <button type="button" class="btn btn-secondary" onclick="calcPress('.')">.</button>
+        <button type="button" class="btn btn-success" onclick="calcEquals()">=</button>
+        <button type="button" class="btn btn-danger" onclick="calcClear()">C</button>
+        <button type="button" class="btn btn-warning" style="grid-column:1/-1;" onclick="calcPress('+')">+</button>
       </div>
+    </div>
+    </div>
+
+<div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🖼️</span>图片压缩器</h2>
+      <input type="file" id="imgCompressInput" accept="image/*" style="margin-bottom:10px;">
+      <div style="margin-bottom:10px;">
+        <label style="font-size:14px;">质量：<span id="imgQualityVal">80</span>%</label>
+        <input type="range" id="imgQuality" min="10" max="100" value="80" oninput="document.getElementById('imgQualityVal').textContent=this.value" style="width:100%;">
+      </div>
+      <button type="button" class="btn btn-primary" onclick="compressImage()">压缩并预览</button>
+      <div id="imgCompressResult" style="margin-top:12px;text-align:center;"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#f6d365,#fda085)">🔑</span>密码生成器</h2>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:14px;">长度：<span id="pwLenVal">16</span></label>
+        <input type="range" id="pwLen" min="6" max="64" value="16" oninput="document.getElementById('pwLenVal').textContent=this.value" style="width:100%;">
+      </div>
+      <div style="font-size:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;">
+        <label><input type="checkbox" id="pwUpper" checked> 大写字母 A-Z</label>
+        <label><input type="checkbox" id="pwLower" checked> 小写字母 a-z</label>
+        <label><input type="checkbox" id="pwNum" checked> 数字 0-9</label>
+        <label><input type="checkbox" id="pwSym"> 特殊符号 !@#$%</label>
+      </div>
+      <button type="button" class="btn btn-success" onclick="genPassword()">生成密码</button>
+      <div id="pwResult" style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+        <input type="text" id="pwOutput" readonly style="flex:1;font-family:monospace;font-size:15px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="copyPassword()">复制</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#667eea,#764ba2)">🔢</span>进制转换器</h2>
+      <input type="text" id="baseInput" placeholder="输入数字..." style="width:100%;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="convertBase(10)">按十进制转</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="convertBase(2)">按二进制转</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="convertBase(16)">按十六进制转</button>
+      </div>
+      <div style="font-size:15px;line-height:2;font-family:monospace;">
+        <div>十进制：<span id="base10Out" style="color:var(--cyan);">-</span></div>
+        <div>二进制：<span id="base2Out" style="color:var(--green);">-</span></div>
+        <div>十六进制：<span id="base16Out" style="color:var(--yellow);">-</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#fa709a,#fee140)">🎡</span>随机转盘</h2>
+      <textarea id="wheelOptions" rows="3" placeholder="每行一个选项" style="width:100%;margin-bottom:10px;">写作业
+玩游戏
+看书
+吃饭</textarea>
+      <button type="button" class="btn btn-primary" onclick="spinWheel()">🎡 转一下</button>
+      <div id="wheelResult" style="font-size:28px;font-weight:700;text-align:center;margin-top:12px;color:var(--red);">-</div>
+    </div>
+    <!-- AI 绘画 -->
+    <div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#c471f5,#fa71cd)">🎨</span>AI 绘画（免费）</h2>
+      <input id="aiPaintPrompt" placeholder="描述你想画的内容，如：一只赛博朋克猫">
+      <select id="aiPaintStyle" style="margin-top:8px;">
+        <option value="">默认风格</option>
+        <option value="anime style">动漫</option>
+        <option value="realistic photo">写实</option>
+        <option value="3d render">3D渲染</option>
+        <option value="pixel art">像素</option>
+        <option value="chinese ink painting">水墨</option>
+      </select>
+      <button type="button" class="btn btn-primary" onclick="aiPaint()">✨ 生成图片</button>
+      <div id="aiPaintResult" style="margin-top:12px;text-align:center;"></div>
+    </div>
+    <!-- 单位换算 -->
+    <div class="card">
+      <h2><span class="tool-ico" style="background:linear-gradient(135deg,#43cea2,#185a9d)">📏</span>单位换算</h2>
+      <input id="unitInput" type="number" placeholder="输入数值" oninput="convertUnit()">
+      <select id="unitType" onchange="convertUnit()" style="margin-top:8px;">
+        <option value="length">长度（以米为基准）</option>
+        <option value="weight">重量（以千克为基准）</option>
+        <option value="temp">温度（摄氏度）</option>
+      </select>
+      <div id="unitResult" style="margin-top:10px;font-size:14px;line-height:1.9;"></div>
     </div>
   </div>
 
@@ -1382,21 +1487,21 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
     <div class="card" id="adminLogin">
       <h2>⚙️ 管理员登录</h2>
       <input type="password" id="adminPass" placeholder="输入管理员密码">
-      <button class="btn btn-primary" onclick="adminLogin()">登录</button>
+      <button type="button" class="btn btn-primary" onclick="adminLogin()">登录</button>
     </div>
     <div id="adminPanel" style="display:none;">
       <div class="card">
         <h2>📢 发布公告</h2>
-        <textarea id="announcementInput" placeholder="输入公告内容..." rows="2"></textarea>
+        <textarea id="announcementInput" placeholder="输入公告内容，可写很多行..." rows="6"></textarea>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="publishAnnouncement()">发布公告</button>
-          <button class="btn btn-secondary" onclick="clearAnnouncement()">清除公告</button>
+          <button type="button" class="btn btn-primary" onclick="publishAnnouncement()">发布公告</button>
+          <button type="button" class="btn btn-secondary" onclick="clearAnnouncement()">清除公告</button>
         </div>
       </div>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
           <h2 style="margin:0;">🖥️ 服务器监控 <span style="font-size:12px;color:var(--muted);">（每秒自动刷新）</span></h2>
-          <button class="btn btn-primary btn-sm" onclick="loadAdminStats()">🔄 手动刷新</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="loadAdminStats()">🔄 手动刷新</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;">
           <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center;">
@@ -1489,8 +1594,8 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
     <input type="text" id="authUsername" placeholder="用户名">
     <input type="password" id="authPassword" placeholder="密码">
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-primary" onclick="doAuth()">确定</button>
-      <button class="btn btn-secondary" onclick="closeModal('authModal')">取消</button>
+      <button type="button" class="btn btn-primary" onclick="doAuth()">确定</button>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('authModal')">取消</button>
     </div>
   </div>
 </div>
@@ -1560,6 +1665,132 @@ function randNumber() {
 }
 function rollDice() {
   document.getElementById('randResult').textContent = '🎲 ' + (Math.floor(Math.random()*6)+1);
+}
+
+// 图片压缩器（纯本地 canvas，不联网）
+function compressImage() {
+  const input = document.getElementById('imgCompressInput');
+  if (!input.files || !input.files[0]) { toast('请先选择图片', 'error'); return; }
+  const file = input.files[0];
+  const quality = parseInt(document.getElementById('imgQuality').value, 10) / 100;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const ratio = (blob.size / file.size * 100).toFixed(0);
+        document.getElementById('imgCompressResult').innerHTML =
+          '<img src="' + url + '" style="max-width:100%;border-radius:8px;">' +
+          '<div style="margin-top:8px;font-size:14px;">原始：' + (file.size/1024).toFixed(0) +
+          'KB → 压缩后：' + (blob.size/1024).toFixed(0) + 'KB（' + ratio + '%）</div>' +
+          '<a class="btn btn-success btn-sm" style="margin-top:8px;display:inline-block;" href="' + url +
+          '" download="compressed.jpg">下载压缩图</a>';
+      }, 'image/jpeg', quality);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 密码生成器
+function genPassword() {
+  const len = parseInt(document.getElementById('pwLen').value, 10);
+  let chars = '';
+  if (document.getElementById('pwUpper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (document.getElementById('pwLower').checked) chars += 'abcdefghijklmnopqrstuvwxyz';
+  if (document.getElementById('pwNum').checked) chars += '0123456789';
+  if (document.getElementById('pwSym').checked) chars += '!@#$%^&*()-_=+[]{}';
+  if (!chars) { toast('至少选一种字符', 'error'); return; }
+  let out = '';
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < len; i++) out += chars[arr[i] % chars.length];
+  document.getElementById('pwOutput').value = out;
+}
+function copyPassword() {
+  const out = document.getElementById('pwOutput');
+  if (!out.value) { toast('先生成密码', 'error'); return; }
+  out.select();
+  try { navigator.clipboard.writeText(out.value); toast('已复制'); }
+  catch(e) { document.execCommand('copy'); toast('已复制'); }
+}
+
+// 进制转换器
+function convertBase(base) {
+  const raw = document.getElementById('baseInput').value.trim();
+  if (!raw) { toast('请输入数字', 'error'); return; }
+  let n;
+  try {
+    if (base === 10) n = parseInt(raw, 10);
+    else if (base === 2) n = parseInt(raw, 2);
+    else n = parseInt(raw, 16);
+    if (isNaN(n) || n < 0) throw new Error();
+  } catch(e) { toast('输入的' + base + '进制数字不合法', 'error'); return; }
+  document.getElementById('base10Out').textContent = n.toString(10);
+  document.getElementById('base2Out').textContent = n.toString(2);
+  document.getElementById('base16Out').textContent = n.toString(16).toUpperCase();
+}
+
+// 随机转盘
+function spinWheel() {
+  const opts = document.getElementById('wheelOptions').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  if (opts.length < 2) { toast('至少填2个选项', 'error'); return; }
+  const el = document.getElementById('wheelResult');
+  let ticks = 0;
+  const total = 20 + Math.floor(Math.random()*10);
+  const timer = setInterval(function(){
+    el.textContent = '🎡 ' + opts[Math.floor(Math.random()*opts.length)];
+    ticks++;
+    if (ticks >= total) {
+      clearInterval(timer);
+      const final = opts[Math.floor(Math.random()*opts.length)];
+      el.textContent = '👉 ' + final;
+      toast('结果：' + final);
+    }
+  }, 70);
+}
+
+// AI 绘画（Pollinations 免费生图，无密钥）
+function aiPaint() {
+  const p = document.getElementById('aiPaintPrompt').value.trim();
+  if (!p) { toast('请输入描述', 'error'); return; }
+  const style = document.getElementById('aiPaintStyle').value;
+  const full = style ? (p + ', ' + style) : p;
+  const url = 'https://image.pollinations.ai/p/' + encodeURIComponent(full) + '?width=512&height=512&nologo=true';
+  const box = document.getElementById('aiPaintResult');
+  box.innerHTML = '<div style="color:var(--muted);">正在生成，约10-30秒...</div>';
+  const img = new Image();
+  img.onload = function() {
+    box.innerHTML = '<img src="' + url + '" style="max-width:100%;border-radius:8px;">' +
+      '<a type="button" class="btn btn-success btn-sm" style="margin-top:8px;display:inline-block;" href="' + url +
+      '" download="ai-art.jpg">下载图片</a>';
+  };
+  img.onerror = function() { box.innerHTML = '<div style="color:var(--red);">生成失败，请稍后再试</div>'; };
+  img.src = url;
+}
+
+// 单位换算
+function convertUnit() {
+  const v = parseFloat(document.getElementById('unitInput').value);
+  const t = document.getElementById('unitType').value;
+  const el = document.getElementById('unitResult');
+  if (isNaN(v)) { el.textContent = '请输入数值'; return; }
+  if (t === 'length') {
+    el.innerHTML = '米：' + v + '<br>千米：' + (v/1000) + '<br>厘米：' + (v*100) +
+      '<br>英寸：' + (v*39.3701).toFixed(3) + '<br>英尺：' + (v*3.28084).toFixed(3);
+  } else if (t === 'weight') {
+    el.innerHTML = '千克：' + v + '<br>克：' + (v*1000) + '<br>斤：' + (v*2) +
+      '<br>磅：' + (v*2.20462).toFixed(3) + '<br>盎司：' + (v*35.274).toFixed(2);
+  } else {
+    el.innerHTML = '摄氏度：' + v + '°C<br>华氏度：' + (v*9/5+32).toFixed(2) +
+      '°F<br>开尔文：' + (v+273.15).toFixed(2) + 'K';
+  }
 }
 
 // 计算器
@@ -2099,18 +2330,28 @@ const Nuclear = {
       this.updateStatus('normal', '反应堆停堆');
     }
 
+    // ===== 性能优化：只在核电站页可见时重绘，重型canvas降频 =====
+    this.tickCount = (this.tickCount || 0) + 1;
+    const nucVisible = document.getElementById('page-nuclear').classList.contains('active');
     this.updateDisplay();
-    this.updateRooms();
-    this.drawReactor();
-    this.draw3D();
-    this.drawSection();
-    this.drawTop();
-    this.drawPrimaryLoop();
-    this.drawPerfChart();
-    this.drawSecondaryLoop();
-    this.drawRadiationMap();
-    this.drawTertiaryLoop();
-    this.updateSafetySystems();
+    if (nucVisible) {
+      this.updateRooms();
+      this.drawReactor();
+      if (!this.boomRaf) this.drawPrimaryLoop();
+      // 重型工程图：每2个tick重绘一次
+      if (this.tickCount % 2 === 0) {
+        this.drawSection();
+        this.drawTop();
+        this.drawPerfChart();
+      }
+      // 最重的回路/热力图：每3个tick重绘一次
+      if (this.tickCount % 3 === 0) {
+        this.drawSecondaryLoop();
+        this.drawRadiationMap();
+        this.drawTertiaryLoop();
+      }
+      this.updateSafetySystems();
+    }
   },
 
   // 事故处理
@@ -2314,9 +2555,10 @@ const Nuclear = {
       this.threeCamera = new THREE.PerspectiveCamera(60, container.clientWidth / 350, 0.1, 1000);
       this.threeCamera.position.set(8, 6, 8);
       this.threeCamera.lookAt(0, 0, 0);
-      this.threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+      this.threeRenderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      this.threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       this.threeRenderer.setSize(container.clientWidth, 350);
-      this.threeRenderer.shadowMap.enabled = true;
+      this.threeRenderer.shadowMap.enabled = false;
       container.appendChild(this.threeRenderer.domElement);
       const ambient = new THREE.AmbientLight(0x404060, 0.5);
       this.threeScene.add(ambient);
@@ -2378,6 +2620,19 @@ const Nuclear = {
       grid.position.y = -3.49;
       this.threeReactor.add(grid);
       this.threeScene.add(this.threeReactor);
+      // 3D 爆炸粒子（小球，平时隐藏，爆炸时激活）
+      this.boomMeshes = [];
+      const boomGeo = new THREE.SphereGeometry(0.18, 6, 6);
+      for (let i = 0; i < 70; i++) {
+        const hue = 0.02 + Math.random()*0.08;
+        const m = new THREE.Mesh(boomGeo, new THREE.MeshBasicMaterial({
+          color: new THREE.Color().setHSL(hue, 1, 0.55), transparent: true
+        }));
+        m.visible = false;
+        m.userData = { life: 0, vx:0, vy:0, vz:0 };
+        this.threeScene.add(m);
+        this.boomMeshes.push(m);
+      }
       let isDragging = false, prevX = 0, prevY = 0;
       container.addEventListener('mousedown', (e) => { isDragging = true; prevX = e.clientX; prevY = e.clientY; this.threeAutoRotate = false; });
       container.addEventListener('mousemove', (e) => {
@@ -2394,6 +2649,22 @@ const Nuclear = {
         const newDist = Math.max(5, Math.min(25, dist + e.deltaY * 0.01));
         this.threeCamera.position.normalize().multiplyScalar(newDist);
       });
+      // 四方向安全监控（独立renderer，共享场景）
+      const monCanvas = document.getElementById('monitor3D');
+      if (monCanvas) {
+        this.monRenderer = new THREE.WebGLRenderer({ canvas: monCanvas, antialias: true });
+        this.monRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.2));
+        this.monCams = [];
+        const d = 11, h = 2.5;
+        // 顺序对应 CAM-1前 / CAM-2右 / CAM-3左 / CAM-4后
+        const defs = [[0,h,d],[d,h,0],[-d,h,0],[0,h,-d]];
+        defs.forEach((p) => {
+          const c = new THREE.PerspectiveCamera(42, 2, 0.1, 100);
+          c.position.set(p[0],p[1],p[2]);
+          c.lookAt(0,0,0);
+          this.monCams.push(c);
+        });
+      }
       this.threeInited = true;
       this.animateThreeJS();
     } catch(e) { console.log('ThreeJS init failed:', e); }
@@ -2402,6 +2673,8 @@ const Nuclear = {
   animateThreeJS() {
     if (!this.threeInited) return;
     requestAnimationFrame(() => this.animateThreeJS());
+    // 核电站页不可见时跳过3D渲染，省CPU
+    if (!document.getElementById('page-nuclear').classList.contains('active')) return;
     if (this.threeAutoRotate) this.threeRotation += 0.005;
     this.threeReactor.rotation.y = this.threeRotation;
     const dist = this.threeCamera.position.length();
@@ -2416,13 +2689,79 @@ const Nuclear = {
     }
     const rodHeight = (this.rodPosition / 100) * 2.5;
     this.threeRods.forEach((rod, i) => {
-      rod.position.y = 1 - rodHeight + (i % 3) * 0.1;
+      if (rod.userData.ejectVy) {
+        rod.position.y += rod.userData.ejectVy;
+        rod.userData.ejectVy *= 1.02;
+        if (rod.position.y > 20) { rod.userData.ejectVy = 0; rod.position.y = 1 - rodHeight; }
+      } else {
+        rod.position.y = 1 - rodHeight + (i % 3) * 0.1;
+      }
     });
+    // 更新3D爆炸粒子
+    if (this.boomMeshes) {
+      this.boomMeshes.forEach((m) => {
+        if (!m.visible) return;
+        const u = m.userData;
+        m.position.x += u.vx*0.1; m.position.y += u.vy*0.1; m.position.z += u.vz*0.1;
+        u.vy -= 0.12; u.life -= 0.018;
+        m.material.opacity = Math.max(0, u.life);
+        m.scale.multiplyScalar(1.02);
+        if (u.life <= 0) m.visible = false;
+      });
+    }
     this.threeRenderer.render(this.threeScene, this.threeCamera);
+    this.renderMonitors();
   },
 
   draw3D() {
     if (!this.threeInited) this.initThreeJS();
+  },
+
+  // 四方向监控渲染（2x2 视口）
+  renderMonitors() {
+    if (!this.monRenderer || !this.monCams) return;
+    const r = this.monRenderer, W = 640, H = 320;
+    r.setScissorTest(true);
+    // 注意 WebGL viewport y 自底向上
+    const views = [
+      {x:0,    y:H/2}, // CAM-1 前（左上）
+      {x:W/2,  y:H/2}, // CAM-2 右（右上）
+      {x:0,    y:0},   // CAM-3 左（左下）
+      {x:W/2,  y:0}    // CAM-4 后（右下）
+    ];
+    for (let i = 0; i < 4; i++) {
+      r.setViewport(views[i].x, views[i].y, W/2, H/2);
+      r.setScissor(views[i].x, views[i].y, W/2, H/2);
+      r.setClearColor(i === 0 ? 0x060612 : 0x050510);
+      r.render(this.threeScene, this.monCams[i]);
+    }
+    r.setScissorTest(false);
+  },
+
+  // 3D 爆炸 + 弹棒
+  explode3D(type) {
+    if (!this.threeInited || !this.boomMeshes) return;
+    let cy = -1;
+    if (type === 'hydrogen') cy = 5;
+    else if (type === 'eject') cy = 1;
+    this.boomMeshes.forEach((m) => {
+      const a = Math.random()*Math.PI*2;
+      const phi = Math.acos(2*Math.random()-1);
+      const sp = 2 + Math.random()*7;
+      m.position.set((Math.random()-0.5)*1.5, cy, (Math.random()-0.5)*1.5);
+      m.userData.vx = Math.sin(phi)*Math.cos(a)*sp;
+      m.userData.vy = Math.abs(Math.cos(phi))*sp + (type==='hydrogen'?3:1.2);
+      m.userData.vz = Math.sin(phi)*Math.sin(a)*sp;
+      m.userData.life = 1;
+      m.visible = true;
+      m.material.opacity = 1;
+      m.scale.setScalar(0.5 + Math.random());
+    });
+    if (type === 'eject') {
+      this.threeRods.forEach((rod) => {
+        if (Math.random() < 0.6) rod.userData.ejectVy = 0.3 + Math.random()*0.5;
+      });
+    }
   },
 
 
@@ -3322,17 +3661,27 @@ const Nuclear = {
     set('rpvStatus', this.meltdown ? '熔穿!' : this.coreTemp > 2000 ? '危险' : '完整', this.meltdown ? 'var(--red)' : this.coreTemp > 2000 ? 'var(--orange)' : 'var(--green)');
   },
 
+  // ===== 爆炸粒子系统（2D，画在一回路图上）=====
+  boomParticles: [],
+  boomRaf: null,
+  boomEnd: 0,
+
   triggerExplosion(type) {
+    type = type || 'steam';
     const overlay = document.getElementById('explosionOverlay');
-    if (!overlay) return;
-    overlay.style.display = 'block';
-    overlay.style.animation = 'none';
-    setTimeout(() => {
-      overlay.style.animation = 'explosionFlash 1s ease-out';
-    }, 10);
-    setTimeout(() => {
-      overlay.style.display = 'none';
-    }, 1000);
+    if (overlay) {
+      overlay.style.display = 'block';
+      overlay.style.animation = 'none';
+      setTimeout(() => { overlay.style.animation = 'explosionFlash 1s ease-out'; }, 10);
+      setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+    }
+
+    // 一回路爆炸中心 = RPV 堆芯 (160,100)；不同事故位置不同
+    let cx = 160, cy = 100;
+    if (type === 'hydrogen') { cx = 160; cy = 30; }       // 氢气爆炸在安全壳顶部
+    else if (type === 'pipe' || type === 'steam_line') { cx = 90; cy = 75; } // 管道
+    else if (type === 'eject') { cx = 160; cy = 60; }      // 弹棒从顶部
+    this.initBoomParticles(cx, cy, type);
 
     if (type === 'hydrogen') {
       this.addLog('💥 爆炸', '氢气爆炸！安全壳顶部被炸毁！');
@@ -3340,9 +3689,115 @@ const Nuclear = {
       this.addLog('💥 爆炸', '蒸汽爆炸！一回路超压破裂！');
     } else if (type === 'meltdown') {
       this.addLog('💥 爆炸', '堆芯熔毁！熔融物击穿压力容器！');
+    } else if (type === 'eject') {
+      this.addLog('🚀 弹棒', '控制棒高速弹出堆顶！');
+    } else {
+      this.addLog('💥 爆炸', '一回路破裂！冷却剂猛烈喷放！');
     }
     this.radiation += 200;
     this.containmentPressure = 0.1;
+    this.explode3D(type);
+    this.runBoomAnimation();
+    try { if (navigator.vibrate) navigator.vibrate([300,100,300,100,500]); } catch(e){}
+  },
+
+  initBoomParticles(cx, cy, type) {
+    this.boomParticles = [];
+    const rand = (a,b) => a + Math.random()*(b-a);
+    // 火球
+    for (let i = 0; i < 14; i++) {
+      this.boomParticles.push({
+        kind:'fire', x:cx+rand(-8,8), y:cy+rand(-8,8),
+        vx:rand(-2.5,2.5), vy:rand(-4,-0.5), r:rand(10,26),
+        life:1, decay:rand(0.012,0.025)
+      });
+    }
+    // 火花
+    for (let i = 0; i < 45; i++) {
+      const a = rand(0, Math.PI*2), sp = rand(2,9);
+      this.boomParticles.push({
+        kind:'spark', x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-2,
+        r:rand(1.5,3), life:1, decay:rand(0.02,0.04)
+      });
+    }
+    // 碎片
+    for (let i = 0; i < 18; i++) {
+      const a = rand(-Math.PI,0), sp = rand(3,8);
+      this.boomParticles.push({
+        kind:'debris', x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+        r:rand(2,5), life:1, decay:rand(0.008,0.015), rot:rand(0,6), vr:rand(-0.3,0.3)
+      });
+    }
+    // 浓烟
+    for (let i = 0; i < 12; i++) {
+      this.boomParticles.push({
+        kind:'smoke', x:cx+rand(-10,10), y:cy, vx:rand(-0.6,0.6), vy:rand(-1.6,-0.6),
+        r:rand(8,18), life:0.9, decay:rand(0.006,0.012)
+      });
+    }
+    // 蒸汽/冷却剂喷流（白色），破口类持续喷
+    if (type === 'pipe' || type === 'steam_line' || type === 'break') {
+      for (let i = 0; i < 25; i++) {
+        this.boomParticles.push({
+          kind:'steamjet', x:cx, y:cy, vx:rand(-5,-1), vy:rand(-2,2),
+          r:rand(4,9), life:1, decay:rand(0.02,0.04)
+        });
+      }
+    }
+    this.boomEnd = performance.now() + 2600;
+  },
+
+  runBoomAnimation() {
+    if (this.boomRaf) cancelAnimationFrame(this.boomRaf);
+    const self = this;
+    function frame() {
+      // 先重绘一回路底图，再叠加爆炸，保证流畅
+      self.drawPrimaryLoop();
+      const canvas = document.getElementById('primaryLoop');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const g = 0.25; // 重力
+        for (let i = self.boomParticles.length-1; i >= 0; i--) {
+          const p = self.boomParticles[i];
+          p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+          if (p.kind === 'spark' || p.kind === 'debris') p.vy += g;
+          if (p.kind === 'fire') p.r *= 1.03;
+          if (p.kind === 'smoke') { p.r *= 1.02; p.vy *= 0.99; }
+          if (p.rot !== undefined) p.rot += p.vr;
+          if (p.life <= 0 || p.y > 240) { self.boomParticles.splice(i,1); continue; }
+          ctx.save();
+          if (p.kind === 'fire') {
+            const grd = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+            grd.addColorStop(0,'rgba(255,240,180,'+p.life+')');
+            grd.addColorStop(0.4,'rgba(255,140,30,'+(p.life*0.9)+')');
+            grd.addColorStop(1,'rgba(200,30,0,0)');
+            ctx.fillStyle = grd;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+          } else if (p.kind === 'spark') {
+            ctx.fillStyle = 'rgba(255,220,120,'+p.life+')';
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+          } else if (p.kind === 'debris') {
+            ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+            ctx.fillStyle = 'rgba(90,90,100,'+p.life+')';
+            ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+          } else if (p.kind === 'smoke') {
+            ctx.fillStyle = 'rgba(60,60,66,'+(p.life*0.5)+')';
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+          } else if (p.kind === 'steamjet') {
+            ctx.fillStyle = 'rgba(220,230,240,'+(p.life*0.6)+')';
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+      if (performance.now() < self.boomEnd || self.boomParticles.length) {
+        self.boomRaf = requestAnimationFrame(frame);
+      } else {
+        self.boomRaf = null;
+        self.drawPrimaryLoop();
+      }
+    }
+    this.boomRaf = requestAnimationFrame(frame);
   },
 
   // 更新显示
@@ -3654,6 +4109,17 @@ const Nuclear = {
     const msg = accidents[type] || `未知事故: ${type}`;
     this.addLog('事故', msg);
     this.alarms.push({time: new Date().toLocaleTimeString(), type: '事故', msg});
+
+    // 爆炸类事故：短延迟后真正引爆（带粒子+3D+震屏）
+    const boomMap = {
+      steam_explosion: 'steam', hydrogen_explosion: 'hydrogen',
+      primary_break: 'break', steam_line_break: 'steam_line',
+      rod_ejection: 'eject', coolant_loss: 'break'
+    };
+    if (boomMap[type]) {
+      const t = type;
+      setTimeout(() => { if (this.accidentType === t) this.triggerExplosion(boomMap[t]); }, 700);
+    }
   },
 
   // 重置反应堆
@@ -4097,10 +4563,10 @@ function updateUserUI() {
     const uid = getUID(currentUser);
     el.innerHTML = '<div class="user-avatar" onclick="showProfile()" title="点击查看个人信息" style="cursor:pointer;font-size:28px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border-radius:50%;border:2px solid var(--purple2);">👤</div>' +
       '<span style="margin-left:8px;font-weight:600;">' + escapeHtml(currentUser.username) + '</span>' +
-      '<button class="btn btn-secondary btn-sm" onclick="logout()" style="margin-left:8px;">退出</button>';
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="logout()" style="margin-left:8px;">退出</button>';
   } else {
-    el.innerHTML = '<button class="btn btn-secondary btn-sm" onclick="showAuth(&quot;login&quot;)">登录</button>' +
-      '<button class="btn btn-primary btn-sm" onclick="showAuth(&quot;register&quot;)">注册</button>';
+    el.innerHTML = '<button type="button" class="btn btn-secondary btn-sm" onclick="showAuth(&quot;login&quot;)">登录</button>' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="showAuth(&quot;register&quot;)">注册</button>';
   }
 }
 
@@ -4121,14 +4587,14 @@ function showProfile() {
     '<div style="background:var(--bg2);padding:12px;border-radius:8px;margin-bottom:12px;">' +
     '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">我的 UID（用于添加好友）</div>' +
     '<div style="font-size:16px;font-weight:700;color:var(--green);word-break:break-all;">' + uid + '</div>' +
-    '<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyUID()">📋 复制 UID</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyUID()">📋 复制 UID</button>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-    '<button class="btn btn-primary" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
-    '<button class="btn btn-secondary" style="flex:1;" onclick="showFriendList()">💬 好友列表</button>' +
+    '<button type="button" class="btn btn-primary" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
+    '<button type="button" class="btn btn-secondary" style="flex:1;" onclick="showFriendList()">💬 好友列表</button>' +
     '</div>' +
-    '<button class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="deleteAccount()">⚠️ 注销账号</button>' +
-    '<button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
+    '<button type="button" class="btn btn-danger" style="width:100%;margin-top:8px;" onclick="deleteAccount()">⚠️ 注销账号</button>' +
+    '<button type="button" class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="closeModal(\'profileModal\')">关闭</button>' +
     '</div>';
   document.body.appendChild(modal);
 }
@@ -4200,9 +4666,9 @@ function showFriendSearch() {
     '<h3>🔍 添加好友</h3>' +
     '<p style="font-size:13px;color:var(--muted);">输入对方的 UID 来搜索并添加好友</p>' +
     '<input type="text" id="searchUIDInput" placeholder="输入对方 UID..." style="width:100%;margin-bottom:12px;">' +
-    '<button class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="searchUserByUID()">🔍 搜索</button>' +
+    '<button type="button" class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="searchUserByUID()">🔍 搜索</button>' +
     '<div id="searchResult"></div>' +
-    '<button class="btn btn-secondary" style="width:100%;" onclick="closeModal(\'friendSearchModal\')">关闭</button>' +
+    '<button type="button" class="btn btn-secondary" style="width:100%;" onclick="closeModal(\'friendSearchModal\')">关闭</button>' +
     '</div>';
   document.body.appendChild(modal);
 }
@@ -4230,7 +4696,7 @@ async function searchUserByUID() {
         '<div style="font-size:32px;margin-bottom:4px;">👤</div>' +
         '<div style="font-weight:700;font-size:16px;">' + escapeHtml(user.username) + '</div>' +
         '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;word-break:break-all;">UID: ' + getUID(user) + '</div>' +
-        '<button class="btn btn-primary btn-sm" onclick="addFriend(\'' + user.id + '\', \'' + user.username + '\')">➕ 添加好友</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="addFriend(\'' + user.id + '\', \'' + user.username + '\')">➕ 添加好友</button>' +
         '</div>';
     } else {
       resultEl.innerHTML = '<p style="text-align:center;color:var(--pink);">未找到该用户</p>';
@@ -4294,10 +4760,10 @@ function showFriendList() {
   modal.innerHTML = '<div class="modal-content" style="max-width:400px;max-height:80vh;overflow-y:auto;">' +
     '<h3>💬 好友列表</h3>' +
     '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
-    '<button class="btn btn-primary btn-sm" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
+    '<button type="button" class="btn btn-primary btn-sm" style="flex:1;" onclick="showFriendSearch()">🔍 添加好友</button>' +
     '</div>' +
     '<div id="friendListContent"><p style="text-align:center;color:var(--muted);">加载中...</p></div>' +
-    '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
+    '<button type="button" class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'friendListModal\')">关闭</button>' +
     '</div>';
   document.body.appendChild(modal);
   loadFriendList();
@@ -4323,7 +4789,7 @@ async function loadFriendList() {
       '<div style="font-size:11px;color:var(--muted);">开源大模型 · 随时聊天</div>' +
       '</div>' +
       '</div>' +
-      '<button class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
       '</div>';
     
     if (data && data.length > 0) {
@@ -4334,8 +4800,8 @@ async function loadFriendList() {
         '<span style="font-weight:600;">' + escapeHtml(f.friend_name || '好友') + '</span>' +
         '</div>' +
         '<div style="display:flex;gap:6px;flex-shrink:0;">' +
-        '<button class="btn btn-primary btn-sm" title="聊天" onclick="openChat(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">💬</button>' +
-        '<button class="btn btn-danger btn-sm" title="删除好友" onclick="removeFriend(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">🗑️</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" title="聊天" onclick="openChat(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">💬</button>' +
+        '<button type="button" class="btn btn-danger btn-sm" title="删除好友" onclick="removeFriend(\'' + f.friend_id + '\', \'' + (f.friend_name || '好友') + '\')">🗑️</button>' +
         '</div>' +
         '</div>'
       ).join('');
@@ -4351,7 +4817,7 @@ async function loadFriendList() {
       '<div style="font-size:11px;color:var(--muted);">开源大模型 · 随时聊天</div>' +
       '</div>' +
       '</div>' +
-      '<button class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="openAIChat()">💬 聊天</button>' +
       '</div>' +
       '<p style="text-align:center;color:var(--muted);">还没有好友，点击上方"添加好友"按钮，输入对方UID添加吧！</p>';
   }
@@ -4596,14 +5062,14 @@ function openAIChat() {
   modal.innerHTML = '<div class="modal-content" style="max-width:500px;height:70vh;display:flex;flex-direction:column;">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
     '<h3 style="margin:0;">🤖 与 AI 助手聊天</h3>' +
-    '<button class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
     '</div>' +
     '<div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;">' +
     '<div style="text-align:center;color:var(--muted);padding:20px;">你好！我是 AI 助手，有什么可以帮你的？</div>' +
     '</div>' +
     '<div style="display:flex;gap:8px;align-items:center;">' +
     '<input type="text" id="chatInput" placeholder="输入消息..." style="flex:1;" onkeypress="if(event.key===\'Enter\')sendAIMessage()">' +
-    '<button class="btn btn-primary" onclick="sendAIMessage()">发送</button>' +
+    '<button type="button" class="btn btn-primary" onclick="sendAIMessage()">发送</button>' +
     '</div>' +
     '</div>';
   document.body.appendChild(modal);
@@ -4670,15 +5136,15 @@ function openChat(friendId, friendName) {
   modal.innerHTML = '<div class="modal-content" style="max-width:500px;height:70vh;display:flex;flex-direction:column;">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
     '<h3 style="margin:0;">💬 与 ' + escapeHtml(friendName) + ' 聊天</h3>' +
-    '<button class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="closeChat()">✕</button>' +
     '</div>' +
     '<div id="chatMessages" style="flex:1;overflow-y:auto;background:var(--bg2);border-radius:8px;padding:12px;margin-bottom:12px;"></div>' +
     '<input type="file" id="chatFileInput" style="display:none;" onchange="sendChatFile()">' +
     '<div style="display:flex;gap:8px;align-items:center;">' +
-    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'chatFileInput\').click()" title="发送文件">📎</button>' +
-    '<button class="btn btn-secondary btn-sm" onclick="showCloudFilePicker()" title="从云盘选择">☁️</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById(\'chatFileInput\').click()" title="发送文件">📎</button>' +
+    '<button type="button" class="btn btn-secondary btn-sm" onclick="showCloudFilePicker()" title="从云盘选择">☁️</button>' +
     '<input type="text" id="chatInput" placeholder="输入消息..." style="flex:1;" onkeypress="if(event.key===\'Enter\')sendMessage()">' +
-    '<button class="btn btn-primary" onclick="sendMessage()">发送</button>' +
+    '<button type="button" class="btn btn-primary" onclick="sendMessage()">发送</button>' +
     '</div>' +
     '</div>';
   document.body.appendChild(modal);
@@ -4740,7 +5206,7 @@ async function showCloudFilePicker() {
     modal.innerHTML = '<div class="modal-content" style="max-width:400px;max-height:60vh;overflow-y:auto;">' +
       '<h3>☁️ 从云盘选择文件</h3>' +
       fileList +
-      '<button class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'cloudPickerModal\')">取消</button>' +
+      '<button type="button" class="btn btn-secondary" style="width:100%;margin-top:12px;" onclick="closeModal(\'cloudPickerModal\')">取消</button>' +
       '</div>';
     document.body.appendChild(modal);
   } catch (e) {
@@ -4871,7 +5337,7 @@ async function loadEchoes() {
       }
       // 判断是否可以删除：管理员可以删任何，普通用户可以删自己的
       const canDelete = currentUser && (currentUser.isAdmin || currentUser.username === e.username);
-      const deleteBtn = canDelete ? '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="deleteEcho(' + e.id + ')">🗑️ 删除</button>' : '';
+      const deleteBtn = canDelete ? '<button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="deleteEcho(' + e.id + ')">🗑️ 删除</button>' : '';
       return '<div class="echo-item">' +
         '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span>' + deleteBtn + '</div>' +
         '<div>' + escapeHtml(e.text || '') + '</div>' +
@@ -5017,8 +5483,8 @@ async function loadFiles() {
             '<div class="size">' + (f.filesize / 1024).toFixed(1) + ' KB</div>' +
           '</div>' +
           '<div style="display:flex;gap:6px;">' +
-            '<button class="btn btn-primary btn-sm" data-file-id="' + f.id + '" data-file-name="' + escapeHtml(f.filename) + '" onclick="downloadFile(this.dataset.fileId, this.dataset.fileName)">下载</button>' +
-            '<button class="btn btn-danger btn-sm" onclick="deleteFile(' + f.id + ')">删除</button>' +
+            '<button type="button" class="btn btn-primary btn-sm" data-file-id="' + f.id + '" data-file-name="' + escapeHtml(f.filename) + '" onclick="downloadFile(this.dataset.fileId, this.dataset.fileName)">下载</button>' +
+            '<button type="button" class="btn btn-danger btn-sm" onclick="deleteFile(' + f.id + ')">删除</button>' +
           '</div>' +
         '</div>'
       ).join('');
@@ -5258,7 +5724,7 @@ function loadAnnouncement() {
     return;
   }
   txt.textContent = text;
-  el.style.display = 'block';
+  el.style.display = 'flex';
 }
 
 function closeAnnouncementBanner() {
@@ -5291,8 +5757,8 @@ async function loadPending() {
         '<div style="margin:8px 0">' + escapeHtml(e.text || '') + '</div>' +
         (img ? '<img src="' + img + '" style="max-width:200px;border-radius:8px">' : '') +
         '<div style="margin-top:8px;display:flex;gap:8px;">' +
-          '<button class="btn btn-success btn-sm" onclick="approveEcho(' + e.id + ')">通过</button>' +
-          '<button class="btn btn-danger btn-sm" onclick="deleteEcho(' + e.id + ')">删除</button>' +
+          '<button type="button" class="btn btn-success btn-sm" onclick="approveEcho(' + e.id + ')">通过</button>' +
+          '<button type="button" class="btn btn-danger btn-sm" onclick="deleteEcho(' + e.id + ')">删除</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -5357,9 +5823,9 @@ let gameDifficulty = 'hard';
 function showGameMenu(area, game, name) {
   area.innerHTML = '<h3 style="margin-bottom:16px;">' + name + ' - 选择模式</h3>' +
     '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-    '<button class="btn btn-success" onclick="startGame(\'' + game + '\', \'easy\')">😊 简单AI</button>' +
-    '<button class="btn btn-warning" onclick="startGame(\'' + game + '\', \'normal\')">😐 普通AI</button>' +
-    '<button class="btn btn-danger" onclick="startGame(\'' + game + '\', \'hard\')">😈 困难AI</button>' +
+    '<button type="button" class="btn btn-success" onclick="startGame(\'' + game + '\', \'easy\')">😊 简单AI</button>' +
+    '<button type="button" class="btn btn-warning" onclick="startGame(\'' + game + '\', \'normal\')">😐 普通AI</button>' +
+    '<button type="button" class="btn btn-danger" onclick="startGame(\'' + game + '\', \'hard\')">😈 困难AI</button>' +
     '</div>';
 }
 
@@ -5375,8 +5841,9 @@ function startGame(game, diff) {
 function showTicTacToeMenu(area) {
   area.innerHTML = '<h3 style="margin-bottom:16px;">选择模式</h3>' +
     '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-    '<button class="btn btn-success" onclick="startTicTacToe(\'easy\')">😊 简单AI</button>' +
-    '<button class="btn btn-warning" onclick="startTicTacToe(\'hard\')">😈 困难AI</button>' +
+    '<button type="button" class="btn btn-success" onclick="startTicTacToe(\'easy\')">😊 简单AI</button>' +
+    '<button type="button" class="btn btn-warning" onclick="startTicTacToe(\'normal\')">😐 普通AI</button>' +
+    '<button type="button" class="btn btn-danger" onclick="startTicTacToe(\'hard\')">😈 困难AI</button>' +
     
     '</div>';
 }
@@ -5646,6 +6113,16 @@ function initTicTacToe(area) {
         const empty = [];
         for (let i = 0; i < 9; i++) if (!board[i]) empty.push(i);
         move = empty[Math.floor(Math.random() * empty.length)];
+      } else if (tttDifficulty === 'normal') {
+        // 普通模式：60%走最优，40%随机（有挑战但不无敌）
+        if (Math.random() < 0.6) {
+          const best = minimax(board.slice(), AI);
+          move = best ? best.index : null;
+        } else {
+          const empty = [];
+          for (let i = 0; i < 9; i++) if (!board[i]) empty.push(i);
+          move = empty[Math.floor(Math.random() * empty.length)];
+        }
       } else {
         // 困难模式：minimax
         const best = minimax(board.slice(), AI);
@@ -5689,6 +6166,787 @@ function initTicTacToe(area) {
   if (!humanFirst) {
     setTimeout(() => aiMove(), 500);
   }
+}
+
+function initGomoku(area) {
+  area.innerHTML = '<div class="score-display" id="gomokuStatus">猜先：点击棋盘左半边猜单数，右半边猜双数</div><canvas id="gomokuCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('gomokuCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 15;
+  const CELL = 30;
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+  const HUMAN = 1;
+  const AI = 2;
+  let guessed = false;
+  let humanFirst = true;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(CELL / 2 + i * CELL, CELL / 2); ctx.lineTo(CELL / 2 + i * CELL, 450 - CELL / 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(CELL / 2, CELL / 2 + i * CELL); ctx.lineTo(450 - CELL / 2, CELL / 2 + i * CELL); ctx.stroke();
+    }
+    const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+    ctx.fillStyle = '#8b4513';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(CELL/2+c*CELL, CELL/2+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(CELL/2 + c*CELL, CELL/2 + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === HUMAN ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  function checkWin(r, c, player) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      let count = 1;
+      for (let i = 1; i < 5; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || board[nr][nc] !== player) break;
+        count++;
+      }
+      for (let i = 1; i < 5; i++) {
+        const nr = r - dr*i, nc = c - dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE || board[nr][nc] !== player) break;
+        count++;
+      }
+      if (count >= 5) return true;
+    }
+    return false;
+  }
+
+  function evaluatePosition(r, c, player) {
+    if (board[r][c]) return -1;
+    let score = 0;
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of dirs) {
+      let count = 1, blocked = 0;
+      for (let i = 1; i < 5; i++) {
+        const nr = r + dr*i, nc = c + dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) { blocked++; break; }
+        if (board[nr][nc] === player) count++;
+        else if (board[nr][nc] !== 0) { blocked++; break; }
+        else break;
+      }
+      for (let i = 1; i < 5; i++) {
+        const nr = r - dr*i, nc = c - dc*i;
+        if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) { blocked++; break; }
+        if (board[nr][nc] === player) count++;
+        else if (board[nr][nc] !== 0) { blocked++; break; }
+        else break;
+      }
+      if (count >= 5) score += 100000;
+      else if (count === 4 && blocked === 0) score += 10000;
+      else if (count === 4 && blocked === 1) score += 1000;
+      else if (count === 3 && blocked === 0) score += 1000;
+      else if (count === 3 && blocked === 1) score += 100;
+      else if (count === 2 && blocked === 0) score += 100;
+      else if (count === 2 && blocked === 1) score += 10;
+    }
+    return score;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('gomokuStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const validMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (!board[r][c]) {
+          let hasNeighbor = false;
+          for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+            const nr = r+dr, nc = c+dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc]) hasNeighbor = true;
+          }
+          if (!hasNeighbor && board[7][7]) continue;
+          const attackScore = evaluatePosition(r, c, AI);
+          const defenseScore = evaluatePosition(r, c, HUMAN);
+          const score = attackScore + defenseScore * 0.9;
+          validMoves.push({r, c, score});
+        }
+      }
+      validMoves.sort((a,b) => b.score - a.score);
+      let move;
+      if (gameDifficulty === 'easy') {
+        // 简单：随机从前5个里选
+        const top = validMoves.slice(0, Math.min(5, validMoves.length));
+        move = top[Math.floor(Math.random() * top.length)];
+      } else if (gameDifficulty === 'normal') {
+        // 普通：从前3个里随机选
+        const top = validMoves.slice(0, Math.min(3, validMoves.length));
+        move = top[Math.floor(Math.random() * top.length)];
+      } else {
+        // 困难：选最优
+        move = validMoves[0];
+      }
+      if (move) {
+        board[move.r][move.c] = AI;
+        draw();
+        if (checkWin(move.r, move.c, AI)) {
+          gameOver = true;
+          document.getElementById('gomokuStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          return;
+        }
+      }
+      document.getElementById('gomokuStatus').textContent = '轮到你了（黑棋）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (!guessed) {
+      guessed = true;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width * canvas.width;
+      const guess = x < 225 ? 1 : 2;
+      const result = Math.random() < 0.5 ? 1 : 2;
+      if (guess === result) {
+        humanFirst = true;
+        document.getElementById('gomokuStatus').textContent = '猜对了！你是黑棋先走，请落子';
+      } else {
+        humanFirst = false;
+        document.getElementById('gomokuStatus').textContent = '猜错了！AI是黑棋先走';
+        setTimeout(() => aiMove(), 500);
+      }
+      return;
+    }
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - CELL/2) / CELL);
+    const r = Math.round((y - CELL/2) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE || board[r][c]) return;
+    board[r][c] = HUMAN;
+    draw();
+    if (checkWin(r, c, HUMAN)) {
+      gameOver = true;
+      document.getElementById('gomokuStatus').textContent = '你赢了！';
+      toast('你赢了！');
+      return;
+    }
+    aiMove();
+  };
+
+  draw();
+  document.getElementById('gomokuStatus').textContent = '猜先：点击棋盘左半边猜单数，右半边猜双数';
+}
+
+function initXiangqi(area) {
+  area.innerHTML = '<div class="score-display" id="xqStatus">你是红方，AI是黑方</div><canvas id="xqCanvas" width="540" height="600"></canvas>';
+  const canvas = document.getElementById('xqCanvas');
+  const ctx = canvas.getContext('2d');
+  const COLS = 9, ROWS = 10, CELL = 60, OFFSET = 30;
+  // 棋盘初始化：r=红, b=黑, K=将/帅, A=士/仕, B=象/相, N=马, R=车, C=炮, P=兵/卒
+  let board = [
+    ['bR','bN','bB','bA','bK','bA','bB','bN','bR'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,'bC',null,null,null,null,null,'bC',null],
+    ['bP',null,'bP',null,'bP',null,'bP',null,'bP'],
+    [null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rP',null,'rP',null,'rP',null,'rP',null,'rP'],
+    [null,'rC',null,null,null,null,null,'rC',null],
+    [null,null,null,null,null,null,null,null,null],
+    ['rR','rN','rB','rA','rK','rA','rB','rN','rR']
+  ];
+  let selected = null;
+  let gameOver = false;
+  const HUMAN = 'r', AI = 'b';
+
+  function draw() {
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(0, 0, 540, 600);
+    ctx.strokeStyle = '#8b4513';
+    ctx.lineWidth = 2;
+    // 横线
+    for (let i = 0; i < ROWS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(OFFSET, OFFSET + i * CELL);
+      ctx.lineTo(OFFSET + (COLS-1) * CELL, OFFSET + i * CELL);
+      ctx.stroke();
+    }
+    // 竖线（中间断开楚河汉界）
+    for (let i = 0; i < COLS; i++) {
+      ctx.beginPath();
+      if (i === 0 || i === COLS-1) {
+        ctx.moveTo(OFFSET + i * CELL, OFFSET);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + (ROWS-1) * CELL);
+      } else {
+        ctx.moveTo(OFFSET + i * CELL, OFFSET);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + 4 * CELL);
+        ctx.moveTo(OFFSET + i * CELL, OFFSET + 5 * CELL);
+        ctx.lineTo(OFFSET + i * CELL, OFFSET + (ROWS-1) * CELL);
+      }
+      ctx.stroke();
+    }
+    // 九宫格斜线
+    ctx.beginPath();
+    ctx.moveTo(OFFSET + 3*CELL, OFFSET); ctx.lineTo(OFFSET + 5*CELL, OFFSET + 2*CELL);
+    ctx.moveTo(OFFSET + 5*CELL, OFFSET); ctx.lineTo(OFFSET + 3*CELL, OFFSET + 2*CELL);
+    ctx.moveTo(OFFSET + 3*CELL, OFFSET + 7*CELL); ctx.lineTo(OFFSET + 5*CELL, OFFSET + 9*CELL);
+    ctx.moveTo(OFFSET + 5*CELL, OFFSET + 7*CELL); ctx.lineTo(OFFSET + 3*CELL, OFFSET + 9*CELL);
+    ctx.stroke();
+    // 楚河汉界
+    ctx.fillStyle = '#8b4513';
+    ctx.font = '24px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('楚 河', OFFSET + 2*CELL, OFFSET + 4.6*CELL);
+    ctx.fillText('汉 界', OFFSET + 6*CELL, OFFSET + 4.6*CELL);
+    // 棋子
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const p = board[r][c];
+      if (!p) continue;
+      const x = OFFSET + c * CELL, y = OFFSET + r * CELL;
+      ctx.beginPath();
+      ctx.arc(x, y, 25, 0, Math.PI*2);
+      ctx.fillStyle = p[0] === 'r' ? '#fff5e6' : '#fff5e6';
+      ctx.fill();
+      ctx.strokeStyle = p[0] === 'r' ? '#c00' : '#000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = p[0] === 'r' ? '#c00' : '#000';
+      ctx.font = 'bold 22px serif';
+      const names = {K: p[0]==='r'?'帅':'将', A: p[0]==='r'?'仕':'士', B: p[0]==='r'?'相':'象', N:'马', R:'车', C:'炮', P: p[0]==='r'?'兵':'卒'};
+      ctx.fillText(names[p[1]], x, y+8);
+      if (selected && selected.r === r && selected.c === c) {
+        ctx.strokeStyle = '#0f0';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, 28, 0, Math.PI*2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function getMoves(r, c) {
+    const p = board[r][c];
+    if (!p) return [];
+    const moves = [];
+    const color = p[0], type = p[1];
+    const inBoard = (r,c) => r>=0 && r<ROWS && c>=0 && c<COLS;
+    const canMove = (r,c) => inBoard(r,c) && (!board[r][c] || board[r][c][0] !== color);
+
+    if (type === 'K') {
+      const palaceR = color === 'r' ? [7,8,9] : [0,1,2];
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (palaceR.includes(nr) && nc>=3 && nc<=5 && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'A') {
+      const palaceR = color === 'r' ? [7,8,9] : [0,1,2];
+      [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (palaceR.includes(nr) && nc>=3 && nc<=5 && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'B') {
+      [[2,2],[2,-2],[-2,2],[-2,-2]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        const eyeR=r+dr/2, eyeC=c+dc/2;
+        if (inBoard(nr,nc) && !board[eyeR][eyeC] && canMove(nr,nc)) {
+          if (color === 'r' && nr >= 5) moves.push([nr,nc]);
+          if (color === 'b' && nr <= 4) moves.push([nr,nc]);
+        }
+      });
+    } else if (type === 'N') {
+      [[2,1,1,0],[2,-1,1,0],[-2,1,-1,0],[-2,-1,-1,0],[1,2,0,1],[-1,2,0,1],[1,-2,0,-1],[-1,-2,0,-1]].forEach(([dr,dc,lr,lc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (inBoard(nr,nc) && !board[r+lr][c+lc] && canMove(nr,nc)) moves.push([nr,nc]);
+      });
+    } else if (type === 'R') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'C') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        let jumped = false;
+        while (inBoard(nr,nc)) {
+          if (!jumped) {
+            if (!board[nr][nc]) moves.push([nr,nc]);
+            else jumped = true;
+          } else {
+            if (board[nr][nc]) { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'P') {
+      const forward = color === 'r' ? -1 : 1;
+      const crossed = color === 'r' ? r <= 4 : r >= 5;
+      if (canMove(r+forward, c)) moves.push([r+forward, c]);
+      if (crossed) {
+        if (canMove(r, c-1)) moves.push([r, c-1]);
+        if (canMove(r, c+1)) moves.push([r, c+1]);
+      }
+    }
+    return moves;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('xqStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const allMoves = [];
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+        if (board[r][c] && board[r][c][0] === AI) {
+          getMoves(r, c).forEach(([nr,nc]) => {
+            let captureScore = 0;
+            if (board[nr][nc]) {
+              captureScore = 1;
+              if (board[nr][nc][1] === 'K') captureScore = 100;
+              else if (board[nr][nc][1] === 'R') captureScore = 9;
+              else if (board[nr][nc][1] === 'N' || board[nr][nc][1] === 'C') captureScore = 5;
+              else if (board[nr][nc][1] === 'B' || board[nr][nc][1] === 'A') captureScore = 2;
+            }
+            allMoves.push({fr:r, fc:c, tr:nr, tc:nc, score: captureScore});
+          });
+        }
+      }
+      allMoves.sort((a,b) => b.score - a.score);
+      let best;
+      if (gameDifficulty === 'easy') {
+        // 简单：随机
+        best = allMoves[Math.floor(Math.random() * allMoves.length)];
+      } else if (gameDifficulty === 'normal') {
+        // 普通：从前5个里随机选
+        const top = allMoves.slice(0, Math.min(5, allMoves.length));
+        best = top[Math.floor(Math.random() * top.length)];
+      } else {
+        // 困难：选最优
+        best = allMoves[0];
+      }
+      if (best) {
+        const captured = board[best.tr][best.tc];
+        board[best.tr][best.tc] = board[best.fr][best.fc];
+        board[best.fr][best.fc] = null;
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('xqStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          draw();
+          return;
+        }
+      }
+      draw();
+      document.getElementById('xqStatus').textContent = '轮到你了（红方）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - OFFSET) / CELL), r = Math.round((y - OFFSET) / CELL);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      const valid = moves.some(([mr,mc]) => mr === r && mc === c);
+      if (valid) {
+        const captured = board[r][c];
+        board[r][c] = board[selected.r][selected.c];
+        board[selected.r][selected.c] = null;
+        selected = null;
+        draw();
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('xqStatus').textContent = '你赢了！';
+          toast('你赢了！');
+          return;
+        }
+        aiMove();
+      } else if (board[r][c] && board[r][c][0] === HUMAN) {
+        selected = {r, c};
+        draw();
+      } else {
+        selected = null;
+        draw();
+      }
+    } else if (board[r][c] && board[r][c][0] === HUMAN) {
+      selected = {r, c};
+      draw();
+    }
+  };
+
+  draw();
+}
+
+function initChess(area) {
+  area.innerHTML = '<div class="score-display" id="chessStatus">你是白方，AI是黑方</div><canvas id="chessCanvas" width="480" height="480"></canvas>';
+  const canvas = document.getElementById('chessCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 8, CELL = 60;
+  // K=王, Q=后, R=车, B=象, N=马, P=兵
+  let board = [
+    ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    ['bP','bP','bP','bP','bP','bP','bP','bP'],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ['wP','wP','wP','wP','wP','wP','wP','wP'],
+    ['wR','wN','wB','wQ','wK','wB','wN','wR']
+  ];
+  let selected = null;
+  let gameOver = false;
+  const HUMAN = 'w', AI = 'b';
+  const symbols = {wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
+
+  function draw() {
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      ctx.fillStyle = (r+c) % 2 === 0 ? '#f0d9b5' : '#b58863';
+      ctx.fillRect(c*CELL, r*CELL, CELL, CELL);
+      const p = board[r][c];
+      if (p) {
+        ctx.font = '40px serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = p[0] === 'w' ? '#fff' : '#000';
+        ctx.strokeStyle = p[0] === 'w' ? '#000' : '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeText(symbols[p], c*CELL+CELL/2, r*CELL+CELL/2+12);
+        ctx.fillText(symbols[p], c*CELL+CELL/2, r*CELL+CELL/2+12);
+      }
+      if (selected && selected.r === r && selected.c === c) {
+        ctx.strokeStyle = '#0f0';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(c*CELL+2, r*CELL+2, CELL-4, CELL-4);
+      }
+    }
+    // 画走法提示（小点点）
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      moves.forEach(([mr, mc]) => {
+        ctx.beginPath();
+        ctx.arc(mc*CELL+CELL/2, mr*CELL+CELL/2, 8, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0, 200, 0, 0.6)';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+    }
+  }
+
+  function getMoves(r, c) {
+    const p = board[r][c];
+    if (!p) return [];
+    const moves = [];
+    const color = p[0], type = p[1];
+    const inBoard = (r,c) => r>=0 && r<SIZE && c>=0 && c<SIZE;
+    const canMove = (r,c) => inBoard(r,c) && (!board[r][c] || board[r][c][0] !== color);
+
+    if (type === 'K') {
+      [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        if (canMove(r+dr, c+dc)) moves.push([r+dr, c+dc]);
+      });
+    } else if (type === 'Q') {
+      [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'R') {
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'B') {
+      [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        let nr=r+dr, nc=c+dc;
+        while (inBoard(nr,nc)) {
+          if (!board[nr][nc]) moves.push([nr,nc]);
+          else { if (board[nr][nc][0] !== color) moves.push([nr,nc]); break; }
+          nr+=dr; nc+=dc;
+        }
+      });
+    } else if (type === 'N') {
+      [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[-1,2],[1,-2],[-1,-2]].forEach(([dr,dc]) => {
+        if (canMove(r+dr, c+dc)) moves.push([r+dr, c+dc]);
+      });
+    } else if (type === 'P') {
+      const dir = color === 'w' ? -1 : 1;
+      const startRow = color === 'w' ? 6 : 1;
+      if (inBoard(r+dir, c) && !board[r+dir][c]) moves.push([r+dir, c]);
+      if (r === startRow && !board[r+dir][c] && !board[r+2*dir][c]) moves.push([r+2*dir, c]);
+      [[dir, -1],[dir, 1]].forEach(([dr,dc]) => {
+        const nr=r+dr, nc=c+dc;
+        if (inBoard(nr,nc) && board[nr][nc] && board[nr][nc][0] !== color) moves.push([nr,nc]);
+      });
+    }
+    return moves;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('chessStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const allMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (board[r][c] && board[r][c][0] === AI) {
+          getMoves(r, c).forEach(([nr,nc]) => {
+            let captureScore = 0;
+            if (board[nr][nc]) {
+              captureScore = 1;
+              if (board[nr][nc][1] === 'K') captureScore = 100;
+              else if (board[nr][nc][1] === 'Q') captureScore = 9;
+              else if (board[nr][nc][1] === 'R') captureScore = 5;
+              else if (board[nr][nc][1] === 'B' || board[nr][nc][1] === 'N') captureScore = 3;
+              else if (board[nr][nc][1] === 'P') captureScore = 1;
+            }
+            allMoves.push({fr:r, fc:c, tr:nr, tc:nc, score: captureScore});
+          });
+        }
+      }
+      allMoves.sort((a,b) => b.score - a.score);
+      let best;
+      if (gameDifficulty === 'easy') {
+        best = allMoves[Math.floor(Math.random() * allMoves.length)];
+      } else if (gameDifficulty === 'normal') {
+        const top = allMoves.slice(0, Math.min(5, allMoves.length));
+        best = top[Math.floor(Math.random() * top.length)];
+      } else {
+        best = allMoves[0];
+      }
+      if (best) {
+        const captured = board[best.tr][best.tc];
+        board[best.tr][best.tc] = board[best.fr][best.fc];
+        board[best.fr][best.fc] = null;
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('chessStatus').textContent = 'AI 获胜！';
+          toast('AI 获胜！');
+          draw();
+          return;
+        }
+      }
+      draw();
+      document.getElementById('chessStatus').textContent = '轮到你了（白方）';
+    }, 300);
+  }
+
+  canvas.onclick = (e) => {
+    if (gameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.floor(x / CELL), r = Math.floor(y / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+
+    if (selected) {
+      const moves = getMoves(selected.r, selected.c);
+      const valid = moves.some(([mr,mc]) => mr === r && mc === c);
+      if (valid) {
+        const captured = board[r][c];
+        board[r][c] = board[selected.r][selected.c];
+        board[selected.r][selected.c] = null;
+        selected = null;
+        draw();
+        if (captured && captured[1] === 'K') {
+          gameOver = true;
+          document.getElementById('chessStatus').textContent = '你赢了！';
+          toast('你赢了！');
+          return;
+        }
+        aiMove();
+      } else if (board[r][c] && board[r][c][0] === HUMAN) {
+        selected = {r, c};
+        draw();
+      } else {
+        selected = null;
+        draw();
+      }
+    } else if (board[r][c] && board[r][c][0] === HUMAN) {
+      selected = {r, c};
+      draw();
+    }
+  };
+
+  draw();
+}
+
+function initGo(area) {
+  area.innerHTML = '<div class="score-display" id="goStatus">你是黑棋，AI是白棋（猜先中...）</div><canvas id="goCanvas" width="450" height="450"></canvas>';
+  const canvas = document.getElementById('goCanvas');
+  const ctx = canvas.getContext('2d');
+  const SIZE = 9, CELL = 50, OFFSET = 25;
+  let board = Array(SIZE).fill(null).map(() => Array(SIZE).fill(0));
+  let gameOver = false;
+  const HUMAN = 1, AI = 2;
+  let currentPlayer = HUMAN;
+
+  function draw() {
+    ctx.fillStyle = '#deb887';
+    ctx.fillRect(0, 0, 450, 450);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < SIZE; i++) {
+      ctx.beginPath(); ctx.moveTo(OFFSET + i*CELL, OFFSET); ctx.lineTo(OFFSET + i*CELL, OFFSET + (SIZE-1)*CELL); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(OFFSET, OFFSET + i*CELL); ctx.lineTo(OFFSET + (SIZE-1)*CELL, OFFSET + i*CELL); ctx.stroke();
+    }
+    const stars = [[2,2],[2,6],[6,2],[6,6],[4,4]];
+    ctx.fillStyle = '#000';
+    stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(OFFSET+c*CELL, OFFSET+r*CELL, 4, 0, Math.PI*2); ctx.fill(); });
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      if (board[r][c]) {
+        ctx.beginPath();
+        ctx.arc(OFFSET + c*CELL, OFFSET + r*CELL, CELL/2 - 2, 0, Math.PI*2);
+        ctx.fillStyle = board[r][c] === HUMAN ? '#000' : '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.stroke();
+      }
+    }
+  }
+
+  function getGroup(r, c, color, visited = new Set()) {
+    const key = r + ',' + c;
+    if (visited.has(key)) return {stones: [], liberties: new Set()};
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return {stones: [], liberties: new Set()};
+    if (board[r][c] === 0) return {stones: [], liberties: new Set([key])};
+    if (board[r][c] !== color) return {stones: [], liberties: new Set()};
+    visited.add(key);
+    let result = {stones: [key], liberties: new Set()};
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+      const sub = getGroup(r+dr, c+dc, color, visited);
+      sub.stones.forEach(s => result.stones.push(s));
+      sub.liberties.forEach(l => result.liberties.add(l));
+    });
+    return result;
+  }
+
+  function placeStone(r, c, color) {
+    if (board[r][c]) return false;
+    board[r][c] = color;
+    // 提子
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+      const nr = r+dr, nc = c+dc;
+      if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] && board[nr][nc] !== color) {
+        const group = getGroup(nr, nc, board[nr][nc]);
+        if (group.liberties.size === 0) {
+          group.stones.forEach(s => {
+            const [sr, sc] = s.split(',').map(Number);
+            board[sr][sc] = 0;
+          });
+        }
+      }
+    });
+    // 禁止自杀
+    const myGroup = getGroup(r, c, color);
+    if (myGroup.liberties.size === 0) {
+      board[r][c] = 0;
+      return false;
+    }
+    return true;
+  }
+
+  function aiMove() {
+    if (gameOver) return;
+    document.getElementById('goStatus').textContent = 'AI 思考中...';
+    setTimeout(() => {
+      const validMoves = [];
+      for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+        if (!board[r][c]) {
+          // 简单评估：靠近已有棋子
+          let score = 0;
+          [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc]) => {
+            const nr=r+dr, nc=c+dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc]) score++;
+          });
+          validMoves.push({r, c, score});
+        }
+      }
+      validMoves.sort((a,b) => b.score - a.score);
+      // 根据难度选择
+      let moveList;
+      if (gameDifficulty === 'easy') {
+        moveList = validMoves; // 简单：全部随机
+      } else if (gameDifficulty === 'normal') {
+        moveList = validMoves.slice(0, Math.min(10, validMoves.length)); // 普通：前10个随机
+      } else {
+        moveList = validMoves.slice(0, Math.min(3, validMoves.length)); // 困难：前3个随机（更优）
+      }
+      // 打乱顺序
+      for (let i = moveList.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [moveList[i], moveList[j]] = [moveList[j], moveList[i]];
+      }
+      // 尝试落子
+      for (const move of moveList) {
+        const boardCopy = board.map(row => [...row]);
+        if (placeStone(move.r, move.c, AI)) {
+          draw();
+          currentPlayer = HUMAN;
+          document.getElementById('goStatus').textContent = '轮到你了（黑棋）';
+          return;
+        }
+        board = boardCopy;
+      }
+      document.getElementById('goStatus').textContent = 'AI 无棋可下，轮到你了';
+    }, 300);
+  }
+
+  // 正常下棋逻辑
+  function normalClick(e) {
+    if (gameOver || currentPlayer !== HUMAN) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX, y = (e.clientY - rect.top) * scaleY;
+    const c = Math.round((x - OFFSET) / CELL), r = Math.round((y - OFFSET) / CELL);
+    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) return;
+    if (placeStone(r, c, HUMAN)) {
+      draw();
+      currentPlayer = AI;
+      aiMove();
+    }
+  }
+
+  // 猜先
+  document.getElementById('goStatus').textContent = '猜先：点击棋盘左半边猜单数，右半边猜双数';
+  let guessMade = false;
+  canvas.onclick = (e) => {
+    if (guessMade) return;
+    guessMade = true;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width * canvas.width;
+    const guess = x < 225 ? 1 : 2;
+    const result = Math.random() < 0.5 ? 1 : 2;
+    if (guess === result) {
+      currentPlayer = HUMAN;
+      document.getElementById('goStatus').textContent = '猜对了！你是黑棋先走';
+    } else {
+      currentPlayer = AI;
+      document.getElementById('goStatus').textContent = '猜错了！AI是黑棋先走';
+      setTimeout(() => aiMove(), 500);
+    }
+    canvas.onclick = normalClick;
+  };
+
+  draw();
 }
 
 function init() {
