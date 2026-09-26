@@ -461,6 +461,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div class="game-card" onclick="openGame('xiangqi')"><div class="icon">🀄</div><div class="name">中国象棋</div></div>
       <div class="game-card" onclick="openGame('chess')"><div class="icon">♟️</div><div class="name">国际象棋</div></div>
       <div class="game-card" onclick="openGame('go')"><div class="icon">⬛</div><div class="name">围棋</div></div>
+      <div class="game-card" onclick="openGame('fps')"><div class="icon">🎯</div><div class="name">FPS射击</div></div>
     </div>
     <div id="gameContainer">
       <button type="button" class="btn btn-secondary btn-sm" onclick="closeGame()" style="margin-bottom:12px;">← 返回游戏列表</button>
@@ -6199,6 +6200,7 @@ function openGame(game) {
   if (game === 'xiangqi') showGameMenu(area, 'xiangqi', '中国象棋');
   if (game === 'chess') showGameMenu(area, 'chess', '国际象棋');
   if (game === 'go') showGameMenu(area, 'go', '围棋');
+  if (game === 'fps') initFPS(area);
 }
 
 let gameDifficulty = 'hard';
@@ -6240,10 +6242,160 @@ function startTicTacToe(diff) {
 
 function closeGame() {
   if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
+  if (window._fpsRaf) { cancelAnimationFrame(window._fpsRaf); window._fpsRaf = null; }
+  if (document.pointerLockElement) document.exitPointerLock();
   document.getElementById('gameList').style.display = 'grid';
   document.getElementById('gameContainer').style.display = 'none';
   document.getElementById('gameArea').innerHTML = '';
 }
+
+// ============ FPS 射击游戏 ============
+const FPS_GUNS = [
+  { id:'pistol', name:'P92 手枪', dmg:25, rof:280, mag:12, auto:false, spread:0.015, reload:900 },
+  { id:'m4a1', name:'M4A1 突击步枪', dmg:30, rof:90, mag:30, auto:true, spread:0.012, reload:1600 },
+  { id:'ak47', name:'AK-47 突击步枪', dmg:38, rof:120, mag:30, auto:true, spread:0.02, reload:1800 },
+  { id:'mp5', name:'MP5 冲锋枪', dmg:22, rof:70, mag:30, auto:true, spread:0.018, reload:1500 },
+  { id:'vector', name:'Vector 冲锋枪', dmg:20, rof:55, mag:33, auto:true, spread:0.014, reload:1700 },
+  { id:'dp28', name:'DP-28 轻机枪', dmg:32, rof:100, mag:47, auto:true, spread:0.025, reload:2600 },
+  { id:'awm', name:'AWM 狙击枪', dmg:120, rof:1200, mag:5, auto:false, spread:0.001, reload:2800 },
+  { id:'m24', name:'M24 狙击枪', dmg:80, rof:1000, mag:5, auto:false, spread:0.002, reload:2400 },
+  { id:'desert', name:'沙漠之鹰', dmg:55, rof:400, mag:7, auto:false, spread:0.03, reload:1400 },
+];
+const FPS_ATTACHMENTS = ['消音器','红点镜','全息镜','2倍镜','4倍镜','垂直握把','扩容弹夹','激光瞄准'];
+
+function initFPS(area) {
+  area.innerHTML = `
+    <div style="max-width:900px;margin:0 auto;">
+      <h3 style="margin-bottom:12px;">🎯 FPS 射击训练场</h3>
+      <div id="fpsModeMenu" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">
+        <button class="btn btn-success" onclick="fpsStart('practice')">🏋️ 练习房</button>
+        <button class="btn btn-warning" onclick="fpsStart('arena')">⚔️ 限时竞技(60秒)</button>
+        <button class="btn btn-danger" onclick="fpsStart('bomb')">💣 拆弹爆破</button>
+        <button class="btn btn-info" onclick="fpsShowGunsmith()">🔧 改枪台</button>
+      </div>
+      <div id="fpsGunsmith" style="display:none;background:#111a2e;padding:12px;border-radius:10px;margin-bottom:12px;">
+        <div style="font-weight:700;margin-bottom:8px;">🔧 改枪台 — 当前: <span id="fpsCurGun"></span></div>
+        <div id="fpsGunList" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;"></div>
+        <div id="fpsAttList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div id="fpsWrap" style="position:relative;display:none;border-radius:10px;overflow:hidden;background:#000;">
+        <div id="fpsHud" style="position:absolute;top:8px;left:10px;color:#7fff9a;font-family:monospace;z-index:5;text-shadow:0 0 4px #000;">
+          分数:<span id="fpsScore">0</span> &nbsp; 命中:<span id="fpsHit">0</span>/<span id="fpsShot">0</span><br>
+          <span id="fpsTimer"></span>
+        </div>
+        <div id="fpsGunInfo" style="position:absolute;top:8px;right:10px;color:#ffd166;font-family:monospace;z-index:5;text-align:right;">
+          <span id="fpsCurAmmo"></span><br><span id="fpsGunName"></span>
+        </div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:26px;z-index:4;">+</div>
+        <div id="fpsTip" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.6);padding:6px 14px;border-radius:20px;z-index:6;font-size:13px;">点击画面锁定鼠标 · WASD移动 · 左键射击 · R换弹 · 1-9切枪</div>
+      </div>
+    </div>`;
+  window._fpsAtt = new Set(['红点镜']);
+  fpsRenderGunsmith();
+}
+function fpsRenderGunsmith() {
+  document.getElementById('fpsCurGun').textContent = FPS_GUNS[(window._fpsGun||=1)].name;
+  document.getElementById('fpsGunList').innerHTML = FPS_GUNS.map((g,i)=>
+    `<button class="btn ${i===(window._fpsGun||1)?'btn-danger':''}" style="padding:4px 8px;font-size:12px;" onclick="fpsSelectGun(${i})">${g.name}</button>`).join('');
+  document.getElementById('fpsAttList').innerHTML = FPS_ATTACHMENTS.map(a=>{
+    const on = window._fpsAtt.has(a);
+    return `<button class="btn ${on?'btn-success':'btn-secondary'}" style="padding:4px 8px;font-size:12px;" onclick="fpsToggleAtt('${a}')">${a}${on?'✓':''}</button>`;
+  }).join('');
+}
+function fpsSelectGun(i){ window._fpsGun=i; window._fpsAmmo=FPS_GUNS[i].mag; fpsRenderGunsmith(); }
+function fpsToggleAtt(a){ window._fpsAtt.has(a)?window._fpsAtt.delete(a):window._fpsAtt.add(a); fpsRenderGunsmith(); }
+function fpsShowGunsmith(){ document.getElementById('fpsGunsmith').style.display='block'; }
+
+function fpsStart(mode) {
+  document.getElementById('fpsGunsmith').style.display='none';
+  document.getElementById('fpsModeMenu').style.display='none';
+  document.getElementById('fpsWrap').style.display='block';
+  const W=880,H=520;
+  const scene = new THREE.Scene(); scene.background=new THREE.Color(0x0a0f1e); scene.fog=new THREE.Fog(0x0a0f1e,10,60);
+  const cam = new THREE.PerspectiveCamera(75, W/H, 0.1, 200); cam.position.set(0,1.7,0);
+  const ren = new THREE.WebGLRenderer({antialias:true}); ren.setSize(W,H); ren.shadowMap.enabled=true;
+  ren.domElement.style.width='100%'; ren.domElement.style.height='520px'; ren.domElement.style.display='block';
+  document.getElementById('fpsWrap').prepend(ren.domElement);
+  scene.add(new THREE.AmbientLight(0x8899bb,0.7));
+  const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(10,20,10); scene.add(sun);
+  // 地面
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80), new THREE.MeshStandardMaterial({color:0x1a2a3a}));
+  floor.rotation.x=-Math.PI/2; scene.add(floor);
+  const grid=new THREE.GridHelper(80,40,0x2a4a6a,0x1a3a5a); scene.add(grid);
+  // 围墙
+  [[0,0,-40,80,3,0],[0,0,40,80,3,0],[-40,0,0,3,3,80],[40,0,0,3,3,80]].forEach(w=>{
+    const wall=new THREE.Mesh(new THREE.BoxGeometry(w[3],3,w[5]||1), new THREE.MeshStandardMaterial({color:0x2a3a4a}));
+    wall.position.set(w[0],1.5,w[2]); scene.add(wall);
+  });
+  // 靶子
+  const targets=[];
+  function spawnTarget(){
+    const t=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.2,0.8), new THREE.MeshStandardMaterial({color:0xff4433,emissive:0x661100}));
+    t.position.set((Math.random()-0.5)*50, 1.2, (Math.random()-0.5)*50);
+    t.userData.score=10; scene.add(t); targets.push(t);
+  }
+  for(let i=0;i<10;i++) spawnTarget();
+
+  let yaw=0,pitch=0,score=0,hit=0,shot=0,ammo=FPS_GUNS[window._fpsGun||1].mag,reloading=false;
+  const keys={};
+  const wrap=document.getElementById('fpsWrap');
+  wrap.addEventListener('click',()=>ren.domElement.requestPointerLock());
+  document.addEventListener('mousemove',e=>{
+    if(document.pointerLockElement!==ren.domElement)return;
+    yaw-=e.movementX*0.0022; pitch-=e.movementY*0.0022;
+    pitch=Math.max(-1.4,Math.min(1.4,pitch));
+    cam.rotation.order='YXZ'; cam.rotation.y=yaw; cam.rotation.x=pitch;
+  });
+  document.addEventListener('keydown',e=>{
+    keys[e.key.toLowerCase()]=true;
+    if(e.key>='1'&&e.key<='9'){const i=+e.key-1;if(FPS_GUNS[i]){window._fpsGun=i;ammo=FPS_GUNS[i].mag;}}
+    if(e.key.toLowerCase()==='r'){reloading=true;setTimeout(()=>{ammo=FPS_GUNS[window._fpsGun||1].mag;reloading=false;},FPS_GUNS[window._fpsGun||1].reload);}
+  });
+  document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+  const ray=new THREE.Raycaster();
+  let firing=false,lastFire=0;
+  function shoot(){
+    const g=FPS_GUNS[window._fpsGun||1];
+    const now=performance.now();
+    if(reloading||ammo<=0)return;
+    if(!g.auto && now-lastFire<g.rof)return;
+    if(g.auto && now-lastFire<g.rof)return;
+    lastFire=now; ammo--; shot++;
+    ray.setFromCamera(new THREE.Vector2(0,0),cam);
+    ray.far=100;
+    const hits=ray.intersectObjects(targets);
+    if(hits.length){
+      hit++; score+=g.dmg>=80?20:10;
+      const t=hits[0].object; scene.remove(t); targets.splice(targets.indexOf(t),1); spawnTarget();
+    }
+    hud();
+  }
+  ren.domElement.addEventListener('mousedown',()=>{firing=true;shoot();});
+  document.addEventListener('mouseup',()=>firing=false);
+  function hud(){
+    document.getElementById('fpsScore').textContent=score;
+    document.getElementById('fpsHit').textContent=hit;
+    document.getElementById('fpsShot').textContent=shot;
+    document.getElementById('fpsGunName').textContent=FPS_GUNS[window._fpsGun||1].name;
+    document.getElementById('fpsCurAmmo').textContent=(reloading?'换弹中...':(ammo+'/'+FPS_GUNS[window._fpsGun||1].mag));
+  }
+  let timeLeft = mode==='arena'?60:999;
+  function loop(){
+    window._fpsRaf=requestAnimationFrame(loop);
+    const sp=0.12;
+    if(keys['w'])cam.position.x-=Math.sin(yaw)*sp,cam.position.z-=Math.cos(yaw)*sp;
+    if(keys['s'])cam.position.x+=Math.sin(yaw)*sp,cam.position.z+=Math.cos(yaw)*sp;
+    if(keys['a'])cam.position.x-=Math.cos(yaw)*sp,cam.position.z+=Math.sin(yaw)*sp;
+    if(keys['d'])cam.position.x+=Math.cos(yaw)*sp,cam.position.z-=Math.sin(yaw)*sp;
+    if(firing){shoot();}
+    if(mode==='arena'){timeLeft--;if(timeLeft<=0){firing=false;cancelAnimationFrame(window._fpsRaf);alert('时间到！最终得分:'+score+' 命中率:'+(shot?Math.round(hit/shot*100):0)+'%');}}
+    document.getElementById('fpsTimer').textContent=mode==='arena'?('⏱ '+timeLeft+'s'):'';
+    targets.forEach(t=>t.rotation.y+=0.02);
+    ren.render(scene,cam);
+  }
+  hud(); loop();
+}
+
 
 // 贪吃蛇
 function initSnake(area) {
