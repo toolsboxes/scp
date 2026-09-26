@@ -2653,15 +2653,18 @@ const Nuclear = {
       const shellMat = new THREE.MeshPhongMaterial({ color: 0x4a6a8a, transparent: true, opacity: 0.3, shininess: 100 });
       const shell = new THREE.Mesh(shellGeo, shellMat);
       this.threeReactor.add(shell);
+      this.threeShell = shell;
       const domeGeo = new THREE.SphereGeometry(4.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
       const dome = new THREE.Mesh(domeGeo, shellMat);
       dome.position.y = 4;
       this.threeReactor.add(dome);
+      this.threeDome = dome;
       const vesselGeo = new THREE.CylinderGeometry(2, 2, 5, 32);
       const vesselMat = new THREE.MeshPhongMaterial({ color: 0x8aaaca, shininess: 100 });
       const vessel = new THREE.Mesh(vesselGeo, vesselMat);
       vessel.position.y = -0.5;
       this.threeReactor.add(vessel);
+      this.threeVessel = vessel;
       const topGeo = new THREE.SphereGeometry(2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
       const top = new THREE.Mesh(topGeo, vesselMat);
       top.position.y = 2;
@@ -2798,8 +2801,8 @@ const Nuclear = {
         this.intRenderer.domElement.style.borderRadius = '4px';
         intContainer.appendChild(this.intRenderer.domElement);
         this.intCam = new THREE.PerspectiveCamera(60, iw / ih, 0.1, 50);
-        // 相机在压力容器内上部俯视堆芯（vessel y范围 -3~2）
-        this.intCam.position.set(0, 1.3, 0.5);
+        // 内部监控：斜上方俯视堆芯（容器内），可见红顶盖+控制棒+燃料
+        this.intCam.position.set(1.0, 1.9, 1.0);
         this.intCam.lookAt(0, -1, 0);
       }
       this.threeInited = true;
@@ -2869,7 +2872,11 @@ const Nuclear = {
   renderInternal() {
     if (!this.intRenderer || !this.intCam) return;
     this.intRenderer.setClearColor(0x050508);
+    // 隐藏外壳容器，只拍堆芯本身（消除灰色壁面波浪）
+    const h = [this.threeShell, this.threeDome, this.threeVessel];
+    h.forEach(m => { if (m) m.visible = false; });
     this.intRenderer.render(this.threeScene, this.intCam);
+    h.forEach(m => { if (m) m.visible = true; });
   },
 
   draw3D() {
