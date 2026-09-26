@@ -6422,14 +6422,11 @@ function fpsSetOptic(a){ window._fpsOptic=a; fpsRenderGunsmith(); }
 function fpsToggleAtt(a){ window._fpsAtt.has(a)?window._fpsAtt.delete(a):window._fpsAtt.add(a); fpsRenderGunsmith(); }
 function fpsShowGunsmith(){ document.getElementById('fpsGunsmith').style.display='block'; }
 function fpsFullscreen(){
-  const w=document.getElementById('fpsWrap');
-  if(!w||!w.requestFullscreen) return;
-  const enter=()=>{
-    w.style.width='100vw'; w.style.height='100vh'; w.style.background='#000';
-    setTimeout(()=>fpsResize(),100);
-  };
-  if(document.fullscreenElement===w){ document.exitFullscreen(); return; }
-  w.requestFullscreen().then(enter).catch(()=>{});
+  const el=document.documentElement;
+  if(document.fullscreenElement){ document.exitFullscreen(); return; }
+  (el.requestFullscreen||el.webkitRequestFullscreen).call(el).then(()=>{
+    setTimeout(()=>fpsResize(),200);
+  }).catch(()=>{});
 }
 function fpsResize(){
   if(!window._fpsCtx) return;
@@ -6449,7 +6446,8 @@ document.addEventListener('fullscreenchange',()=>{
 
 function fpsStart(mode) {
   document.getElementById('fpsGunsmith').style.display='none';
-  document.getElementById('fpsModeMenu').style.display='none';
+  document.getElementById('fpsLobby').style.display='none';
+  document.getElementById('fpsModeSelect').style.display='none';
   document.getElementById('fpsWrap').style.display='block';
   const W=880,H=520;
   const scene = new THREE.Scene(); scene.background=new THREE.Color(0x0a0f1e); scene.fog=new THREE.Fog(0x0a0f1e,12,70);
@@ -6536,26 +6534,28 @@ function fpsStart(mode) {
       s.userData.maxHp=100; s.userData.hp=100;
       return s;
     }
-    // 回退：简单几何体（带头盔+枪）
+    // 回退：几何体士兵（明显的头+头盔+枪+身体）
     const g=new THREE.Group();
-    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,1.1,10), new THREE.MeshStandardMaterial({color:clr}));
-    body.position.y=0.55; g.add(body);
-    const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10), new THREE.MeshStandardMaterial({color:0xffcc99}));
-    head.position.y=1.3; g.add(head);
-    const helmet=new THREE.Mesh(new THREE.SphereGeometry(0.19,12,10,0,Math.PI*2,0,Math.PI/2), new THREE.MeshStandardMaterial({color:0x333333}));
-    helmet.position.y=1.32; g.add(helmet);
-    // 手里的枪
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.28,1.0,8), new THREE.MeshStandardMaterial({color:clr}));
+    body.position.y=0.5; g.add(body);
+    const vest=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.4,0.25), new THREE.MeshStandardMaterial({color:0x222222}));
+    vest.position.y=0.7; g.add(vest);
+    const head=new THREE.Mesh(new THREE.SphereGeometry(0.16,10,8), new THREE.MeshStandardMaterial({color:0xffcc99}));
+    head.position.y=1.15; g.add(head);
+    const helmet=new THREE.Mesh(new THREE.SphereGeometry(0.17,10,8,0,Math.PI*2,0,Math.PI/2), new THREE.MeshStandardMaterial({color:0x1a1a2e}));
+    helmet.position.y=1.17; g.add(helmet);
+    // 明显的枪
     const gun=new THREE.Group();
-    const gunBody=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.08,0.5), new THREE.MeshStandardMaterial({color:0x222222}));
-    gun.add(gunBody);
-    const gunBarrel=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.3,6), new THREE.MeshStandardMaterial({color:0x111111}));
-    gunBarrel.rotation.x=Math.PI/2; gunBarrel.position.z=0.35; gun.add(gunBarrel);
-    gun.position.set(0.3,0.9,0.2); gun.rotation.y=-0.3; g.add(gun);
+    const gb=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.07,0.55), new THREE.MeshStandardMaterial({color:0x1a1a1a}));
+    gun.add(gb);
+    const gbar=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.35,6), new THREE.MeshStandardMaterial({color:0x0a0a0a}));
+    gbar.rotation.x=Math.PI/2; gbar.position.z=0.4; gun.add(gbar);
+    gun.position.set(0.25,0.75,0.15); gun.rotation.y=-0.4; g.add(gun);
     // 血条（Sprite）
     const hpCanvas=document.createElement('canvas'); hpCanvas.width=100; hpCanvas.height=10;
     const hpTex=new THREE.CanvasTexture(hpCanvas);
     const hpSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:hpTex,transparent:true}));
-    hpSprite.position.y=1.7; hpSprite.scale.set(1,0.1,1);
+    hpSprite.position.y=1.5; hpSprite.scale.set(0.8,0.08,1);
     g.add(hpSprite);
     g.userData.hpCanvas=hpCanvas; g.userData.hpTex=hpTex; g.userData.hpSprite=hpSprite;
     g.userData.maxHp=100;
