@@ -6357,7 +6357,7 @@ function initFPS(area) {
       <div id="fpsWrap" style="position:relative;display:none;border-radius:10px;overflow:hidden;background:#000;width:100%;height:520px;">
         <div id="fpsHud" style="position:absolute;top:8px;left:10px;color:#7fff9a;font-family:monospace;z-index:5;text-shadow:0 0 4px #000;">
           分数:<span id="fpsScore">0</span> &nbsp; 命中:<span id="fpsHit">0</span>/<span id="fpsShot">0</span>  &nbsp; 击杀:<span id="fpsKills">0</span><br>
-          ❤️ 血量:<div style="display:inline-block;width:100px;height:10px;background:#333;border-radius:5px;vertical-align:middle;"><div id="fpsHpBar" style="width:100%;height:100%;background:linear-gradient(90deg,#3f3,#ff0);border-radius:5px;transition:width .2s;"></div></div> <span id="fpsHp">100</span><br>
+          ❤️ 血量:<div style="display:inline-block;width:100px;height:10px;background:#333;border-radius:5px;vertical-align:middle;"><div id="fpsHpBar" style="width:100%;height:100%;background:linear-gradient(90deg,#3f3,#ff0);border-radius:5px;"></div></div> <span id="fpsHp">100</span><br>
           <span id="fpsTimer"></span>
         </div>
         <div id="fpsGunInfo" style="position:absolute;top:8px;right:10px;color:#ffd166;font-family:monospace;z-index:5;text-align:right;">
@@ -6381,7 +6381,7 @@ function initFPS(area) {
   window.fpsPickMode = function(m){
     window._fpsPickedMode = m;
     document.querySelectorAll('#fpsModeList button').forEach(b=>b.className='btn btn-secondary');
-    event.target.className='btn btn-success';
+    if(window.event&&window.event.target) window.event.target.className='btn btn-success';
   };
   window.fpsStartFromSelect = function(){
     const opp=document.querySelector('input[name=fpsOpp]:checked').value;
@@ -6633,6 +6633,7 @@ function fpsStart(mode) {
     scene.add(mate);
   }
 
+  let playerHp=100;
   let yaw=0,pitch=0,score=0,hit=0,shot=0,kills=0,ammo=FPS_GUNS[window._fpsGun].mag,reloading=false;
   let vy=0,onGround=true,crouch=0;
   const keys={};
@@ -6648,7 +6649,7 @@ function fpsStart(mode) {
     keys[e.key.toLowerCase()]=true;
     if(e.key===' '){ e.preventDefault(); if(onGround){ vy=window['_ch_高跳']?0.45:0.22; onGround=false; } }
     if(e.key>='1'&&e.key<='9'){const i=+e.key-1;if(FPS_GUNS[i]){window._fpsGun=i;ammo=FPS_GUNS[i].mag;rebuildGun();hud();}}
-    if(e.key.toLowerCase()==='r'){reloading=true;setTimeout(()=>{ammo=FPS_GUNS[window._fpsGun].mag;reloading=false;},FPS_GUNS[window._fpsGun].reload);}
+    if(e.key.toLowerCase()==='r'){reloading=true;setTimeout(()=>{ammo=FPS_GUNS[window._fpsGun].mag;reloading=false;hud();},FPS_GUNS[window._fpsGun].reload);}
   });
   document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
   let aiming=false;
@@ -6668,8 +6669,8 @@ function fpsStart(mode) {
     lastFire=now;
     if(!window['_ch_无限子弹']) ammo--;
     shot++;
-    // 后坐力
-    if(!window['_ch_无后坐力']){ gunGroup.position.y=-0.25; gunGroup.position.z=-0.4; setTimeout(()=>{gunGroup.position.y=-0.22;gunGroup.position.z=-0.45;},80); }
+    // 后坐力（开镜时减小）
+    if(!window['_ch_无后坐力']){ const kick=aiming?0.005:0.02; gunGroup.position.y=-0.22-kick; gunGroup.position.z=-0.45-kick; setTimeout(()=>{gunGroup.position.y=-0.22;gunGroup.position.z=-0.45;},60); }
     ray.setFromCamera(new THREE.Vector2(0,0),cam); ray.far=120;
     const hits=ray.intersectObjects(enemies,true);
     // 曳光弹特效
@@ -6703,7 +6704,6 @@ function fpsStart(mode) {
     }
     hud();
   }
-  let playerHp=100;
   function hud(){
     document.getElementById('fpsScore').textContent=score;
     document.getElementById('fpsHit').textContent=hit;
@@ -6722,20 +6722,26 @@ function fpsStart(mode) {
     if(keys['s'])cam.position.x+=Math.sin(yaw)*sp,cam.position.z+=Math.cos(yaw)*sp;
     if(keys['a'])cam.position.x-=Math.cos(yaw)*sp,cam.position.z+=Math.sin(yaw)*sp;
     if(keys['d'])cam.position.x+=Math.cos(yaw)*sp,cam.position.z-=Math.sin(yaw)*sp;
+    // 目标高度：站1.7 蹲0.9 趴0.5
+    let targetY = 1.7;
+    if(keys['c']) targetY = 0.5;
+    else if(keys['control']) targetY = 0.9;
     // 重力/跳
-    if(!onGround||vy>0){ cam.position.y+=vy; vy-=0.012; if(cam.position.y<=1.7){cam.position.y=1.7;vy=0;onGround=true;} }
-    if(keys['control']) cam.position.y=Math.max(0.9,cam.position.y);
-    if(keys['c']) cam.position.y=Math.max(0.5,cam.position.y);
+    if(!onGround||vy>0){ cam.position.y+=vy; vy-=0.012; if(cam.position.y<=targetY){cam.position.y=targetY;vy=0;onGround=true;} }
+    else { cam.position.y += (targetY - cam.position.y)*0.15; } // 平滑蹲趴
     if(window['_ch_飞天']) cam.position.y=Math.min(8,cam.position.y+0.05);
     if(window['_ch_遁地']) cam.position.y=Math.max(0.3,cam.position.y-0.05);
     if(firing) shoot();
+    // 换弹动画：枪往下垂
+    if(reloading){ gunGroup.position.y = -0.35; gunGroup.rotation.x = 0.5; }
+    else { gunGroup.position.y = -0.22; gunGroup.rotation.x = 0; }
     // 敌人朝玩家移动
     enemies.forEach(e=>{
       e.rotation.y = Math.atan2(cam.position.x-e.position.x, cam.position.z-e.position.z);
       const dx=cam.position.x-e.position.x, dz=cam.position.z-e.position.z;
       const dist=Math.sqrt(dx*dx+dz*dz);
       if(dist>3){ e.position.x+=dx/dist*0.03; e.position.z+=dz/dist*0.03; }
-      else if(!window['_ch_无敌'] && dist<3 && !e.userData.dead){ playerHp-=0.15; if(playerHp<=0){ playerHp=100; cam.position.set(0,1.7,0); } }
+      else if(!window['_ch_无敌'] && dist<2 && !e.userData.dead){ playerHp-=0.05; if(playerHp<=0){ playerHp=100; cam.position.set(0,1.7,0); } }
       e.position.y = Math.abs(Math.sin(Date.now()*0.003+e.position.x))*0.05; // 走路起伏
     });
     ren.render(scene,cam);
@@ -7948,15 +7954,7 @@ function applyForcedLandscape() {
   // 尝试让系统真正锁横屏（成功后视口变宽，页面像电脑一样）
   try {
     if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(function () {
-        try {
-          if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().then(function () {
-              screen.orientation.lock('landscape').catch(function () {});
-            }).catch(function () {});
-          }
-        } catch (e2) {}
-      });
+      screen.orientation.lock('landscape').catch(function () {});
     }
   } catch (e) {}
 }applyForcedLandscape();
