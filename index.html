@@ -2798,9 +2798,9 @@ const Nuclear = {
         this.intRenderer.domElement.style.borderRadius = '4px';
         intContainer.appendChild(this.intRenderer.domElement);
         this.intCam = new THREE.PerspectiveCamera(60, iw / ih, 0.1, 50);
-        // 相机置于压力容器内部斜看堆芯：可看到燃料块+控制棒底部+容器内壁
-        this.intCam.position.set(0, 1.6, 2.0);
-        this.intCam.lookAt(0, -0.2, 0);
+        // 相机斜上方俯视堆芯：可见红色顶盖、燃料棒、控制棒
+        this.intCam.position.set(0.2, 3.4, 2.2);
+        this.intCam.lookAt(0, -0.7, 0);
       }
       this.threeInited = true;
       this.animateThreeJS();
@@ -4243,6 +4243,15 @@ const Nuclear = {
   // 触发事故
   triggerAccident(type) {
     this.accidentType = type;
+    // 弹棒事故：立即同步设置控制棒飞出动画（不依赖 tick）
+    if (type === 'rod_ejection' && this.threeRods && this.threeRods.length) {
+      this.threeRods.forEach((rod) => {
+        rod.userData.ejectVy = 0.14 + Math.random() * 0.1;
+        rod.userData.ejectVx = (Math.random() - 0.5) * 0.06;
+        rod.userData.ejectVz = (Math.random() - 0.5) * 0.06;
+      });
+      this.addLog('事故', '控制棒高速弹出堆顶！');
+    }
     const accidents = {
       steam_explosion: '蒸汽管道破裂！蒸汽爆炸模拟已启动',
       coolant_loss: '冷却剂流失事故（LOCA）已启动！',
