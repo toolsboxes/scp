@@ -6468,6 +6468,12 @@ function fpsStart(mode) {
   window._fpsCtx={ren,cam,scene};
   scene.add(new THREE.AmbientLight(0x8899bb,0.8));
   const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(10,20,10); scene.add(sun);
+  // 天空渐变
+  scene.background=new THREE.Color(0x0a1028);
+  scene.fog=new THREE.Fog(0x0a1028,15,80);
+  // 月亮
+  const moon=new THREE.Mesh(new THREE.SphereGeometry(3,16,12), new THREE.MeshBasicMaterial({color:0xeeeecc}));
+  moon.position.set(-30,40,-50); scene.add(moon);
   // 手持枪模型（挂相机）— 每把枪不同形状
   const gunGroup = new THREE.Group();
   window._fpsGunGroup = gunGroup;
