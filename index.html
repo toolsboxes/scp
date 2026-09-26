@@ -6302,13 +6302,19 @@ function initFPS(area) {
   window._fpsAtt = window._fpsAtt || new Set([]);
   window._fpsOptic = window._fpsOptic || '红点镜';
   fpsRenderGunsmith();
-  // 外挂悬浮窗（仅管理员解锁后可见）
+  // 外挂悬浮窗（仅管理员解锁后可见，可收起展开）
   if (window._fpsCheatUnlocked && !document.getElementById('fpsCheatPanel')) {
     const cp = document.createElement('div');
     cp.id = 'fpsCheatPanel';
-    cp.style.cssText = 'position:fixed;top:60px;right:10px;z-index:9999;background:rgba(20,0,30,.92);border:1px solid #f0f;border-radius:10px;padding:10px;font-size:12px;color:#fff;width:150px;';
-    cp.innerHTML = '<b style="color:#f0f;">👑 外挂菜单</b><div id="fpsCheatBody" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;"></div>';
+    cp.style.cssText = 'position:fixed;top:60px;right:10px;z-index:9999;background:rgba(20,0,30,.92);border:1px solid #f0f;border-radius:10px;padding:10px;font-size:12px;color:#fff;width:160px;';
+    cp.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#f0f;">👑 外挂菜单</b><button id="fpsCheatToggle" style="background:none;border:none;color:#f0f;cursor:pointer;font-size:14px;">—</button></div><div id="fpsCheatBody" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;"></div>';
     document.body.appendChild(cp);
+    cp.querySelector('#fpsCheatToggle').onclick=()=>{
+      const body=cp.querySelector('#fpsCheatBody');
+      const t=cp.querySelector('#fpsCheatToggle');
+      if(body.style.display==='none'){body.style.display='flex';t.textContent='—';}
+      else{body.style.display='none';t.textContent='+';}
+    };
     const cheats = ['无敌','飞天','遁地','加速','高跳','无限子弹','无后坐力'];
     cheats.forEach(c=>{
       const b=document.createElement('button');
@@ -6339,19 +6345,28 @@ function fpsShowGunsmith(){ document.getElementById('fpsGunsmith').style.display
 function fpsFullscreen(){
   const w=document.getElementById('fpsWrap');
   if(!w||!w.requestFullscreen) return;
-  w.requestFullscreen().then(()=>{
+  const enter=()=>{
+    w.style.width='100vw'; w.style.height='100vh'; w.style.background='#000';
     setTimeout(()=>fpsResize(),100);
-  }).catch(()=>{});
+  };
+  if(document.fullscreenElement===w){ document.exitFullscreen(); return; }
+  w.requestFullscreen().then(enter).catch(()=>{});
 }
 function fpsResize(){
   if(!window._fpsCtx) return;
   const {ren,cam}=window._fpsCtx;
-  const w=document.getElementById('fpsWrap');
-  const iw=w.clientWidth||window.innerWidth, ih=w.clientHeight||window.innerHeight;
+  const iw=window.innerWidth, ih=window.innerHeight;
   ren.setSize(iw, ih, false);
-  cam.aspect = iw/ih;
-  cam.updateProjectionMatrix();
+  if(cam){ cam.aspect = iw/ih; cam.updateProjectionMatrix(); }
 }
+document.addEventListener('fullscreenchange',()=>{
+  if(document.fullscreenElement){ fpsResize(); }
+  else {
+    const w=document.getElementById('fpsWrap');
+    if(w){ w.style.width=''; w.style.height=''; }
+    if(window._fpsCtx){ const {ren,cam}=window._fpsCtx; ren.setSize(880,520,false); cam.aspect=880/520; cam.updateProjectionMatrix(); }
+  }
+});
 
 function fpsStart(mode) {
   document.getElementById('fpsGunsmith').style.display='none';
@@ -6363,7 +6378,8 @@ function fpsStart(mode) {
   const ren = new THREE.WebGLRenderer({antialias:true});
   cam.aspect = W/H;
   ren.setSize(W,H,false);
-  ren.domElement.style.width='100%'; ren.domElement.style.height='520px'; ren.domElement.style.display='block';
+  ren.domElement.style.width='100%'; ren.domElement.style.height='100%'; ren.domElement.style.display='block';
+  ren.domElement.style.position='absolute'; ren.domElement.style.top='0'; ren.domElement.style.left='0';
   document.getElementById('fpsWrap').prepend(ren.domElement);
   window._fpsCtx={ren,cam,scene};
   scene.add(new THREE.AmbientLight(0x8899bb,0.8));
@@ -6400,6 +6416,16 @@ function fpsStart(mode) {
     scene.add(g); enemies.push(g);
   }
   for(let i=0;i<6;i++) spawnEnemy();
+  // 队友（绿色人形，站在玩家附近）
+  for(let i=0;i<3;i++){
+    const mate=new THREE.Group();
+    const mb=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,1.1,10), new THREE.MeshStandardMaterial({color:0x33cc55}));
+    mb.position.y=0.55; mate.add(mb);
+    const mh=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10), new THREE.MeshStandardMaterial({color:0xffcc99}));
+    mh.position.y=1.3; mate.add(mh);
+    mate.position.set((Math.random()-0.5)*5,0,5+Math.random()*5);
+    scene.add(mate);
+  }
 
   let yaw=0,pitch=0,score=0,hit=0,shot=0,kills=0,ammo=FPS_GUNS[window._fpsGun].mag,reloading=false;
   let vy=0,onGround=true,crouch=0;
@@ -6437,7 +6463,12 @@ function fpsStart(mode) {
     if(!window['_ch_无限子弹']) ammo--;
     shot++;
     ray.setFromCamera(new THREE.Vector2(0,0),cam); ray.far=120;
-    ray.far=120;
+    // 曳光弹特效
+    const endPoint = hits.length ? hits[0].point.clone() : new THREE.Vector2(0,0).unproject(cam).multiplyScalar(100);
+    const lineGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,-0.5).applyMatrix4(cam.matrixWorld), endPoint]);
+    const line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({color:0xffee44,transparent:true,opacity:0.9}));
+    scene.add(line);
+    setTimeout(()=>scene.remove(line),80);
     const hits=ray.intersectObjects(enemies,true);
     if(hits.length){
       const obj=hits[0].object;
@@ -6474,19 +6505,28 @@ function fpsStart(mode) {
     if(window['_ch_飞天']) cam.position.y=Math.min(8,cam.position.y+0.05);
     if(window['_ch_遁地']) cam.position.y=Math.max(0.3,cam.position.y-0.05);
     if(firing) shoot();
-    enemies.forEach(e=>{ e.rotation.y=yaw; });
+    // 敌人朝玩家移动
+    enemies.forEach(e=>{
+      e.rotation.y = Math.atan2(cam.position.x-e.position.x, cam.position.z-e.position.z);
+      const dx=cam.position.x-e.position.x, dz=cam.position.z-e.position.z;
+      const dist=Math.sqrt(dx*dx+dz*dz);
+      if(dist>3){ e.position.x+=dx/dist*0.03; e.position.z+=dz/dist*0.03; }
+      e.position.y = Math.abs(Math.sin(Date.now()*0.003+e.position.x))*0.05; // 走路起伏
+    });
     ren.render(scene,cam);
   }
   hud(); loop();
 }
 
-// 管理员界面连按5下B解锁外挂菜单
+// 管理面板输完密码后连按5下B解锁外挂菜单
 let _bCount=0,_bTimer=null;
 document.addEventListener('keydown',e=>{
+  const panel=document.getElementById('adminPanel');
+  if(!panel || panel.style.display!=='block') return; // 只有管理面板激活时才计数
   if((e.key==='b'||e.key==='B')){
     _bCount++; clearTimeout(_bTimer);
     _bTimer=setTimeout(()=>_bCount=0,1500);
-    if(_bCount>=5){ window._fpsCheatUnlocked=true; _bCount=0; if(typeof toast==='function')toast('🔓 外挂菜单已解锁'); }
+    if(_bCount>=5){ window._fpsCheatUnlocked=true; _bCount=0; if(typeof toast==='function')toast('🔓 外挂菜单已解锁，进入小游戏即可看到'); }
   }
 });
 
@@ -7453,7 +7493,7 @@ function initChess(area) {
 }
 
 function initGo(area) {
-  area.innerHTML = '<div class="score-display" id="goStatus">你是黑棋，AI是白棋（猜先中...）</div><canvas id="goCanvas" width="450" height="450"></canvas>';
+  area.innerHTML = '<div class="score-display" id="goStatus">你是黑棋，AI是白棋（猜先中...）</div><canvas id="goCanvas" width="450" height="450"></canvas><div style="text-align:center;margin-top:8px;"><button class="btn btn-warning" id="goPassBtn">⏭️ 无棋可下，跳过一手</button></div>';
   const canvas = document.getElementById('goCanvas');
   const ctx = canvas.getContext('2d');
   const SIZE = 9, CELL = 50, OFFSET = 25;
@@ -7608,6 +7648,14 @@ function initGo(area) {
       setTimeout(() => aiMove(), 500);
     }
     canvas.onclick = normalClick;
+  };
+
+  // 无棋可下跳过一手按钮
+  document.getElementById('goPassBtn').onclick = () => {
+    if (gameOver || currentPlayer !== HUMAN) return;
+    currentPlayer = AI;
+    document.getElementById('goStatus').textContent = '你跳过了一手，轮到AI';
+    setTimeout(() => aiMove(), 400);
   };
 
   draw();
