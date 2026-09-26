@@ -2460,9 +2460,9 @@ const Nuclear = {
         // 3D 弹棒特效：控制棒高速飞向堆顶并带偏移
         if (this.threeRods && this.threeRods.length) {
           this.threeRods.forEach((rod) => {
-            rod.userData.ejectVy = 0.5 + Math.random() * 0.6;
-            rod.userData.ejectVx = (Math.random() - 0.5) * 0.1;
-            rod.userData.ejectVz = (Math.random() - 0.5) * 0.1;
+            rod.userData.ejectVy = 0.16 + Math.random() * 0.1;
+            rod.userData.ejectVx = (Math.random() - 0.5) * 0.06;
+            rod.userData.ejectVz = (Math.random() - 0.5) * 0.06;
           });
         }
       },
@@ -2831,8 +2831,8 @@ const Nuclear = {
         rod.position.y += rod.userData.ejectVy;
         rod.position.x += (rod.userData.ejectVx || 0);
         rod.position.z += (rod.userData.ejectVz || 0);
-        rod.userData.ejectVy *= 1.02;
-        if (rod.position.y > 20) {
+        rod.userData.ejectVy *= 0.985;
+        if (rod.position.y > 8) {
           rod.userData.ejectVy = 0; rod.userData.ejectVx = 0; rod.userData.ejectVz = 0;
           const angle = (i / this.threeRods.length) * Math.PI * 2;
           rod.position.set(Math.cos(angle) * 1.2, 1 - rodHeight, Math.sin(angle) * 1.2);
@@ -4542,36 +4542,41 @@ const Nuclear = {
     this.termOut.scrollTop = this.termOut.scrollHeight;
   },
   termHelp() {
-    return [
-      '—— 启动/停堆 ——',
-      '  start         一键开堆',
-      '  stop          正常停堆',
-      '  az5           紧急停堆(AZ5)',
-      '  reset         重置反应堆',
-      '—— 功率/控制 ——',
-      '  rod <0-100>   控制棒插入深度(%)',
-      '  boron <n>     硼化 +n ppm',
-      '  dilute <n>    稀释 -n ppm',
-      '  groda/grob/groc/grod  切换控制棒组A/B/C/D',
-      '—— 系统开关 ——',
-      '  pressurizer   稳压器加热器',
-      '  spray         稳压器喷淋',
-      '  si            安全注入',
-      '  cspray        安全壳喷淋',
-      '  diesel        应急柴油机',
-      '  rhr           余热排出',
-      '  ccw           设备冷却水',
-      '  cvs           化容系统',
-      '—— 超级控制(30项) ——',
-      '  sys <name>    切换系统，如 sys coolantPumpA',
-      '  sys help      列出所有系统名',
-      '—— 事故 ——',
-      '  accident <type>  steam|loss|blackout|eject|quake|tsunami',
-      '—— 其他 ——',
-      '  status        当前运行参数',
-      '  log <msg>     写一条日志',
-      '  clear         清空终端与日志'
+    const lines = [
+      '',
+      '【开堆 / 停堆】',
+      '  start          开堆 → 用法: start，作用: 一键启动反应堆',
+      '  stop           停堆 → 用法: stop，作用: 正常停堆降温',
+      '  az5            急停 → 用法: az5，作用: 紧急停堆(AZ5 应急停机)',
+      '  reset          重置 → 用法: reset，作用: 把反应堆恢复初始状态',
+      '【功率 / 控制】',
+      '  rod            控制棒 → 用法: rod 0~100，作用: 设定控制棒插入深度，100=全插(压功率)',
+      '  boron          硼化 → 用法: boron 10，作用: 注入硼液增加硼浓度(压功率)',
+      '  dilute         稀释 → 用法: dilute 10，作用: 降低硼浓度(提功率)',
+      '  groda/grob/groc/grod  控制棒组 → 作用: 切换 A/B/C/D 组控制棒',
+      '【系统开关】',
+      '  pressurizer    稳压器 → 作用: 开/关稳压器加热器(控压力)',
+      '  spray          喷淋 → 作用: 开/关稳压器喷淋(降压)',
+      '  si             安注 → 作用: 开/关安全注入系统(冷却堆芯)',
+      '  cspray         壳喷淋 → 作用: 开/关安全壳喷淋',
+      '  diesel         柴油机 → 作用: 开/关应急柴油发电机',
+      '  rhr            余热 → 作用: 开/关余热排出系统',
+      '  ccw            设备冷 → 作用: 开/关设备冷却水系统',
+      '  cvs            化容 → 作用: 开/关化学容积控制系统',
+      '【超级控制(30项)】',
+      '  sys            系统 → 用法: sys 系统名，作用: 切换任一项超级控制',
+      '  sys help       系统名单 → 作用: 列出全部 30 项系统名',
+      '【事故】',
+      '  accident       事故 → 用法: accident 事故名，作用: 触发指定事故',
+      '  事故名可选: steam(蒸汽爆炸) loss(冷却剂丧失) blackout(断电) eject(弹棒) quake(地震) tsunami(海啸)',
+      '【其他】',
+      '  status         状态 → 作用: 显示当前所有运行参数',
+      '  log            日志 → 用法: log 想写的话，作用: 记一条操作日志',
+      '  clear          清屏 → 作用: 清空终端和日志',
+      '  version        版本 → 作用: 显示终端版本',
+      ''
     ].join('\n');
+    return lines;
   },
   termCommand(line) {
     const parts = line.split(/\s+/);
