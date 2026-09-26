@@ -6604,17 +6604,22 @@ function fpsStart(mode) {
     const MODEL_URLS = [
       'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
       'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb',
-      'https://threejs.org/examples/models/gltf/Soldier.glb'
+      'https://threejs.org/examples/models/gltf/Soldier.glb',
+      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb',
+      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/RobotExpressive/RobotExpressive.glb'
     ];
     let mi=0;
     function tryLoadModel(){
       if(mi>=MODEL_URLS.length){ console.warn('所有模型CDN都失败,用几何体'); return; }
       console.log('尝试加载模型:',MODEL_URLS[mi]);
       new GLTFLoader().load(MODEL_URLS[mi], gltf=>{
-        console.log('✅ Soldier模型加载成功! 来源:',MODEL_URLS[mi]);
+        console.log('✅ GLB模型加载成功! 来源:',MODEL_URLS[mi]);
         soldierModel=gltf;
+        // 清除几何体敌人，用GLB重建
         enemies.forEach(e=>scene.remove(e)); enemies.length=0;
-        for(let i=0;i<6;i++) spawnEnemy();
+        for(let i=0;i<8;i++) spawnEnemy();
+        // 重建队友
+        document.querySelectorAll('.fps-mate').forEach(m=>scene.remove(m));
       }, undefined, err=>{ mi++; tryLoadModel(); });
     }
     tryLoadModel();
@@ -6669,8 +6674,8 @@ function fpsStart(mode) {
     lastFire=now;
     if(!window['_ch_无限子弹']) ammo--;
     shot++;
-    // 后坐力（开镜时减小）
-    if(!window['_ch_无后坐力']){ const kick=aiming?0.005:0.02; gunGroup.position.y=-0.22-kick; gunGroup.position.z=-0.45-kick; setTimeout(()=>{gunGroup.position.y=-0.22;gunGroup.position.z=-0.45;},60); }
+    // 后坐力（开镜时完全取消）
+    if(!window['_ch_无后坐力'] && !aiming){ const kick=0.02; gunGroup.position.y=-0.22-kick; gunGroup.position.z=-0.45-kick; setTimeout(()=>{gunGroup.position.y=-0.22;gunGroup.position.z=-0.45;},60); }
     ray.setFromCamera(new THREE.Vector2(0,0),cam); ray.far=120;
     const hits=ray.intersectObjects(enemies,true);
     // 曳光弹特效
