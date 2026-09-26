@@ -6,6 +6,8 @@
 <title>ToolBox - 工具箱</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>if(!window.GLTFLoader)document.write('<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script>');</script>
+<script>if(!window.GLTFLoader)document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/examples/js/loaders/GLTFLoader.js"><\/script>');</script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -6604,9 +6606,10 @@ function fpsStart(mode) {
     const MODEL_URLS = [
       'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
       'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb',
+      'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
+      'https://cdn.statically.io/gh/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
       'https://threejs.org/examples/models/gltf/Soldier.glb',
-      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb',
-      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/RobotExpressive/RobotExpressive.glb'
+      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb'
     ];
     let mi=0;
     function tryLoadModel(){
