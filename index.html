@@ -881,6 +881,15 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         </div>
       </div>
 
+      <!-- 反应堆内部 3D 监控（堆芯内部视角，可见控制棒/燃料） -->
+      <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:12px;">
+        <h3 style="margin-bottom:10px;font-size:15px;">🔬 反应堆内部监控（堆芯上方俯视）</h3>
+        <div style="background:#000;border-radius:8px;padding:6px;position:relative;">
+          <canvas id="internal3D" width="480" height="300" style="width:100%;height:auto;border-radius:4px;display:block;"></canvas>
+          <div style="position:absolute;top:6px;left:8px;font-size:11px;color:#3f3;text-shadow:0 0 3px #000;">● 堆芯燃料 + 控制棒底部</div>
+        </div>
+      </div>
+
       <!-- 系统流程图 + 性能曲线 -->
       <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <!-- 一回路系统流程图 -->
@@ -1758,24 +1767,44 @@ function spinWheel() {
 }
 
 // AI 绘画（Pollinations 免费生图，无密钥）
-// AI 绘画内容审核：命中不良词直接拦截，不提交生成
-var AIPAINTSAFE_WORDS = [
+// AI 绘画内容审核：命中不良词直接拦截，不提交生成（中英文 + 拼写变形屏蔽）
+var AIPAINTSAFE_WORDS_ZH = [
   // 色情低俗
-  '裸体','裸露','裸照','色情','裸女','裸男','乳','屁股','下体','sex','nude','naked','porn','nsfw','boobs','breast','penis','vagina',
+  '裸体','裸露','裸照','色情','裸女','裸男','乳','屁股','下体','强奸','轮奸','性交','性爱','卖淫','淫荡','淫乱','幼女','儿童色情','鸡奸','自慰',
   // 暴力血腥
-  '血腥','暴力','杀人','虐杀','砍头','血溅','gore','bloody','kill','murder','dead body','blood',
+  '血腥','暴力','杀人','虐杀','砍头','血溅','分尸','肢解','碎尸','惨死',
   // 武器与危险
-  '枪支','炸弹','爆炸物','武器','枪','炸药','ak47','gun','bomb','weapon','explosive','rifle','pistol',
-  // 违禁与政治敏感
-  '毒品','大麻','摇头丸','海洛因','冰毒','吸毒','drug','cocaine','heroin','meth','weed','marijuana',
-  // 隐私/恶意
-  '血腥图片','恐怖袭击','自杀','自残','suicide'
+  '枪支','炸弹','爆炸物','武器','枪','炸药','毒品','大麻','摇头丸','海洛因','冰毒','吸毒','血腥图片','恐怖袭击','自杀','自残','屠杀','绞刑','活埋'
 ];
+var AIPAINTSAFE_WORDS_EN = [
+  // 色情低俗
+  'sex','sexy','sexual','nude','naked','nudity','porn','pornographic','nsfw','boobs','breast','nipple','penis','dick','cock','pussy','vagina','anal','blowjob','ejaculat','masturbat','erotic','xxx','fuck','fuxk','fuk','whore','bitch','slut','hoe','nasty','rape','raped','molest','pedo','childporn','cunnilingus','felatio','handjob','incest','bondage','fetish',
+  // 暴力血腥
+  'gore','bloody','blood','bloodshed','kill','killer','killed','killing','murder','murdered','massacre','slaughter','decapitat','behead','tortur','stab','stabbing','shoot','shooting','gunshot','assault','corpse','deadbody','slasher','chainsaw','guillotine','lynch',
+  // 武器与危险
+  'weapon','pistol','rifle','shotgun','machinegun','ak47','ak-47','grenade','bomb','explosive','dynamite','nuke','nuclearweapon','knife','dagger','sword','revolver','uzi','sniper','shooter','cannon','tnt',
+  // 违禁与政治敏感
+  'drug','drugs','cocaine','heroin','meth','methamphetamine','crystal','marijuana','cannabis','opium','ecstasy','crack','lsd','fentanyl','narcotic','suicide','suicidal','selfharm','terrorist','terrorism','isis','nazi','hitler','swastika','holocaust'
+];
+// 归一化：屏蔽 l33t 数字替换、大小写、各种分隔符（空格/符号/下划线）
+function aiPaintNorm(s) {
+  return (s || '').toLowerCase()
+    .replace(/0/g, 'o').replace(/1/g, 'i').replace(/3/g, 'e').replace(/4/g, 'a')
+    .replace(/5/g, 's').replace(/7/g, 't').replace(/\$/g, 's').replace(/@/g, 'a')
+    .replace(/8/g, 'b').replace(/2/g, 'z').replace(/9/g, 'g').replace(/6/g, 'b')
+    .replace(/[^a-z0-9]/g, '');
+}
 function aiPaintCheck(text) {
   const lower = (text || '').toLowerCase();
-  for (let i = 0; i < AIPAINTSAFE_WORDS.length; i++) {
-    if (lower.indexOf(AIPAINTSAFE_WORDS[i]) !== -1) {
-      return AIPAINTSAFE_WORDS[i];
+  for (let i = 0; i < AIPAINTSAFE_WORDS_ZH.length; i++) {
+    if (lower.indexOf(AIPAINTSAFE_WORDS_ZH[i]) !== -1) {
+      return AIPAINTSAFE_WORDS_ZH[i];
+    }
+  }
+  const en = aiPaintNorm(lower);
+  for (let i = 0; i < AIPAINTSAFE_WORDS_EN.length; i++) {
+    if (en.indexOf(AIPAINTSAFE_WORDS_EN[i]) !== -1) {
+      return AIPAINTSAFE_WORDS_EN[i];
     }
   }
   return null;
@@ -2585,7 +2614,7 @@ const Nuclear = {
       this.threeCamera.position.set(8, 6, 8);
       this.threeCamera.lookAt(0, 0, 0);
       this.threeRenderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-      this.threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      this.threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.2));
       this.threeRenderer.setSize(container.clientWidth, 350);
       this.threeRenderer.shadowMap.enabled = false;
       container.appendChild(this.threeRenderer.domElement);
@@ -2681,8 +2710,8 @@ const Nuclear = {
       // 四方向安全监控（独立renderer，共享场景）
       const monCanvas = document.getElementById('monitor3D');
       if (monCanvas) {
-        this.monRenderer = new THREE.WebGLRenderer({ canvas: monCanvas, antialias: true });
-        this.monRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.2));
+        this.monRenderer = new THREE.WebGLRenderer({ canvas: monCanvas, antialias: false });
+        this.monRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
         this.monCams = [];
         const d = 11, h = 2.5;
         // 顺序对应 CAM-1前 / CAM-2右 / CAM-3左 / CAM-4后
@@ -2694,6 +2723,15 @@ const Nuclear = {
           this.monCams.push(c);
         });
       }
+      // 反应堆内部监控：相机置于堆芯上方，俯视燃料与控制棒底部
+      const intCanvas = document.getElementById('internal3D');
+      if (intCanvas) {
+        this.intRenderer = new THREE.WebGLRenderer({ canvas: intCanvas, antialias: false });
+        this.intRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+        this.intCam = new THREE.PerspectiveCamera(60, 480 / 300, 0.1, 50);
+        this.intCam.position.set(0, 3.2, 0);
+        this.intCam.lookAt(0, -1, 0);
+      }
       this.threeInited = true;
       this.animateThreeJS();
     } catch(e) { console.log('ThreeJS init failed:', e); }
@@ -2702,8 +2740,9 @@ const Nuclear = {
   animateThreeJS() {
     if (!this.threeInited) return;
     requestAnimationFrame(() => this.animateThreeJS());
-    // 核电站页不可见时跳过3D渲染，省CPU
+    // 核电站页不可见时跳过3D渲染，省CPU/GPU
     if (!document.getElementById('page-nuclear').classList.contains('active')) return;
+    this.frameCount = (this.frameCount || 0) + 1;
     if (this.threeAutoRotate) this.threeRotation += 0.005;
     this.threeReactor.rotation.y = this.threeRotation;
     const dist = this.threeCamera.position.length();
@@ -2727,9 +2766,11 @@ const Nuclear = {
       }
     });
     // 更新3D爆炸粒子
+    let hasBoom = false;
     if (this.boomMeshes) {
       this.boomMeshes.forEach((m) => {
         if (!m.visible) return;
+        hasBoom = true;
         const u = m.userData;
         m.position.x += u.vx*0.1; m.position.y += u.vy*0.1; m.position.z += u.vz*0.1;
         u.vy -= 0.12; u.life -= 0.018;
@@ -2738,8 +2779,21 @@ const Nuclear = {
         if (u.life <= 0) m.visible = false;
       });
     }
-    this.threeRenderer.render(this.threeScene, this.threeCamera);
-    this.renderMonitors();
+    // 主渲染：爆炸/交互时每帧，平时每2帧一次（约30fps），降占用
+    if (hasBoom || this.frameCount % 2 === 0) {
+      this.threeRenderer.render(this.threeScene, this.threeCamera);
+    }
+    // 四方向监控：每3帧一次（约20fps），大幅降占用
+    if (this.frameCount % 3 === 0) this.renderMonitors();
+    // 内部监控：每4帧一次（约15fps），保持流畅又省资源
+    if (this.frameCount % 4 === 0) this.renderInternal();
+  },
+
+  // 反应堆内部监控渲染（堆芯上方俯视）
+  renderInternal() {
+    if (!this.intRenderer || !this.intCam) return;
+    this.intRenderer.setClearColor(0x050508);
+    this.intRenderer.render(this.threeScene, this.intCam);
   },
 
   draw3D() {
