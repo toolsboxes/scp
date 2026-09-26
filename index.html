@@ -5715,17 +5715,52 @@ async function loadEchoes() {
       // 判断是否可以删除：管理员可以删任何，普通用户可以删自己的
       const canDelete = currentUser && (currentUser.isAdmin || currentUser.username === e.username);
       const deleteBtn = canDelete ? '<button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;" onclick="deleteEcho(' + e.id + ')">🗑️ 删除</button>' : '';
+      const replyBtn = currentUser ? '<button type="button" class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;margin-left:6px;" onclick="toggleReply(' + e.id + ')">💬 回复</button>' : '';
       return '<div class="echo-item">' +
-        '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span>' + deleteBtn + '</div>' +
+        '<div class="meta"><span>👤 ' + escapeHtml(e.username || '匿名') + '</span><span>' + escapeHtml(e.time || '') + '</span>' + deleteBtn + replyBtn + '</div>' +
         '<div>' + escapeHtml(e.text || '') + '</div>' +
         (img ? '<img src="' + img + '" alt="图片" style="max-width:100%;border-radius:8px;margin-top:8px;">' : '') +
         (vid ? '<video src="' + vid + '" controls style="max-width:100%;border-radius:8px;margin-top:8px;"></video>' : '') +
         (fil ? '<div style="margin-top:8px;"><a href="' + fil + '" download="' + escapeHtml(fname || '文件') + '" style="color:var(--cyan);">📎 ' + escapeHtml(fname || '下载文件') + '</a></div>' : '') +
+        '<div id="replyBox' + e.id + '" style="display:none;margin-top:10px;padding:8px;background:rgba(0,0,0,.2);border-radius:8px;">' +
+          '<input type="text" id="replyInput' + e.id + '" placeholder="回复 ' + escapeHtml(e.username || '') + '..." style="width:70%;padding:6px;border-radius:6px;border:1px solid #444;background:#222;color:#fff;">' +
+          '<button class="btn btn-primary btn-sm" style="margin-left:6px;padding:6px 12px;" onclick="submitReply(' + e.id + ')">发送</button>' +
+        '</div>' +
+        '<div id="replyList' + e.id + '" style="margin-top:8px;padding-left:12px;border-left:2px solid #444;"></div>' +
       '</div>';
     }).join('');
+    // 加载回复
+    data.forEach(async e=>{
+      const { data: replies } = await sb.from('echoes').select('*').eq('parent_id', e.id).eq('status','approved').order('id',{ascending:true});
+      const box=document.getElementById('replyList'+e.id);
+      if(box && replies && replies.length){
+        box.innerHTML=replies.map(r=>'<div style="font-size:13px;padding:4px 0;color:#ccc;">↳ <b style="color:var(--cyan);">'+escapeHtml(r.username||'匿名')+'</b>: '+escapeHtml(r.text||'')+'</div>').join('');
+      }
+    });
   } catch (e) {
     console.warn('loadEchoes error:', e);
   }
+}
+function toggleReply(id){
+  const box=document.getElementById('replyBox'+id);
+  if(box) box.style.display = box.style.display==='none'?'block':'none';
+}
+async function submitReply(parentId){
+  const inp=document.getElementById('replyInput'+parentId);
+  const text=inp.value.trim();
+  if(!text){ toast('回复内容不能为空','error'); return; }
+  if(!currentUser){ toast('请先登录','error'); return; }
+  try{
+    await sb.from('echoes').insert([{
+      username: currentUser.username,
+      text: text,
+      parent_id: parentId,
+      status: 'approved',
+      time: new Date().toLocaleString()
+    }]);
+    toast('回复成功');
+    loadEchoes();
+  }catch(e){ console.warn(e); }
 }
 
 // AI 敏感词审核
@@ -6285,7 +6320,7 @@ function initFPS(area) {
         <div style="color:#888;font-size:12px;margin-bottom:6px;">其他配件（可叠加）：</div>
         <div id="fpsAttList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
       </div>
-      <div id="fpsWrap" style="position:relative;display:none;border-radius:10px;overflow:hidden;background:#000;height:520px;">
+      <div id="fpsWrap" style="position:relative;display:none;border-radius:10px;overflow:hidden;background:#000;width:100%;height:520px;">
         <div id="fpsHud" style="position:absolute;top:8px;left:10px;color:#7fff9a;font-family:monospace;z-index:5;text-shadow:0 0 4px #000;">
           分数:<span id="fpsScore">0</span> &nbsp; 命中:<span id="fpsHit">0</span>/<span id="fpsShot">0</span>  &nbsp; 击杀:<span id="fpsKills">0</span><br>
           <span id="fpsTimer"></span>
@@ -6413,12 +6448,29 @@ function fpsStart(mode) {
       s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.setHex(clr); } });
       return s;
     }
-    // 回退：简单几何体
+    // 回退：简单几何体（带头盔+枪）
     const g=new THREE.Group();
     const body=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,1.1,10), new THREE.MeshStandardMaterial({color:clr}));
     body.position.y=0.55; g.add(body);
     const head=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,10), new THREE.MeshStandardMaterial({color:0xffcc99}));
     head.position.y=1.3; g.add(head);
+    const helmet=new THREE.Mesh(new THREE.SphereGeometry(0.19,12,10,0,Math.PI*2,0,Math.PI/2), new THREE.MeshStandardMaterial({color:0x333333}));
+    helmet.position.y=1.32; g.add(helmet);
+    // 手里的枪
+    const gun=new THREE.Group();
+    const gunBody=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.08,0.5), new THREE.MeshStandardMaterial({color:0x222222}));
+    gun.add(gunBody);
+    const gunBarrel=new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.3,6), new THREE.MeshStandardMaterial({color:0x111111}));
+    gunBarrel.rotation.x=Math.PI/2; gunBarrel.position.z=0.35; gun.add(gunBarrel);
+    gun.position.set(0.3,0.9,0.2); gun.rotation.y=-0.3; g.add(gun);
+    // 血条（Sprite）
+    const hpCanvas=document.createElement('canvas'); hpCanvas.width=100; hpCanvas.height=10;
+    const hpTex=new THREE.CanvasTexture(hpCanvas);
+    const hpSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:hpTex,transparent:true}));
+    hpSprite.position.y=1.7; hpSprite.scale.set(1,0.1,1);
+    g.add(hpSprite);
+    g.userData.hpCanvas=hpCanvas; g.userData.hpTex=hpTex; g.userData.hpSprite=hpSprite;
+    g.userData.maxHp=100;
     return g;
   }
   if(window.GLTFLoader){
@@ -6491,6 +6543,13 @@ function fpsStart(mode) {
       const en = enemies.find(e=>e===obj||e.children.includes(obj));
       if(en){
         hit++; en.userData.hp-=g.dmg;
+        // 更新血条
+        const c=en.userData.hpCanvas, ctx=c.getContext('2d');
+        const pct=Math.max(0,en.userData.hp/en.userData.maxHp);
+        ctx.clearRect(0,0,100,10);
+        ctx.fillStyle='#333'; ctx.fillRect(0,0,100,10);
+        ctx.fillStyle=pct>0.5?'#3f3':pct>0.25?'#ff0':'#f00'; ctx.fillRect(1,1,98*pct,8);
+        en.userData.hpTex.needsUpdate=true;
         if(en.userData.hp<=0){
           score+=100;kills++;scene.remove(en);enemies.splice(enemies.indexOf(en),1);spawnEnemy();
           if(mode==='arena'){ window._fpsGun=(window._fpsGun+1)%FPS_GUNS.length; ammo=FPS_GUNS[window._fpsGun].mag; }
