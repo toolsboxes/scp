@@ -6336,7 +6336,22 @@ function fpsSelectGun(i){ window._fpsGun=i; fpsRenderGunsmith(); }
 function fpsSetOptic(a){ window._fpsOptic=a; fpsRenderGunsmith(); }
 function fpsToggleAtt(a){ window._fpsAtt.has(a)?window._fpsAtt.delete(a):window._fpsAtt.add(a); fpsRenderGunsmith(); }
 function fpsShowGunsmith(){ document.getElementById('fpsGunsmith').style.display='block'; }
-function fpsFullscreen(){ const w=document.getElementById('fpsWrap'); if(w&&w.requestFullscreen) w.requestFullscreen(); }
+function fpsFullscreen(){
+  const w=document.getElementById('fpsWrap');
+  if(!w||!w.requestFullscreen) return;
+  w.requestFullscreen().then(()=>{
+    setTimeout(()=>fpsResize(),100);
+  }).catch(()=>{});
+}
+function fpsResize(){
+  if(!window._fpsCtx) return;
+  const {ren,cam}=window._fpsCtx;
+  const w=document.getElementById('fpsWrap');
+  const iw=w.clientWidth||window.innerWidth, ih=w.clientHeight||window.innerHeight;
+  ren.setSize(iw, ih, false);
+  cam.aspect = iw/ih;
+  cam.updateProjectionMatrix();
+}
 
 function fpsStart(mode) {
   document.getElementById('fpsGunsmith').style.display='none';
@@ -6345,9 +6360,12 @@ function fpsStart(mode) {
   const W=880,H=520;
   const scene = new THREE.Scene(); scene.background=new THREE.Color(0x0a0f1e); scene.fog=new THREE.Fog(0x0a0f1e,12,70);
   const cam = new THREE.PerspectiveCamera(75, W/H, 0.1, 200); cam.position.set(0,1.7,0);
-  const ren = new THREE.WebGLRenderer({antialias:true}); ren.setSize(W,H);
+  const ren = new THREE.WebGLRenderer({antialias:true});
+  cam.aspect = W/H;
+  ren.setSize(W,H,false);
   ren.domElement.style.width='100%'; ren.domElement.style.height='520px'; ren.domElement.style.display='block';
   document.getElementById('fpsWrap').prepend(ren.domElement);
+  window._fpsCtx={ren,cam,scene};
   scene.add(new THREE.AmbientLight(0x8899bb,0.8));
   const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(10,20,10); scene.add(sun);
   // 手持枪模型（挂相机）
