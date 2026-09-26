@@ -430,10 +430,12 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         <div class="algo-item" onclick="selectAlgo('hex', event)"><div class="name">Hex十六进制</div><div class="desc">编码/解码</div></div>
         <div class="algo-item" onclick="selectAlgo('rot13', event)"><div class="name">ROT13</div><div class="desc">字符替换</div></div>
         <div class="algo-item" onclick="selectAlgo('aes', event)"><div class="name">AES加密</div><div class="desc">需密钥</div></div>
+        <div class="algo-item" onclick="selectAlgo('rc4', event)"><div class="name">RC4</div><div class="desc">需密钥</div></div>
+        <div class="algo-item" onclick="selectAlgo('caesar', event)"><div class="name">凯撒</div><div class="desc">偏移量</div></div>
       </div>
       <textarea id="cryptoInput" placeholder="输入内容..." rows="3"></textarea>
       <div id="keyGroup" style="display:none;">
-        <input type="text" id="cryptoKey" placeholder="输入密钥（AES需要）">
+        <input type="text" id="cryptoKey" placeholder="输入密钥（AES/RC4）或偏移量数字（凯撒，如 3）">
       </div>
       <div style="display:flex; gap:8px; margin-bottom:12px;">
         <button type="button" class="btn btn-primary" onclick="doCrypto('encode')">🔒 加密/编码</button>
@@ -1399,7 +1401,6 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
         <button type="button" class="btn btn-warning" style="grid-column:1/-1;" onclick="calcPress('+')">+</button>
       </div>
     </div>
-    </div>
 
 <div class="card">
       <h2><span class="tool-ico" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🖼️</span>图片压缩器</h2>
@@ -1757,9 +1758,37 @@ function spinWheel() {
 }
 
 // AI 绘画（Pollinations 免费生图，无密钥）
+// AI 绘画内容审核：命中不良词直接拦截，不提交生成
+var AIPAINTSAFE_WORDS = [
+  // 色情低俗
+  '裸体','裸露','裸照','色情','裸女','裸男','乳','屁股','下体','sex','nude','naked','porn','nsfw','boobs','breast','penis','vagina',
+  // 暴力血腥
+  '血腥','暴力','杀人','虐杀','砍头','血溅','gore','bloody','kill','murder','dead body','blood',
+  // 武器与危险
+  '枪支','炸弹','爆炸物','武器','枪','炸药','ak47','gun','bomb','weapon','explosive','rifle','pistol',
+  // 违禁与政治敏感
+  '毒品','大麻','摇头丸','海洛因','冰毒','吸毒','drug','cocaine','heroin','meth','weed','marijuana',
+  // 隐私/恶意
+  '血腥图片','恐怖袭击','自杀','自残','suicide'
+];
+function aiPaintCheck(text) {
+  const lower = (text || '').toLowerCase();
+  for (let i = 0; i < AIPAINTSAFE_WORDS.length; i++) {
+    if (lower.indexOf(AIPAINTSAFE_WORDS[i]) !== -1) {
+      return AIPAINTSAFE_WORDS[i];
+    }
+  }
+  return null;
+}
+
 function aiPaint() {
   const p = document.getElementById('aiPaintPrompt').value.trim();
   if (!p) { toast('请输入描述', 'error'); return; }
+  const hit = aiPaintCheck(p);
+  if (hit) {
+    toast('内容包含敏感词「' + hit + '」，请修改描述', 'error');
+    return;
+  }
   const style = document.getElementById('aiPaintStyle').value;
   const full = style ? (p + ', ' + style) : p;
   const url = 'https://image.pollinations.ai/p/' + encodeURIComponent(full) + '?width=512&height=512&nologo=true';
@@ -4371,11 +4400,12 @@ function selectAlgo(algo, ev) {
     sha256: 'SHA-256 哈希', sha512: 'SHA-512 哈希',
     base64: 'Base64 编解码', unicode: 'Unicode 编解码',
     url: 'URL 编解码', hex: 'Hex 十六进制编解码',
-    rot13: 'ROT13 字符替换', aes: 'AES 加解密'
+    rot13: 'ROT13 字符替换', aes: 'AES 加解密',
+    rc4: 'RC4 加解密', caesar: '凯撒移位加密'
   };
   document.getElementById('algoTitle').textContent = titles[algo];
-  document.getElementById('keyGroup').style.display = algo === 'aes' ? 'block' : 'none';
-  const rev = (algo === 'base64' || algo === 'unicode' || algo === 'url' || algo === 'hex' || algo === 'rot13' || algo === 'aes');
+  document.getElementById('keyGroup').style.display = (algo === 'aes' || algo === 'rc4' || algo === 'caesar') ? 'block' : 'none';
+  const rev = (algo === 'base64' || algo === 'unicode' || algo === 'url' || algo === 'hex' || algo === 'rot13' || algo === 'aes' || algo === 'rc4' || algo === 'caesar');
   const d = document.getElementById('decodeBtn');
   d.disabled = !rev;
   d.style.opacity = rev ? '1' : '0.4';
@@ -4425,6 +4455,24 @@ function doCrypto(mode) {
           ? CryptoJS.AES.encrypt(input, key).toString()
           : CryptoJS.AES.decrypt(input, key).toString(CryptoJS.enc.Utf8);
         break;
+      case 'rc4':
+        if (!key) { toast('请输入密钥', 'error'); return; }
+        output = mode === 'encode'
+          ? CryptoJS.RC4.encrypt(input, key).toString()
+          : CryptoJS.RC4.decrypt(input, key).toString(CryptoJS.enc.Utf8);
+        break;
+      case 'caesar': {
+        if (key === '') { toast('请输入偏移量数字', 'error'); return; }
+        const shift = parseInt(key, 10);
+        if (isNaN(shift)) { toast('偏移量必须是数字', 'error'); return; }
+        // 归一化偏移，避免超大数
+        const s = ((mode === 'decode' ? -shift : shift) % 26 + 26) % 26;
+        output = input.replace(/[a-zA-Z]/g, c => {
+          const base = (c >= 'a' && c <= 'z') ? 97 : 65;
+          return String.fromCharCode((c.charCodeAt(0) - base + s) % 26 + base);
+        });
+        break;
+      }
     }
     document.getElementById('cryptoOutput').textContent = output || '(空)';
   } catch (e) {
