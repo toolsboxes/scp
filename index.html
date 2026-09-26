@@ -2798,9 +2798,9 @@ const Nuclear = {
         this.intRenderer.domElement.style.borderRadius = '4px';
         intContainer.appendChild(this.intRenderer.domElement);
         this.intCam = new THREE.PerspectiveCamera(60, iw / ih, 0.1, 50);
-        // 相机斜上方俯视堆芯：可见红色顶盖、燃料棒、控制棒
-        this.intCam.position.set(0.2, 3.4, 2.2);
-        this.intCam.lookAt(0, -0.7, 0);
+        // 相机在壳内斜上方俯视堆芯：可见红色顶盖、燃料棒、控制棒
+        this.intCam.position.set(0, 2.2, 1.9);
+        this.intCam.lookAt(0, -0.6, 0);
       }
       this.threeInited = true;
       this.animateThreeJS();
