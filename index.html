@@ -6554,13 +6554,13 @@ function fpsStart(mode) {
     if(!window['_ch_无限子弹']) ammo--;
     shot++;
     ray.setFromCamera(new THREE.Vector2(0,0),cam); ray.far=120;
+    const hits=ray.intersectObjects(enemies,true);
     // 曳光弹特效
-    const endPoint = hits.length ? hits[0].point.clone() : new THREE.Vector2(0,0).unproject(cam).multiplyScalar(100);
+    const endPoint = hits.length ? hits[0].point.clone() : new THREE.Vector3(0,0,0.5).unproject(cam);
     const lineGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,-0.5).applyMatrix4(cam.matrixWorld), endPoint]);
     const line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({color:0xffee44,transparent:true,opacity:0.9}));
     scene.add(line);
     setTimeout(()=>scene.remove(line),80);
-    const hits=ray.intersectObjects(enemies,true);
     if(hits.length){
       const obj=hits[0].object;
       const en = enemies.find(e=>e===obj||e.children.includes(obj));
