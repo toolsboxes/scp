@@ -6625,9 +6625,9 @@ function fpsStart(mode) {
     g.userData.hp=100;
     scene.add(g); enemies.push(g);
   }
-  for(let i=0;i<6;i++) spawnEnemy();
-  // 队友（绿色战服，站在玩家附近）
-  for(let i=0;i<3;i++){
+  for(let i=0;i<8;i++) spawnEnemy();
+  // 队友（白蓝战服，站在玩家附近）
+  for(let i=0;i<4;i++){
     const mate=makeSoldier(0x66aaff);
     mate.position.set((Math.random()-0.5)*5,0,5+Math.random()*5);
     scene.add(mate);
