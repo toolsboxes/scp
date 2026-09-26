@@ -907,12 +907,12 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
           <canvas id="secondaryLoop" width="320" height="200" style="background:#000;border-radius:6px;max-width:100%;height:auto;"></canvas>
         </div>
         <!-- 反应堆终端 -->
-        <div style="margin-top:16px;background:#0a0a0f;border:1px solid #1f5f3a;border-radius:10px;padding:12px;">
+        <div style="grid-column:1/-1;margin-top:8px;background:#0a0a0f;border:1px solid #1f5f3a;border-radius:10px;padding:14px;">
           <h3 style="margin-bottom:8px;font-size:14px;color:#2fdd5a;">🖥️ 反应堆终端（输入 help 查看指令）</h3>
-          <div id="nuclearTermOut" style="background:#05050a;color:#2fdd5a;font-family:Consolas,'Courier New',monospace;font-size:12px;min-height:150px;max-height:280px;overflow:auto;border-radius:6px;padding:8px;white-space:pre-wrap;line-height:1.5;"></div>
+          <div id="nuclearTermOut" style="background:#05050a;color:#2fdd5a;font-family:Consolas,'Courier New',monospace;font-size:12px;min-height:190px;max-height:340px;overflow:auto;border-radius:6px;padding:10px;white-space:pre-wrap;line-height:1.5;"></div>
           <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
             <span style="color:#2fdd5a;font-family:Consolas,monospace;font-size:15px;">❯</span>
-            <input id="nuclearTermInput" style="flex:1;background:#05050a;color:#2fdd5a;border:1px solid #1f5f3a;border-radius:6px;padding:7px;font-family:Consolas,'Courier New',monospace;font-size:13px;outline:none;" placeholder="输入 help 获取指令" autocomplete="off" spellcheck="false">
+            <input id="nuclearTermInput" style="flex:1;background:#05050a;color:#2fdd5a;border:1px solid #1f5f3a;border-radius:6px;padding:8px;font-family:Consolas,'Courier New',monospace;font-size:13px;outline:none;" placeholder="输入 help 获取指令" autocomplete="off" spellcheck="false">
           </div>
         </div>
       </div>
@@ -2681,8 +2681,8 @@ const Nuclear = {
       const fuelEdge = new THREE.LineSegments(edgeGeo, edgeMat);
       fuelEdge.position.y = -1;
       this.threeReactor.add(fuelEdge);
-      // 堆芯上/下栅格板（顶盖与底盖，1:1 还原堆芯结构）
-      const gridMat = new THREE.MeshPhongMaterial({ color: 0x6a7a8a, transparent: true, opacity: 0.55, shininess: 60 });
+      // 堆芯上/下栅格板（顶盖与底盖，红色区分堆芯区）
+      const gridMat = new THREE.MeshPhongMaterial({ color: 0xee5533, transparent: true, opacity: 0.55, shininess: 60 });
       const topGrid = new THREE.Mesh(new THREE.CylinderGeometry(1.28, 1.28, 0.1, 24), gridMat);
       topGrid.position.y = -0.02;
       this.threeReactor.add(topGrid);
@@ -2779,15 +2779,17 @@ const Nuclear = {
       // 反应堆内部监控：相机置于堆芯上方，俯视燃料与控制棒底部
       const intContainer = document.getElementById('internal3D');
       if (intContainer) {
+        const iw = intContainer.clientWidth || 700;
+        const ih = Math.max(380, Math.round(iw * 0.625));
         this.intRenderer = new THREE.WebGLRenderer({ antialias: false });
-        this.intRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
-        this.intRenderer.setSize(640, 400, false);
+        this.intRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        this.intRenderer.setSize(iw, ih, false);
         this.intRenderer.domElement.style.width = '100%';
         this.intRenderer.domElement.style.height = 'auto';
         this.intRenderer.domElement.style.display = 'block';
         this.intRenderer.domElement.style.borderRadius = '4px';
         intContainer.appendChild(this.intRenderer.domElement);
-        this.intCam = new THREE.PerspectiveCamera(60, 640 / 400, 0.1, 50);
+        this.intCam = new THREE.PerspectiveCamera(60, iw / ih, 0.1, 50);
         // 相机置于压力容器内部斜看堆芯：可看到燃料块+控制棒底部+容器内壁
         this.intCam.position.set(0, 1.6, 2.0);
         this.intCam.lookAt(0, -0.2, 0);
