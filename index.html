@@ -6445,7 +6445,16 @@ function fpsStart(mode) {
   function makeSoldier(clr){
     if(soldierModel){
       const s=soldierModel.scene.clone();
-      s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.setHex(clr); } });
+      s.scale.set(1.2,1.2,1.2);
+      s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.setHex(clr); o.castShadow=true; } });
+      // 血条
+      const hpCanvas=document.createElement('canvas'); hpCanvas.width=100; hpCanvas.height=10;
+      const hpTex=new THREE.CanvasTexture(hpCanvas);
+      const hpSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:hpTex,transparent:true}));
+      hpSprite.position.y=2.0; hpSprite.scale.set(1.2,0.12,1);
+      s.add(hpSprite);
+      s.userData.hpCanvas=hpCanvas; s.userData.hpTex=hpTex; s.userData.hpSprite=hpSprite;
+      s.userData.maxHp=100; s.userData.hp=100;
       return s;
     }
     // 回退：简单几何体（带头盔+枪）
@@ -6474,12 +6483,13 @@ function fpsStart(mode) {
     return g;
   }
   if(window.GLTFLoader){
-    new GLTFLoader().load('https://threejs.org/examples/models/gltf/Soldier.glb', gltf=>{
+    new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb', gltf=>{
+      console.log('Soldier model loaded!');
       soldierModel=gltf;
       // 重新生成敌人
       enemies.forEach(e=>scene.remove(e)); enemies.length=0;
       for(let i=0;i<6;i++) spawnEnemy();
-    }, undefined, ()=>{});
+    }, xhr=>console.log('模型加载中:',(xhr.loaded/1000).toFixed(0)+'KB'), err=>console.warn('模型加载失败,用几何体回退:',err));
   }
   function spawnEnemy(){
     const g=makeSoldier(0xcc3333);
