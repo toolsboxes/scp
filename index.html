@@ -875,7 +875,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:15px;">📹 四方向安全监控（前/后/左/右固定机位）</h3>
         <div style="background:#000;border-radius:8px;padding:6px;position:relative;">
-          <canvas id="monitor3D" width="640" height="320" style="width:100%;height:auto;border-radius:4px;display:block;"></canvas>
+          <div id="monitor3D" style="width:100%;border-radius:4px;display:block;position:relative;"></div>
           <div style="position:absolute;inset:6px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;pointer-events:none;">
             <div style="padding:4px;font-size:11px;color:#3f3;text-shadow:0 0 3px #000;">● CAM-1 前视</div>
             <div style="padding:4px;font-size:11px;color:#3f3;text-align:right;text-shadow:0 0 3px #000;">● CAM-2 右视</div>
@@ -889,7 +889,7 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div style="margin-top:16px;background:var(--bg2);border-radius:10px;padding:12px;">
         <h3 style="margin-bottom:10px;font-size:15px;">🔬 反应堆内部监控（堆芯上方俯视）</h3>
         <div style="background:#000;border-radius:8px;padding:6px;position:relative;">
-          <canvas id="internal3D" width="480" height="300" style="width:100%;height:auto;border-radius:4px;display:block;"></canvas>
+          <div id="internal3D" style="width:100%;border-radius:4px;display:block;position:relative;"></div>
           <div style="position:absolute;top:6px;left:8px;font-size:11px;color:#3f3;text-shadow:0 0 3px #000;">● 堆芯燃料 + 控制棒底部</div>
         </div>
       </div>
@@ -2712,10 +2712,16 @@ const Nuclear = {
         this.threeCamera.position.normalize().multiplyScalar(newDist);
       });
       // 四方向安全监控（独立renderer，共享场景）
-      const monCanvas = document.getElementById('monitor3D');
-      if (monCanvas) {
-        this.monRenderer = new THREE.WebGLRenderer({ canvas: monCanvas, antialias: false });
+      const monContainer = document.getElementById('monitor3D');
+      if (monContainer) {
+        this.monRenderer = new THREE.WebGLRenderer({ antialias: false });
         this.monRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+        this.monRenderer.setSize(640, 320, false);
+        this.monRenderer.domElement.style.width = '100%';
+        this.monRenderer.domElement.style.height = 'auto';
+        this.monRenderer.domElement.style.display = 'block';
+        this.monRenderer.domElement.style.borderRadius = '4px';
+        monContainer.appendChild(this.monRenderer.domElement);
         this.monCams = [];
         const d = 11, h = 2.5;
         // 顺序对应 CAM-1前 / CAM-2右 / CAM-3左 / CAM-4后
@@ -2728,10 +2734,16 @@ const Nuclear = {
         });
       }
       // 反应堆内部监控：相机置于堆芯上方，俯视燃料与控制棒底部
-      const intCanvas = document.getElementById('internal3D');
-      if (intCanvas) {
-        this.intRenderer = new THREE.WebGLRenderer({ canvas: intCanvas, antialias: false });
+      const intContainer = document.getElementById('internal3D');
+      if (intContainer) {
+        this.intRenderer = new THREE.WebGLRenderer({ antialias: false });
         this.intRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+        this.intRenderer.setSize(480, 300, false);
+        this.intRenderer.domElement.style.width = '100%';
+        this.intRenderer.domElement.style.height = 'auto';
+        this.intRenderer.domElement.style.display = 'block';
+        this.intRenderer.domElement.style.borderRadius = '4px';
+        intContainer.appendChild(this.intRenderer.domElement);
         this.intCam = new THREE.PerspectiveCamera(60, 480 / 300, 0.1, 50);
         // 斜俯视视角：从堆芯斜前方上方看入内部，稳定不翻转，可看到燃料块+控制棒+容器内壁
         this.intCam.position.set(0, 2.8, 3.8);
