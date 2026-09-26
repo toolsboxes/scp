@@ -6963,6 +6963,27 @@ function initXiangqi(area) {
         ctx.stroke();
       }
     }
+    // 选中棋子后：画蓝色圆点提示所有可走位置
+    if (selected) {
+      getMoves(selected.r, selected.c).forEach(([mr,mc]) => {
+        const x = OFFSET + mc * CELL, y = OFFSET + mr * CELL;
+        ctx.beginPath();
+        ctx.arc(x, y, 9, 0, Math.PI*2);
+        ctx.fillStyle = board[mr][mc] ? 'rgba(255,80,80,0.6)' : 'rgba(0,130,255,0.55)';
+        ctx.fill();
+        ctx.strokeStyle = board[mr][mc] ? '#f33' : '#06f';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+    // 将军提示
+    const kr = findKing('r');
+    if (kr && isAttacked(kr.r, kr.c, 'b')) {
+      ctx.fillStyle = '#ff2222';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚠ 将 军 ！', 270, 300);
+    }
   }
 
   function getMoves(r, c) {
@@ -7032,6 +7053,20 @@ function initXiangqi(area) {
       }
     }
     return moves;
+  }
+
+  function findKing(color) {
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+      if (board[r][c] === color + 'K') return { r, c };
+    return null;
+  }
+  function isAttacked(r, c, byColor) {
+    for (let i = 0; i < ROWS; i++) for (let j = 0; j < COLS; j++) {
+      if (board[i][j] && board[i][j][0] === byColor) {
+        if (getMoves(i, j).some(([mr, mc]) => mr === r && mc === c)) return true;
+      }
+    }
+    return false;
   }
 
   function aiMove() {
