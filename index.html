@@ -4616,13 +4616,14 @@ async function deleteAccount() {
   }
   try {
     const userId = currentUser.id;
+    const uid = getUID(currentUser);
     // 删除云盘文件
-    const { data: userFiles } = await sb.from('files').select('*').eq('user_id', userId);
+    const { data: userFiles } = await sb.from('files').select('*').eq('user_id', uid);
     if (userFiles) {
       for (const f of userFiles) {
         try { await sb.storage.from('uploads').remove([f.stored_name]); } catch(e) {}
       }
-      await sb.from('files').delete().eq('user_id', userId);
+      await sb.from('files').delete().eq('user_id', uid);
     }
     // 删除好友关系
     await sb.from('friends').delete().or('user_id.eq.' + userId + ',friend_id.eq.' + userId);
@@ -5188,7 +5189,7 @@ async function sendChatFile() {
 async function showCloudFilePicker() {
   if (!currentUser) return;
   try {
-    const { data, error } = await sb.from('files').select('*').eq('user_id', currentUser.id);
+    const { data, error } = await sb.from('files').select('*').eq('user_id', getUID(currentUser));
     if (error) throw error;
     if (!data || data.length === 0) {
       toast('云盘里还没有文件', 'error');
@@ -5470,8 +5471,9 @@ async function postEcho() {
 async function loadFiles() {
   try {
     if (!currentUser) return;
+    const uid = getUID(currentUser);
     const { data, error } = await sb.from('files')
-      .select('*').eq('user_id', currentUser.id).order('id', { ascending: false });
+      .select('*').eq('user_id', uid).order('id', { ascending: false });
     const list = document.getElementById('fileList');
     if (error || !data || !data.length) {
       list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">还没有文件</p>';
@@ -5500,11 +5502,12 @@ async function loadFiles() {
 async function uploadFile() {
   try {
     if (!currentUser) { toast('请先登录', 'error'); showAuth('login'); return; }
+    const uid = getUID(currentUser);
     const file = document.getElementById('fileInput').files[0];
     if (!file) { toast('请选择文件', 'error'); return; }
-    
+
     // 检查用户已用空间
-    const { data: existingFiles } = await sb.from('files').select('filesize').eq('user_id', currentUser.id);
+    const { data: existingFiles } = await sb.from('files').select('filesize').eq('user_id', uid);
     const usedSpace = existingFiles ? existingFiles.reduce((s, f) => s + Number(f.filesize || 0), 0) : 0;
     if (usedSpace + file.size > STORAGE_LIMIT) {
       const remaining = Math.max(0, (STORAGE_LIMIT - usedSpace) / 1024 / 1024).toFixed(2);
@@ -5512,14 +5515,20 @@ async function uploadFile() {
       return;
     }
 
-    const path = 'userfiles/' + currentUser.id + '/' + Date.now() + '-' + file.name;
+    const path = 'userfiles/' + uid + '/' + Date.now() + '-' + file.name;
     const { error: uploadError } = await sb.storage.from('uploads').upload(path, file);
-    if (uploadError) { toast('上传失败', 'error'); return; }
+    if (uploadError) { toast('上传失败：' + uploadError.message, 'error'); return; }
 
-    await sb.from('files').insert([{
-      user_id: currentUser.id, filename: file.name,
+    const { error: dbError } = await sb.from('files').insert([{
+      user_id: uid, filename: file.name,
       filesize: file.size, filetype: file.type, stored_name: path
     }]);
+    if (dbError) {
+      // 数据库记录失败：回滚已上传的存储文件，避免假成功
+      await sb.storage.from('uploads').remove([path]);
+      toast('上传失败：' + dbError.message, 'error');
+      return;
+    }
     toast('上传成功');
     document.getElementById('fileInput').value = '';
     loadFiles();
