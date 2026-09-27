@@ -6460,7 +6460,8 @@ function fpsStart(mode) {
   const W=880,H=520;
   const scene = new THREE.Scene(); scene.background=new THREE.Color(0x0a0f1e); scene.fog=new THREE.Fog(0x0a0f1e,12,70);
   const cam = new THREE.PerspectiveCamera(75, W/H, 0.1, 200); cam.position.set(0,1.7,0);
-  const ren = new THREE.WebGLRenderer({antialias:true});
+  const ren = new THREE.WebGLRenderer({antialias:false, powerPreference:'high-performance'});
+  ren.setPixelRatio(1);
   cam.aspect = W/H;
   ren.setSize(W,H,false);
   ren.domElement.style.width='100%'; ren.domElement.style.height='100%'; ren.domElement.style.display='block';
