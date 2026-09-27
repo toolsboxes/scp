@@ -6545,18 +6545,31 @@ function fpsStart(mode) {
     const wall=new THREE.Mesh(new THREE.BoxGeometry(w[3],3,w[5]||1), new THREE.MeshStandardMaterial({color:0x2a3a4a}));
     wall.position.set(w[0],1.5,w[2]); scene.add(wall);
   });
-  // 掩体和箱子
+  // 掩体和箱子（碰撞箱列表）
+  window._fpsColliders=[];
   const coverMat=new THREE.MeshStandardMaterial({color:0x3a5a7a});
   const crateMat=new THREE.MeshStandardMaterial({color:0x5a4a2a});
   [[-15,0,-10,3,1.5,2],[10,0,-20,4,2,1.5],[20,0,5,2,2,2],[-25,0,15,3,1,3],[0,0,15,2.5,1.8,2],[-10,0,25,3,2,2],[15,0,30,4,2.5,1.5]].forEach(c=>{
     const box=new THREE.Mesh(new THREE.BoxGeometry(c[3],c[4],c[5]), coverMat);
     box.position.set(c[0],c[4]/2,c[2]); scene.add(box);
+    window._fpsColliders.push({x:c[0],z:c[2],hw:c[3]/2,hd:c[5]/2});
   });
   // 塔楼
   [[-30,0,-30],[30,0,-30],[-30,0,30],[30,0,30]].forEach(t=>{
     const tower=new THREE.Mesh(new THREE.BoxGeometry(3,8,3), new THREE.MeshStandardMaterial({color:0x2a4a6a}));
     tower.position.set(t[0],4,t[2]); scene.add(tower);
+    window._fpsColliders.push({x:t[0],z:t[2],hw:1.5,hd:1.5});
   });
+  // 加载地图GLB模型
+  if(window.THREE && THREE.GLTFLoader){
+    new THREE.GLTFLoader().load('./Map.glb', gltf=>{
+      console.log('✅ 地图模型加载成功');
+      const map=gltf.scene;
+      map.scale.set(0.05,0.05,0.05);
+      map.position.set(0,-1,0);
+      scene.add(map);
+    }, undefined, err=>console.warn('地图模型加载失败',err));
+  }
   // 人形敌人（尝试加载官方 Soldier 模型，失败则用简单几何体）
   const enemies=[];
   let soldierModel=null;
@@ -6564,7 +6577,7 @@ function fpsStart(mode) {
     const src = isEnemy && window._enemyModel ? window._enemyModel : soldierModel;
     if(src){
       const s=src.scene.clone();
-      s.scale.set(0.005,0.005,0.005);
+      s.scale.set(0.003,0.003,0.003);
       s.position.y=0;
       s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.transparent=false; } });
       // 血条
@@ -6720,10 +6733,22 @@ function fpsStart(mode) {
   function loop(){
     window._fpsRaf=requestAnimationFrame(loop);
     const sp = (window['_ch_加速']||keys['shift']) ? 0.25 : 0.12;
-    if(keys['w'])cam.position.x-=Math.sin(yaw)*sp,cam.position.z-=Math.cos(yaw)*sp;
-    if(keys['s'])cam.position.x+=Math.sin(yaw)*sp,cam.position.z+=Math.cos(yaw)*sp;
-    if(keys['a'])cam.position.x-=Math.cos(yaw)*sp,cam.position.z+=Math.sin(yaw)*sp;
-    if(keys['d'])cam.position.x+=Math.cos(yaw)*sp,cam.position.z-=Math.sin(yaw)*sp;
+    let nx=cam.position.x, nz=cam.position.z;
+    if(keys['w'])nx-=Math.sin(yaw)*sp,nz-=Math.cos(yaw)*sp;
+    if(keys['s'])nx+=Math.sin(yaw)*sp,nz+=Math.cos(yaw)*sp;
+    if(keys['a'])nx-=Math.cos(yaw)*sp,nz+=Math.sin(yaw)*sp;
+    if(keys['d'])nx+=Math.cos(yaw)*sp,nz-=Math.sin(yaw)*sp;
+    // 碰撞检测（不能穿墙穿箱）
+    let blocked=false;
+    if(window._fpsColliders){
+      for(const c of window._fpsColliders){
+        if(Math.abs(nx-c.x)<c.hw+0.3 && Math.abs(nz-c.z)<c.hd+0.3){ blocked=true; break; }
+      }
+    }
+    if(!blocked){ cam.position.x=nx; cam.position.z=nz; }
+    // 边界
+    cam.position.x=Math.max(-43,Math.min(43,cam.position.x));
+    cam.position.z=Math.max(-43,Math.min(43,cam.position.z));
     // 目标高度：站1.7 蹲0.9 趴0.5
     let targetY = 1.7;
     if(keys['c']) targetY = 0.5;
