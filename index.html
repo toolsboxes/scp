@@ -6560,10 +6560,11 @@ function fpsStart(mode) {
   // 人形敌人（尝试加载官方 Soldier 模型，失败则用简单几何体）
   const enemies=[];
   let soldierModel=null;
-  function makeSoldier(clr){
-    if(soldierModel){
-      const s=soldierModel.scene.clone();
-      s.scale.set(0.012,0.012,0.012);
+  function makeSoldier(clr, isEnemy){
+    const src = isEnemy && window._enemyModel ? window._enemyModel : soldierModel;
+    if(src){
+      const s=src.scene.clone();
+      s.scale.set(0.005,0.005,0.005);
       s.position.y=0;
       s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.transparent=false; } });
       // 血条
@@ -6605,30 +6606,24 @@ function fpsStart(mode) {
   }
   if(window.THREE && THREE.GLTFLoader){
     const GLTFLoader = THREE.GLTFLoader;
-    const MODEL_URLS = [
-      './Soldier.glb',
-      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
-      'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb'
-    ];
-    let mi=0;
-    function tryLoadModel(){
-      if(mi>=MODEL_URLS.length){ console.warn('所有模型CDN都失败,用几何体'); return; }
-      console.log('尝试加载模型:',MODEL_URLS[mi]);
-      new GLTFLoader().load(MODEL_URLS[mi], gltf=>{
-        console.log('✅ GLB模型加载成功! 来源:',MODEL_URLS[mi]);
-        soldierModel=gltf;
-        // 清除几何体敌人，用GLB重建
-        enemies.forEach(e=>scene.remove(e)); enemies.length=0;
-        for(let i=0;i<8;i++) spawnEnemy();
-        // 重建队友
-        document.querySelectorAll('.fps-mate').forEach(m=>scene.remove(m));
-      }, undefined, err=>{ mi++; tryLoadModel(); });
-    }
-    tryLoadModel();
+    // 队友模型（Soldier）
+    new GLTFLoader().load('./Soldier.glb', gltf=>{
+      console.log('✅ 队友模型加载成功');
+      soldierModel=gltf;
+      enemies.forEach(e=>scene.remove(e)); enemies.length=0;
+      for(let i=0;i<8;i++) spawnEnemy();
+    });
+    // 敌人模型（Xbot，不同外观）
+    let enemyModel=null;
+    window._enemyModel=null;
+    new GLTFLoader().load('./Enemy.glb', gltf=>{
+      console.log('✅ 敌人模型加载成功');
+      window._enemyModel=gltf;
+    });
   }
   function spawnEnemy(){
-    const g=makeSoldier(0x1a2a5e);
-    g.position.set((Math.random()-0.5)*55, 0, (Math.random()-0.5)*55);
+    const g=makeSoldier(0x1a2a5e, true);
+    g.position.set((Math.random()-0.5)*60, 0, -15-Math.random()*40);
     g.userData.hp=100;
     scene.add(g); enemies.push(g);
   }
