@@ -6604,12 +6604,9 @@ function fpsStart(mode) {
   }
   if(window.GLTFLoader){
     const MODEL_URLS = [
+      './Soldier.glb',
       'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
-      'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb',
-      'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
-      'https://cdn.statically.io/gh/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
-      'https://threejs.org/examples/models/gltf/Soldier.glb',
-      'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb'
+      'https://unpkg.com/three@0.128.0/examples/models/gltf/Soldier.glb'
     ];
     let mi=0;
     function tryLoadModel(){
