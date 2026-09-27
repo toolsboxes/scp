@@ -6468,11 +6468,11 @@ function fpsStart(mode) {
   ren.domElement.style.position='absolute'; ren.domElement.style.top='0'; ren.domElement.style.left='0';
   document.getElementById('fpsWrap').prepend(ren.domElement);
   window._fpsCtx={ren,cam,scene};
-  scene.add(new THREE.AmbientLight(0x8899bb,0.8));
-  const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(10,20,10); scene.add(sun);
+  scene.add(new THREE.AmbientLight(0xffffff,0.9));
+  const sun=new THREE.DirectionalLight(0xffffff,1.5); sun.position.set(10,20,10); scene.add(sun);
   // 天空渐变
-  scene.background=new THREE.Color(0x0a1028);
-  scene.fog=new THREE.Fog(0x0a1028,15,80);
+  scene.background=new THREE.Color(0x1a2a4a);
+  scene.fog=new THREE.Fog(0x1a2a4a,30,120);
   // 月亮
   const moon=new THREE.Mesh(new THREE.SphereGeometry(3,16,12), new THREE.MeshBasicMaterial({color:0xeeeecc}));
   moon.position.set(-30,40,-50); scene.add(moon);
@@ -6563,8 +6563,9 @@ function fpsStart(mode) {
   function makeSoldier(clr){
     if(soldierModel){
       const s=soldierModel.scene.clone();
-      s.scale.set(1.2,1.2,1.2);
-      s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.color.setHex(clr); o.castShadow=true; } });
+      s.scale.set(0.012,0.012,0.012);
+      s.position.y=0;
+      s.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.transparent=false; } });
       // 血条
       const hpCanvas=document.createElement('canvas'); hpCanvas.width=100; hpCanvas.height=10;
       const hpTex=new THREE.CanvasTexture(hpCanvas);
