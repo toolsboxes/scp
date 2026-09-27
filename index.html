@@ -6601,7 +6601,8 @@ function fpsStart(mode) {
     g.userData.maxHp=100;
     return g;
   }
-  if(window.GLTFLoader){
+  if(window.THREE && THREE.GLTFLoader){
+    const GLTFLoader = THREE.GLTFLoader;
     const MODEL_URLS = [
       './Soldier.glb',
       'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb',
