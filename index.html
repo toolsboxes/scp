@@ -6641,11 +6641,12 @@ function fpsStart(mode) {
     scene.add(g); enemies.push(g);
   }
   for(let i=0;i<8;i++) spawnEnemy();
-  // 队友（白蓝战服，站在玩家附近）
+  // 队友（白蓝战服，跟着玩家）
+  const mates=[];
   for(let i=0;i<4;i++){
     const mate=makeSoldier(0x66aaff);
     mate.position.set((Math.random()-0.5)*5,0,5+Math.random()*5);
-    scene.add(mate);
+    scene.add(mate); mates.push(mate);
   }
 
   let playerHp=100;
@@ -6767,9 +6768,22 @@ function fpsStart(mode) {
       e.rotation.y = Math.atan2(cam.position.x-e.position.x, cam.position.z-e.position.z);
       const dx=cam.position.x-e.position.x, dz=cam.position.z-e.position.z;
       const dist=Math.sqrt(dx*dx+dz*dz);
-      if(dist>3){ e.position.x+=dx/dist*0.03; e.position.z+=dz/dist*0.03; }
+      if(dist>5){ e.position.x+=dx/dist*0.05; e.position.z+=dz/dist*0.05; }
       else if(!window['_ch_无敌'] && dist<2 && !e.userData.dead){ playerHp-=0.05; if(playerHp<=0){ playerHp=100; cam.position.set(0,1.7,0); } }
-      e.position.y = Math.abs(Math.sin(Date.now()*0.003+e.position.x))*0.05; // 走路起伏
+      // 敌人射击玩家
+      if(dist<30 && !e.userData.dead && Math.random()<0.01){
+        if(!window['_ch_无敌'] && Math.random()<0.3){ playerHp-=2; if(playerHp<=0){ playerHp=100; cam.position.set(0,1.7,0); } }
+      }
+      e.position.y = Math.abs(Math.sin(Date.now()*0.003+e.position.x))*0.05;
+    });
+    // 队友跟着玩家走
+    mates.forEach((m,i)=>{
+      const tx=cam.position.x+Math.sin(yaw+Math.PI)*(3+i*1.5);
+      const tz=cam.position.z+Math.cos(yaw+Math.PI)*(3+i*1.5);
+      m.position.x+=(tx-m.position.x)*0.02;
+      m.position.z+=(tz-m.position.z)*0.02;
+      m.rotation.y=yaw;
+      m.position.y=Math.abs(Math.sin(Date.now()*0.003+i))*0.05;
     });
     ren.render(scene,cam);
   }
