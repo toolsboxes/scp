@@ -6259,7 +6259,7 @@ function updateCheatPanel(game) {
   body.innerHTML = '';
   let cheats = [];
   if(game === 'fps') cheats = ['无敌','飞天','遁地','加速','高跳','无限子弹','无后坐力'];
-  else if(game === 'tictactoe' || game === 'gomoku' || game === 'go' || game === 'xiangqi' || game === 'chess') cheats = ['强制胜利','AI无棋可下','自动走最优步','提示最佳位置'];
+  // 棋类游戏不显示外挂
   else if(game === 'snake') cheats = ['穿墙模式','无限加速'];
   else if(game === 'g2048') cheats = ['无限撤销','自动合并'];
   cheats.forEach(c=>{
