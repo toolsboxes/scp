@@ -7,6 +7,7 @@
 <script src="https://cdn.staticfile.net/three.js/r128/three.min.js"></script>
 <script>if(!window.THREE)document.write('<script src="https://cdn.bootcdn.net/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
 <script src="./GLTFLoader.js"></script>
+<script src="./DRACOLoader.js"></script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -6389,12 +6390,12 @@ function initFPS(area) {
     document.getElementById('fpsModeSelect').style.display='none';
     fpsStart(window._fpsPickedMode, opp);
   };
-  // 外挂悬浮窗（仅管理员解锁后可见，可收起展开）
+  // 外挂悬浮窗（仅管理员解锁后可见，所有游戏通用）
   if (window._fpsCheatUnlocked && !document.getElementById('fpsCheatPanel')) {
     const cp = document.createElement('div');
     cp.id = 'fpsCheatPanel';
-    cp.style.cssText = 'position:fixed;top:60px;right:10px;z-index:9999;background:rgba(20,0,30,.92);border:1px solid #f0f;border-radius:10px;padding:10px;font-size:12px;color:#fff;width:160px;';
-    cp.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#f0f;">👑 外挂菜单</b><button id="fpsCheatToggle" style="background:none;border:none;color:#f0f;cursor:pointer;font-size:14px;">—</button></div><div id="fpsCheatBody" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;"></div>';
+    cp.style.cssText = 'position:fixed;top:60px;right:10px;z-index:9999;background:rgba(20,0,30,.92);border:1px solid #f0f;border-radius:10px;padding:10px;font-size:12px;color:#fff;width:170px;';
+    cp.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#f0f;">👑 外挂菜单</b><button id="fpsCheatToggle" style="background:none;border:none;color:#f0f;cursor:pointer;font-size:14px;">—</button></div><div id="fpsCheatBody" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto;"></div>';
     document.body.appendChild(cp);
     cp.querySelector('#fpsCheatToggle').onclick=()=>{
       const body=cp.querySelector('#fpsCheatBody');
@@ -6402,13 +6403,42 @@ function initFPS(area) {
       if(body.style.display==='none'){body.style.display='flex';t.textContent='—';}
       else{body.style.display='none';t.textContent='+';}
     };
-    const cheats = ['无敌','飞天','遁地','加速','高跳','无限子弹','无后坐力'];
-    cheats.forEach(c=>{
+    const body = cp.querySelector('#fpsCheatBody');
+    // FPS外挂
+    const fpsHeader=document.createElement('div');
+    fpsHeader.style.cssText='color:#f0f;font-size:10px;margin-top:2px;';
+    fpsHeader.textContent='── FPS射击 ──';
+    body.appendChild(fpsHeader);
+    ['无敌','飞天','遁地','加速','高跳','无限子弹','无后坐力'].forEach(c=>{
       const b=document.createElement('button');
       b.className='btn btn-danger'; b.style.cssText='padding:3px 6px;font-size:11px;';
       b.textContent=c;
       b.onclick=()=>{ window['_ch_'+c]=!window['_ch_'+c]; b.style.opacity=window['_ch_'+c]?1:0.5; };
-      cp.querySelector('#fpsCheatBody').appendChild(b);
+      body.appendChild(b);
+    });
+    // 棋类外挂
+    const gameHeader=document.createElement('div');
+    gameHeader.style.cssText='color:#0ff;font-size:10px;margin-top:4px;';
+    gameHeader.textContent='── 棋类游戏 ──';
+    body.appendChild(gameHeader);
+    ['强制胜利','AI无棋可下','自动走最优步','提示最佳位置'].forEach(c=>{
+      const b=document.createElement('button');
+      b.className='btn btn-success'; b.style.cssText='padding:3px 6px;font-size:11px;';
+      b.textContent=c;
+      b.onclick=()=>{ window['_gameCheat_'+c]=!window['_gameCheat_'+c]; b.style.opacity=window['_gameCheat_'+c]?1:0.5; toast(c+' '+(window['_gameCheat_'+c]?'已开启':'已关闭')); };
+      body.appendChild(b);
+    });
+    // 其他游戏外挂
+    const otherHeader=document.createElement('div');
+    otherHeader.style.cssText='color:#ff0;font-size:10px;margin-top:4px;';
+    otherHeader.textContent='── 其他游戏 ──';
+    body.appendChild(otherHeader);
+    ['贪吃蛇穿墙','2048无限撤销','跳过对手回合'].forEach(c=>{
+      const b=document.createElement('button');
+      b.className='btn btn-warning'; b.style.cssText='padding:3px 6px;font-size:11px;color:#000;';
+      b.textContent=c;
+      b.onclick=()=>{ window['_gameCheat_'+c]=!window['_gameCheat_'+c]; b.style.opacity=window['_gameCheat_'+c]?1:0.5; toast(c+' '+(window['_gameCheat_'+c]?'已开启':'已关闭')); };
+      body.appendChild(b);
     });
   }
 }
@@ -6562,7 +6592,9 @@ function fpsStart(mode) {
   });
   // 加载地图GLB模型
   if(window.THREE && THREE.GLTFLoader){
-    new THREE.GLTFLoader().load('./Map.glb', gltf=>{
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');
+    new THREE.GLTFLoader().setDRACOLoader(dracoLoader).load('./Map.glb', gltf=>{
       console.log('✅ 地图模型加载成功');
       const map=gltf.scene;
       map.scale.set(0.05,0.05,0.05);
@@ -6798,7 +6830,56 @@ document.addEventListener('keydown',e=>{
   if((e.key==='b'||e.key==='B')){
     _bCount++; clearTimeout(_bTimer);
     _bTimer=setTimeout(()=>_bCount=0,1500);
-    if(_bCount>=5){ window._fpsCheatUnlocked=true; _bCount=0; if(typeof toast==='function')toast('🔓 外挂菜单已解锁，进入小游戏即可看到'); }
+    if(_bCount>=5){ window._fpsCheatUnlocked=true; _bCount=0; if(typeof toast==='function')toast('🔓 外挂菜单已解锁，所有游戏都可用');
+      // 立即显示外挂面板
+      setTimeout(()=>{ if(window._fpsCheatUnlocked && !document.getElementById('fpsCheatPanel')){
+        const cp = document.createElement('div');
+        cp.id = 'fpsCheatPanel';
+        cp.style.cssText = 'position:fixed;top:60px;right:10px;z-index:9999;background:rgba(20,0,30,.92);border:1px solid #f0f;border-radius:10px;padding:10px;font-size:12px;color:#fff;width:170px;';
+        cp.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#f0f;">👑 外挂菜单</b><button id="fpsCheatToggle" style="background:none;border:none;color:#f0f;cursor:pointer;font-size:14px;">—</button></div><div id="fpsCheatBody" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto;"></div>';
+        document.body.appendChild(cp);
+        cp.querySelector('#fpsCheatToggle').onclick=()=>{
+          const body=cp.querySelector('#fpsCheatBody');
+          const t=cp.querySelector('#fpsCheatToggle');
+          if(body.style.display==='none'){body.style.display='flex';t.textContent='—';}
+          else{body.style.display='none';t.textContent='+';}
+        };
+        const body = cp.querySelector('#fpsCheatBody');
+        const fpsHeader=document.createElement('div');
+        fpsHeader.style.cssText='color:#f0f;font-size:10px;margin-top:2px;';
+        fpsHeader.textContent='── FPS射击 ──';
+        body.appendChild(fpsHeader);
+        ['无敌','飞天','遁地','加速','高跳','无限子弹','无后坐力'].forEach(c=>{
+          const b=document.createElement('button');
+          b.className='btn btn-danger'; b.style.cssText='padding:3px 6px;font-size:11px;';
+          b.textContent=c;
+          b.onclick=()=>{ window['_ch_'+c]=!window['_ch_'+c]; b.style.opacity=window['_ch_'+c]?1:0.5; };
+          body.appendChild(b);
+        });
+        const gameHeader=document.createElement('div');
+        gameHeader.style.cssText='color:#0ff;font-size:10px;margin-top:4px;';
+        gameHeader.textContent='── 棋类游戏 ──';
+        body.appendChild(gameHeader);
+        ['强制胜利','AI无棋可下','自动走最优步','提示最佳位置'].forEach(c=>{
+          const b=document.createElement('button');
+          b.className='btn btn-success'; b.style.cssText='padding:3px 6px;font-size:11px;';
+          b.textContent=c;
+          b.onclick=()=>{ window['_gameCheat_'+c]=!window['_gameCheat_'+c]; b.style.opacity=window['_gameCheat_'+c]?1:0.5; toast(c+' '+(window['_gameCheat_'+c]?'已开启':'已关闭')); };
+          body.appendChild(b);
+        });
+        const otherHeader=document.createElement('div');
+        otherHeader.style.cssText='color:#ff0;font-size:10px;margin-top:4px;';
+        otherHeader.textContent='── 其他游戏 ──';
+        body.appendChild(otherHeader);
+        ['贪吃蛇穿墙','2048无限撤销','跳过对手回合'].forEach(c=>{
+          const b=document.createElement('button');
+          b.className='btn btn-warning'; b.style.cssText='padding:3px 6px;font-size:11px;color:#000;';
+          b.textContent=c;
+          b.onclick=()=>{ window['_gameCheat_'+c]=!window['_gameCheat_'+c]; b.style.opacity=window['_gameCheat_'+c]?1:0.5; toast(c+' '+(window['_gameCheat_'+c]?'已开启':'已关闭')); };
+          body.appendChild(b);
+        });
+      }},100);
+    }
   }
 });
 
