@@ -6326,29 +6326,101 @@ function showDebugPanel() {
   if(panel){ panel.remove(); return; }
   panel = document.createElement('div');
   panel.id = 'debugOverlay';
-  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;';
+  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a,#1a0a2e);z-index:99999;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;';
   panel.innerHTML = `
-    <div style="width:90%;max-width:900px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h2 style="color:#f0f;margin:0;">⚡ 开发者调试</h2>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('debugOverlay').remove()">✕ 关闭</button>
+    <div style="width:95%;max-width:1000px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:15px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,0,255,.3);">
+        <div>
+          <h2 style="color:#f0f;margin:0;font-size:20px;">⚡ 开发者调试控制台</h2>
+          <div style="color:#888;font-size:11px;margin-top:4px;">Developer Debug Console v2.0 | ToolBox Admin</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="color:#0f0;font-size:11px;">● ONLINE</span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('debugOverlay').remove()">✕ 关闭</button>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px;">
-        <button type="button" class="btn btn-danger btn-sm" onclick="debugClearDB()">🗑️ 清空数据库</button>
-        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetUsers()">👤 重置所有用户</button>
-        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetEchoes()">📢 重置回声洞</button>
-        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetFiles()">📁 重置云盘</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugDumpLogs()">📋 导出日志</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugTestAPI()">🔌 测试API</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowSQL()">🗃️ SQL状态</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowNetwork()">🌐 网络状态</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowMemory()">💾 内存状态</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCache()">📦 缓存状态</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;">
+        <div style="background:rgba(255,0,0,.1);border:1px solid #f00;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🗑️</div>
+          <button type="button" class="btn btn-danger btn-sm" onclick="debugConfirmAction('清空数据库','debugClearDB')">清空数据库</button>
+        </div>
+        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">👤</div>
+          <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置所有用户','debugResetUsers')">重置用户</button>
+        </div>
+        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📢</div>
+          <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置回声洞','debugResetEchoes')">重置回声洞</button>
+        </div>
+        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📁</div>
+          <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置云盘文件','debugResetFiles')">重置云盘</button>
+        </div>
+        <div style="background:rgba(0,255,255,.1);border:1px solid #0ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📋</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugDumpLogs()">导出日志</button>
+        </div>
+        <div style="background:rgba(0,255,255,.1);border:1px solid #0ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🔌</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugTestAPI()">测试API</button>
+        </div>
+        <div style="background:rgba(138,43,226,.1);border:1px solid #8a2be2;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🗃️</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowSQL()">SQL状态</button>
+        </div>
+        <div style="background:rgba(138,43,226,.1);border:1px solid #8a2be2;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🌐</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowNetwork()">网络状态</button>
+        </div>
+        <div style="background:rgba(0,255,0,.1);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">💾</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowMemory()">内存状态</button>
+        </div>
+        <div style="background:rgba(0,255,0,.1);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📦</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCache()">缓存状态</button>
+        </div>
+        <div style="background:rgba(255,0,255,.1);border:1px solid #f0f;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🔧</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowEnv()">环境变量</button>
+        </div>
+        <div style="background:rgba(255,0,255,.1);border:1px solid #f0f;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🧹</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugClearLocalStorage()">清缓存</button>
+        </div>
       </div>
-      <div id="debugOutput" style="background:#000;color:#0f0;font-family:monospace;font-size:12px;padding:15px;border-radius:8px;height:400px;overflow-y:auto;border:1px solid #f0f;"></div>
+      <div style="background:#000;border:1px solid #f0f;border-radius:12px;padding:15px;">
+        <div style="color:#f0f;font-size:13px;font-weight:700;margin-bottom:8px;">📟 终端输出</div>
+        <div id="debugOutput" style="background:#000;color:#0f0;font-family:'Courier New',monospace;font-size:12px;padding:10px;border-radius:6px;height:350px;overflow-y:auto;line-height:1.6;"></div>
+      </div>
     </div>`;
   document.body.appendChild(panel);
   addLog('调试面板已打开', 'ok');
+  debugOut('=== ToolBox Debug Console ===');
+  debugOut('系统就绪，等待操作...');
+}
+function debugConfirmAction(action, fn) {
+  const pwd = prompt('⚠️ 确认操作：'+action+'\n\n请输入管理员密码 (520520) 确认：');
+  if(pwd === '520520') {
+    debugOut('✅ 密码正确，执行: '+action);
+    eval(fn+'()');
+  } else if(pwd !== null) {
+    debugOut('❌ 密码错误，操作已取消', 'error');
+    addLog('调试操作密码错误', 'error');
+  }
+}
+function debugShowEnv() {
+  debugOut('=== 环境变量 ===');
+  debugOut(`SUPABASE_URL: ${SUPABASE_URL}`);
+  debugOut(`ANON_KEY: ${SUPABASE_ANON_KEY?.substring(0,20)}...`);
+  debugOut(`用户代理: ${navigator.userAgent.substring(0,60)}...`);
+  debugOut(`语言: ${navigator.language}`);
+  debugOut(`平台: ${navigator.platform}`);
+}
+function debugClearLocalStorage() {
+  localStorage.clear();
+  debugOut('✅ localStorage已清空', 'ok');
+  addLog('本地缓存已清空', 'warn');
 }
 function debugOut(msg) {
   const out = document.getElementById('debugOutput');
