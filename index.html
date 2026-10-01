@@ -6326,12 +6326,12 @@ function showDebugPanel() {
   if(panel){ panel.remove(); return; }
   panel = document.createElement('div');
   panel.id = 'debugOverlay';
-  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a,#1a0a2e);z-index:99999;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;';
+  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#000000,#0a0a1a);z-index:99999;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;';
   panel.innerHTML = `
     <div style="width:95%;max-width:1000px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:15px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,0,255,.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:15px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(0,150,255,.5);">
         <div>
-          <h2 style="color:#f0f;margin:0;font-size:20px;">⚡ 开发者调试控制台</h2>
+          <h2 style="color:#fff;margin:0;font-size:20px;">⚡ 开发者调试控制台</h2>
           <div style="color:#888;font-size:11px;margin-top:4px;">Developer Debug Console v2.0 | ToolBox Admin</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -6344,53 +6344,53 @@ function showDebugPanel() {
           <div style="font-size:24px;margin-bottom:6px;">🗑️</div>
           <button type="button" class="btn btn-danger btn-sm" onclick="debugConfirmAction('清空数据库','debugClearDB')">清空数据库</button>
         </div>
-        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">👤</div>
           <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置所有用户','debugResetUsers')">重置用户</button>
         </div>
-        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">📢</div>
           <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置回声洞','debugResetEchoes')">重置回声洞</button>
         </div>
-        <div style="background:rgba(255,165,0,.1);border:1px solid #ffa500;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">📁</div>
           <button type="button" class="btn btn-warning btn-sm" onclick="debugConfirmAction('重置云盘文件','debugResetFiles')">重置云盘</button>
         </div>
-        <div style="background:rgba(0,255,255,.1);border:1px solid #0ff;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">📋</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugDumpLogs()">导出日志</button>
         </div>
-        <div style="background:rgba(0,255,255,.1);border:1px solid #0ff;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">🔌</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugTestAPI()">测试API</button>
         </div>
-        <div style="background:rgba(138,43,226,.1);border:1px solid #8a2be2;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">🗃️</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowSQL()">SQL状态</button>
         </div>
-        <div style="background:rgba(138,43,226,.1);border:1px solid #8a2be2;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">🌐</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowNetwork()">网络状态</button>
         </div>
-        <div style="background:rgba(0,255,0,.1);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">💾</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowMemory()">内存状态</button>
         </div>
-        <div style="background:rgba(0,255,0,.1);border:1px solid #0f0;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">📦</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCache()">缓存状态</button>
         </div>
-        <div style="background:rgba(255,0,255,.1);border:1px solid #f0f;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">🔧</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowEnv()">环境变量</button>
         </div>
-        <div style="background:rgba(255,0,255,.1);border:1px solid #f0f;border-radius:10px;padding:12px;text-align:center;">
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
           <div style="font-size:24px;margin-bottom:6px;">🧹</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugClearLocalStorage()">清缓存</button>
         </div>
       </div>
-      <div style="background:#000;border:1px solid #f0f;border-radius:12px;padding:15px;">
-        <div style="color:#f0f;font-size:13px;font-weight:700;margin-bottom:8px;">📟 终端输出</div>
+      <div style="background:#000;border:1px solid #0096ff;border-radius:12px;padding:15px;">
+        <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:8px;">📟 终端输出</div>
         <div id="debugOutput" style="background:#000;color:#0f0;font-family:'Courier New',monospace;font-size:12px;padding:10px;border-radius:6px;height:350px;overflow-y:auto;line-height:1.6;"></div>
       </div>
     </div>`;
