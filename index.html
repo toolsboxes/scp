@@ -6,8 +6,6 @@
 <title>ToolBox - 工具箱</title>
 <script src="https://cdn.staticfile.net/three.js/r128/three.min.js"></script>
 <script>if(!window.THREE)document.write('<script src="https://cdn.bootcdn.net/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
-<script src="./GLTFLoader.js"></script>
-<script src="./DRACOLoader.js"></script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -472,7 +470,6 @@ body.forced-landscape #appRoot .tab { padding: 8px 16px !important; font-size: 1
       <div class="game-card" onclick="openGame('xiangqi')"><div class="icon">🀄</div><div class="name">中国象棋</div></div>
       <div class="game-card" onclick="openGame('chess')"><div class="icon">♟️</div><div class="name">国际象棋</div></div>
       <div class="game-card" onclick="openGame('go')"><div class="icon">⬛</div><div class="name">围棋</div></div>
-      <div class="game-card" onclick="openGame('fps')"><div class="icon">🎯</div><div class="name">FPS射击</div></div>
     </div>
     <div id="gameContainer">
       <button type="button" class="btn btn-secondary btn-sm" onclick="closeGame()" style="margin-bottom:12px;">← 返回游戏列表</button>
@@ -6245,7 +6242,6 @@ function openGame(game) {
   if (game === 'xiangqi') showGameMenu(area, 'xiangqi', '中国象棋');
   if (game === 'chess') showGameMenu(area, 'chess', '国际象棋');
   if (game === 'go') showGameMenu(area, 'go', '围棋');
-  if (game === 'fps') initFPS(area);
   updateCheatPanel(game);
 }
 
