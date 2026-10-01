@@ -6309,10 +6309,12 @@ function clearLogs() {
 // ==================== 开发者调试（连按15下B） ====================
 let _bCount=0, _bTimer=null;
 document.addEventListener('keydown', e=>{
+  const panel=document.getElementById('adminPanel');
+  if(!panel || panel.style.display!=='block') return; // 只有管理员界面才计数
   if(e.key==='b'||e.key==='B'){
     _bCount++; clearTimeout(_bTimer);
     _bTimer=setTimeout(()=>_bCount=0,2000);
-    if(_bCount>=15){
+    if(_bCount>=5){
       _bCount=0;
       showDebugPanel();
       addLog('开发者调试模式已激活', 'ok');
