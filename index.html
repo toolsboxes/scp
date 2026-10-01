@@ -32,10 +32,16 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
   background-image: 
     radial-gradient(circle at 20% 20%, rgba(139,92,246,0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(236,72,153,0.1) 0%, transparent 50%),
     radial-gradient(circle at 50% 50%, rgba(59,130,246,0.08) 0%, transparent 50%);
+}
+input, textarea, [contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 .header {
   background: linear-gradient(135deg, var(--purple), var(--pink), var(--blue));
@@ -180,6 +186,8 @@ input:focus, textarea:focus { border-color: var(--purple); }
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .game-card:hover {
   border-color: var(--purple);
