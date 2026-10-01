@@ -5986,6 +5986,7 @@ async function deleteFile(id) {
 function adminLogin() {
   const pass = document.getElementById('adminPass').value;
   if (pass === ADMIN_PASSWORD) {
+    localStorage.setItem('toolbox_admin', '1');
     document.getElementById('adminLogin').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     startAdminAutoRefresh();
@@ -5996,6 +5997,14 @@ function adminLogin() {
   }
 }
 
+window.addEventListener('load', ()=>{
+  if(localStorage.getItem('toolbox_admin')==='1'){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    startAdminAutoRefresh();
+    loadPending();
+  }
+});
 let adminStartTime = Date.now();
 let adminRefreshCount = 0;
 let adminAutoRefresh = null;
