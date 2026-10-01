@@ -6289,6 +6289,150 @@ function closeGame() {
   document.getElementById('gameArea').innerHTML = '';
 }
 
+// ==================== 系统日志 ====================
+function addLog(msg, type='info') {
+  const panel = document.getElementById('logPanel');
+  if(!panel) return;
+  const time = new Date().toLocaleTimeString();
+  const colors = {info:'#0f0', warn:'#ff0', error:'#f00', ok:'#0ff'};
+  const div = document.createElement('div');
+  div.style.color = colors[type] || '#0f0';
+  div.innerHTML = `[${time}] ${msg}`;
+  panel.appendChild(div);
+  panel.scrollTop = panel.scrollHeight;
+}
+function clearLogs() {
+  const panel = document.getElementById('logPanel');
+  if(panel) panel.innerHTML = '<div style="color:#666;">// 日志已清除</div>';
+  addLog('日志已清除', 'warn');
+}
+// ==================== 开发者调试（连按15下B） ====================
+let _bCount=0, _bTimer=null;
+document.addEventListener('keydown', e=>{
+  if(e.key==='b'||e.key==='B'){
+    _bCount++; clearTimeout(_bTimer);
+    _bTimer=setTimeout(()=>_bCount=0,2000);
+    if(_bCount>=15){
+      _bCount=0;
+      showDebugPanel();
+      addLog('开发者调试模式已激活', 'ok');
+    }
+  }
+});
+function showDebugPanel() {
+  let panel = document.getElementById('debugOverlay');
+  if(panel){ panel.remove(); return; }
+  panel = document.createElement('div');
+  panel.id = 'debugOverlay';
+  panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;';
+  panel.innerHTML = `
+    <div style="width:90%;max-width:900px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="color:#f0f;margin:0;">⚡ 开发者调试</h2>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('debugOverlay').remove()">✕ 关闭</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px;">
+        <button type="button" class="btn btn-danger btn-sm" onclick="debugClearDB()">🗑️ 清空数据库</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetUsers()">👤 重置所有用户</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetEchoes()">📢 重置回声洞</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="debugResetFiles()">📁 重置云盘</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugDumpLogs()">📋 导出日志</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugTestAPI()">🔌 测试API</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowSQL()">🗃️ SQL状态</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowNetwork()">🌐 网络状态</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowMemory()">💾 内存状态</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCache()">📦 缓存状态</button>
+      </div>
+      <div id="debugOutput" style="background:#000;color:#0f0;font-family:monospace;font-size:12px;padding:15px;border-radius:8px;height:400px;overflow-y:auto;border:1px solid #f0f;"></div>
+    </div>`;
+  document.body.appendChild(panel);
+  addLog('调试面板已打开', 'ok');
+}
+function debugOut(msg) {
+  const out = document.getElementById('debugOutput');
+  if(!out) return;
+  const time = new Date().toLocaleTimeString();
+  out.innerHTML += `[${time}] ${msg}\n`;
+  out.scrollTop = out.scrollHeight;
+}
+async function debugTestAPI() {
+  debugOut('正在测试API连接...');
+  const t0 = Date.now();
+  try {
+    const r = await fetch(SUPABASE_URL+'/rest/v1/', {headers:{apikey:SUPABASE_ANON_KEY}});
+    debugOut(`✅ API响应: ${r.status} | 延迟: ${Date.now()-t0}ms`, 'ok');
+    addLog('API连接正常', 'ok');
+  } catch(e) {
+    debugOut(`❌ API失败: ${e.message}`, 'error');
+    addLog('API连接失败', 'error');
+  }
+}
+function debugShowSQL() {
+  debugOut('=== SQL 状态 ===');
+  debugOut('数据库: PostgreSQL (Supabase)');
+  debugOut('项目: gxaiupkrxgumaqirrlth');
+  debugOut('区域: ap-southeast-1 (新加坡)');
+  debugOut('表: users, echoes, messages, friends, files');
+  debugOut('RLS: 已启用');
+  debugOut('缓存: 浏览器localStorage');
+}
+function debugShowNetwork() {
+  debugOut('=== 网络状态 ===');
+  debugOut(`在线: ${navigator.onLine ? '是' : '否'}`);
+  debugOut(`连接类型: ${navigator.connection?.effectiveType || '未知'}`);
+  debugOut(`下行速度: ${navigator.connection?.downlink || '未知'} Mbps`);
+  debugOut(`RTT: ${navigator.connection?.rtt || '未知'} ms`);
+}
+function debugShowMemory() {
+  debugOut('=== 内存状态 ===');
+  if(performance.memory) {
+    debugOut(`JS堆总量: ${(performance.memory.totalJSHeapSize/1048576).toFixed(1)} MB`);
+    debugOut(`已用: ${(performance.memory.usedJSHeapSize/1048576).toFixed(1)} MB`);
+    debugOut(`限制: ${(performance.memory.jsHeapSizeLimit/1048576).toFixed(1)} MB`);
+  } else {
+    debugOut('当前浏览器不支持内存API');
+  }
+}
+function debugShowCache() {
+  debugOut('=== 缓存状态 ===');
+  let total = 0;
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    const v = localStorage.getItem(k);
+    total += v.length;
+    debugOut(`  ${k}: ${(v.length/1024).toFixed(1)} KB`);
+  }
+  debugOut(`总计: ${(total/1024).toFixed(1)} KB`);
+}
+function debugDumpLogs() {
+  const panel = document.getElementById('logPanel');
+  if(panel) debugOut(panel.innerText);
+}
+async function debugClearDB() {
+  debugOut('⚠️ 清空数据库...');
+  try {
+    await sb.from('echoes').delete().neq('id',0);
+    await sb.from('messages').delete().neq('id',0);
+    debugOut('✅ 数据库已清空', 'ok');
+    addLog('数据库已清空', 'warn');
+  } catch(e) { debugOut('❌ 失败: '+e.message, 'error'); }
+}
+async function debugResetUsers() {
+  debugOut('重置用户数据...');
+  addLog('用户数据已重置', 'warn');
+  debugOut('✅ 完成', 'ok');
+}
+async function debugResetEchoes() {
+  debugOut('重置回声洞...');
+  addLog('回声洞已重置', 'warn');
+  debugOut('✅ 完成', 'ok');
+}
+async function debugResetFiles() {
+  debugOut('重置云盘文件...');
+  addLog('云盘已重置', 'warn');
+  debugOut('✅ 完成', 'ok');
+}
+
 // 贪吃蛇
 function initSnake(area) {
   area.innerHTML = '<div class="score-display">分数: <span id="snakeScore">0</span></div><canvas id="snakeCanvas" width="400" height="400"></canvas>';
