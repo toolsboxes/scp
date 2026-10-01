@@ -6421,6 +6421,57 @@ function showDebugPanel() {
           <div style="font-size:24px;margin-bottom:6px;">💥</div>
           <button type="button" class="btn btn-danger btn-sm" onclick="debugConfirmAction('重启网站','debugRebootSite')">重启网站</button>
         </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📝</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugExportLogs()">导出日志文件</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🔍</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugConsoleTest()">控制台测试</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📊</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowDOMStats()">DOM统计</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">⏰</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowTime()">时间信息</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🌐</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCookie()">Cookie</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📦</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowIndexedDB()">IndexedDB</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🔋</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowBattery()">电池状态</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📡</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowNetworkInfo()">网络详情</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🖱️</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowInputDevices()">输入设备</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🎨</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowCSSVars()">CSS变量</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📱</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowTouchInfo()">触摸支持</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🔄</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowHistory()">历史记录</button>
+        </div>
+      </div>
+      <div style="background:#000;
+        </div>
       </div>
       <div style="background:#000;border:1px solid #0096ff;border-radius:12px;padding:15px;">
         <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:8px;">📟 终端输出</div>
@@ -6509,6 +6560,83 @@ function debugShowGeolocation() {
       err => debugOut(`❌ 定位失败: ${err.message}`)
     );
   } else debugOut('浏览器不支持定位');
+}
+function debugExportLogs() {
+  const panel = document.getElementById('logPanel');
+  const blob = new Blob([panel.innerText], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'toolbox_logs_'+Date.now()+'.txt';
+  a.click();
+  debugOut('✅ 日志已导出', 'ok');
+}
+function debugConsoleTest() {
+  console.log('调试测试:', new Date().toISOString());
+  console.warn('警告测试');
+  console.error('错误测试');
+  debugOut('✅ 控制台测试完成（按F12查看）', 'ok');
+}
+function debugShowDOMStats() {
+  debugOut('=== DOM统计 ===');
+  debugOut(`元素总数: ${document.getElementsByTagName('*').length}`);
+  debugOut(`div数: ${document.getElementsByTagName('div').length}`);
+  debugOut(`按钮数: ${document.getElementsByTagName('button').length}`);
+  debugOut(`脚本数: ${document.getElementsByTagName('script').length}`);
+}
+function debugShowTime() {
+  debugOut('=== 时间信息 ===');
+  debugOut(`当前时间: ${new Date().toLocaleString()}`);
+  debugOut(`时区: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
+  debugOut(`时间戳: ${Date.now()}`);
+  debugOut(`已运行: ${(performance.now()/1000).toFixed(1)}秒`);
+}
+function debugShowCookie() {
+  debugOut('=== Cookie ===');
+  debugOut(document.cookie || '(空)');
+}
+function debugShowIndexedDB() {
+  debugOut('=== IndexedDB ===');
+  debugOut('支持: '+(!!window.indexedDB));
+}
+function debugShowBattery() {
+  debugOut('=== 电池状态 ===');
+  if(navigator.getBattery) {
+    navigator.getBattery().then(b=>{
+      debugOut(`电量: ${(b.level*100).toFixed(0)}%`);
+      debugOut(`充电: ${b.charging?"是":"否"}`);
+    });
+  } else debugOut('浏览器不支持');
+}
+function debugShowNetworkInfo() {
+  debugOut('=== 网络详情 ===');
+  const n = navigator.connection;
+  if(n) {
+    debugOut(`类型: ${n.effectiveType}`);
+    debugOut(`下行: ${n.downlink}Mbps`);
+    debugOut(`RTT: ${n.rtt}ms`);
+    debugOut(`省流: ${n.saveData?"开":"关"}`);
+  }
+}
+function debugShowInputDevices() {
+  debugOut('=== 输入设备 ===');
+  debugOut(`指针: ${navigator.maxTouchPoints}点触摸`);
+  debugOut('鼠标: 有');
+  debugOut('键盘: 有');
+}
+function debugShowCSSVars() {
+  debugOut('=== CSS变量 ===');
+  const s = getComputedStyle(document.body);
+  debugOut(`主背景: ${s.backgroundImage?.substring(0,40)||s.backgroundColor}`);
+  debugOut(`主色: ${s.color}`);
+}
+function debugShowTouchInfo() {
+  debugOut('=== 触摸支持 ===');
+  debugOut(`触摸点: ${navigator.maxTouchPoints}`);
+  debugOut(`触摸事件: ${"ontouchstart" in window?"支持":"不支持"}`);
+}
+function debugShowHistory() {
+  debugOut('=== 历史记录 ===');
+  debugOut(`历史长度: ${history.length}`);
 }
 function debugRebootSite() {
   debugOut('🔄 正在重启网站...');
