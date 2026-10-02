@@ -6469,6 +6469,21 @@ function showDebugPanel() {
           <div style="font-size:24px;margin-bottom:6px;">🔄</div>
           <button type="button" class="btn btn-secondary btn-sm" onclick="debugShowHistory()">历史记录</button>
         </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🧮</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugMathCalc()">计算器</button>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid #aaa;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">🎲</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugRandomTest()">随机测试</button>
+        </div>
+        <div style="background:rgba(0,100,200,.1);border:1px solid #0096ff;border-radius:10px;padding:12px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:6px;">📏</div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="debugPageSize()">页面大小</button>
+        </div>
+      </div>
+      <div style="background:#000;
+        </div>
       </div>
       <div style="background:#000;
         </div>
@@ -6638,6 +6653,21 @@ function debugShowHistory() {
   debugOut('=== 历史记录 ===');
   debugOut(`历史长度: ${history.length}`);
 }
+function debugMathCalc() {
+  const expr = prompt('输入表达式（如 1+2*3）:');
+  if(expr){ try { debugOut(expr+' = '+eval(expr)); } catch(e){ debugOut('错误: '+e.message); } }
+}
+function debugRandomTest() {
+  debugOut('随机数测试:');
+  for(let i=0;i<5;i++) debugOut('  '+(i+1)+': '+Math.random().toFixed(4));
+}
+function debugPageSize() {
+  debugOut('=== 页面大小 ===');
+  debugOut('滚动宽度: '+document.documentElement.scrollWidth);
+  debugOut('滚动高度: '+document.documentElement.scrollHeight);
+  debugOut('视口宽度: '+innerWidth);
+  debugOut('视口高度: '+innerHeight);
+}
 function debugRebootSite() {
   debugOut('🔄 正在重启网站...');
   addLog('网站重启', 'warn');
@@ -6733,7 +6763,7 @@ function initSnake(area) {
   area.innerHTML = '<div class="score-display">分数: <span id="snakeScore">0</span></div><canvas id="snakeCanvas" width="400" height="400"></canvas>';
   const canvas = document.getElementById('snakeCanvas');
   const ctx = canvas.getContext('2d');
-  let snake = [{ x: 10, y: 10 }], food = { x: 15, y: 15 }, dir = { x: 1, y: 0 }, score = 0;
+  let snake = [{ x: 10, y: 10 }], food = { x: 15, y: 15 }, dir = { x: 1, y: 0 }, nextDir = { x: 1, y: 0 }, score = 0;
 
   function draw() {
     ctx.fillStyle = '#0a0a0f';
@@ -6747,6 +6777,7 @@ function initSnake(area) {
   }
 
   function update() {
+    dir = nextDir;
     const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
     if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x === head.x && s.y === head.y)) {
       clearInterval(gameInterval);
@@ -6764,10 +6795,10 @@ function initSnake(area) {
   }
 
   document.onkeydown = (e) => {
-    if (e.key === 'ArrowUp' && dir.y !== 1) dir = { x: 0, y: -1 };
-    if (e.key === 'ArrowDown' && dir.y !== -1) dir = { x: 0, y: 1 };
-    if (e.key === 'ArrowLeft' && dir.x !== 1) dir = { x: -1, y: 0 };
-    if (e.key === 'ArrowRight' && dir.x !== -1) dir = { x: 1, y: 0 };
+    if (e.key === 'ArrowUp' && dir.y !== 1) nextDir = { x: 0, y: -1 };
+    if (e.key === 'ArrowDown' && dir.y !== -1) nextDir = { x: 0, y: 1 };
+    if (e.key === 'ArrowLeft' && dir.x !== 1) nextDir = { x: -1, y: 0 };
+    if (e.key === 'ArrowRight' && dir.x !== -1) nextDir = { x: 1, y: 0 };
   };
 
   draw();
