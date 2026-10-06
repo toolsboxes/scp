@@ -1532,6 +1532,10 @@ body.touch-landscape #appRoot .card { padding: 20px !important; }
   <div class="card">
     <h2>📦 资源合集</h2>
     <p style="color:var(--muted);font-size:13px;">开发者整理分享的资源文件，不限速，直接下载。</p>
+    <div id="adminUploadBar" style="display:none;margin:12px 0;">
+      <button type="button" class="btn btn-primary btn-sm" onclick="uploadResource()">📤 上传资源</button>
+      <button type="button" class="btn btn-secondary btn-sm" style="margin-left:8px;" onclick="loadResourceDrafts()">📋 资源管理</button>
+    </div>
     <div id="resourceList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:12px;">
       <div style="color:var(--muted);text-align:center;padding:30px;">加载中...</div>
     </div>
